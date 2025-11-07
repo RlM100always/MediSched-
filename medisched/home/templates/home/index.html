@@ -27,14 +27,21 @@
             <li><a href="#contact">Contact</a></li>
         </ul>
         <div class="nav-buttons">
-            {% if is_authenticated %}
-                <a href="/dashboard/" class="btn btn-primary">Dashboard</a>
-                <a href="{% url 'home:logout' %}" class="btn btn-outline">Logout</a>
-            {% else %}
-                <button class="btn btn-outline" onclick="openModal('signin')">Login</button>
-                <button class="btn btn-primary" onclick="openModal('signup')">Register</button>
-            {% endif %}
-        </div>
+    {% if is_authenticated %}
+        {% if user_type == 'patient' %}
+            <a href="/users/patient/dashboard/" class="btn btn-primary">Dashboard</a>
+        {% elif user_type == 'doctor' %}
+            <a href="/users/doctor/dashboard/" class="btn btn-primary">Dashboard</a>
+        {% elif user_type == 'admin' %}
+            <a href="users/admin/dashboard/" class="btn btn-primary">Dashboard</a>
+        {% endif %}
+        <a href="{% url 'home:logout' %}" class="btn btn-outline">Logout</a>
+    {% else %}
+        <button class="btn btn-outline" onclick="openModal('signin')">Login</button>
+        <button class="btn btn-primary" onclick="openModal('signup')">Register</button>
+    {% endif %}
+   </div>
+
         <div class="hamburger" id="hamburger">
             <span></span>
             <span></span>
@@ -563,10 +570,10 @@
         </div>
     </div>
 
-    <script>
-    // Django URL গুলো JS এর ভেতর ব্যবহার করার জন্য
-    const signinUrl = "{% url 'home:signin' %}";
-    const signupUrl = "{% url 'home:signup' %}";
+<script>
+  const signupUrl = "{% url 'users:signup_ajax' %}";
+  const signinUrl = "{% url 'users:signin_ajax' %}";
+  const logoutUrl = "{% url 'users:logout_ajax' %}";
 </script>
 <script src="{% static 'home/js/main.js' %}"></script>
 

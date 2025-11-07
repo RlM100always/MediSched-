@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard | MediSched</title>
+    <link rel="stylesheet" href="{% static 'users/css/doctor_dashboard.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'doctor/css/doctor_dashboard.css' %}">
+
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>MediSched</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active"><a href="#"><i class='bx bx-home'></i> Dashboard</a></li>
+                <li><a href="#"><i class='bx bx-calendar'></i> Appointments</a></li>
+                <li><a href="#"><i class='bx bx-user'></i> Patients</a></li>
+                <li><a href="#"><i class='bx bx-file'></i> Prescriptions</a></li>
+                <li><a href="#"><i class='bx bx-dollar-circle'></i> Payments</a></li>
+                <li><a href="#"><i class='bx bx-star'></i> Reviews</a></li>
+<li><a href="{% url 'doctor:profile_edit' %}"><i class='bx bx-user-circle'></i> Profile</a></li>
+                <li><a href="#"><i class='bx bx-log-out'></i> Logout</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <h1>Welcome, Dr. {{ doctor_user.first_name }}</h1>
+                <div class="header-icons">
+                    <i class='bx bx-bell'></i>
+                    <i class='bx bx-message-square'></i>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <section class="stats-cards">
+                <div class="card">
+                    <h3>Upcoming Appointments</h3>
+                    <p>{{ upcoming_appointments_count }}</p>
+                </div>
+                <div class="card">
+                    <h3>Patients Today</h3>
+                    <p>{{ patients_today_count }}</p>
+                </div>
+                <div class="card">
+                    <h3>Earnings</h3>
+                    <p>${{ earnings_today }}</p>
+                </div>
+                <div class="card">
+                    <h3>Reviews</h3>
+                    <p>{{ total_reviews }}</p>
+                </div>
+            </section>
+
+            <!-- Appointments Table -->
+            <section class="appointments-section">
+                <h2>Upcoming Appointments</h2>
+                <table class="appointments-table">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in upcoming_appointments %}
+                        <tr>
+                            <td>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</td>
+                            <td>{{ appointment.appointment_date }}</td>
+                            <td>{{ appointment.appointment_time }}</td>
+                            <td>{{ appointment.status.status_name }}</td>
+                            <td>
+                                <button class="btn view">View</button>
+                                <button class="btn complete">Complete</button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5">No appointments scheduled.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Quick Links -->
+            <section class="quick-links">
+                <h2>Quick Actions</h2>
+                <div class="quick-cards">
+                    <div class="quick-card">
+                        <i class='bx bx-user-plus'></i>
+                        <p>New Patient</p>
+                    </div>
+                    <div class="quick-card">
+                        <i class='bx bx-calendar-plus'></i>
+                        <p>New Appointment</p>
+                    </div>
+                    <div class="quick-card">
+                        <i class='bx bx-file'></i>
+                        <p>New Prescription</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="{% static 'users/js/doctor_dashboard.js' %}"></script>
+</body>
+</html>

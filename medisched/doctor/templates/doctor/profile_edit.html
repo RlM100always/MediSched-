@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Doctor Profile | MediSched</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'doctor/css/profile.css' %}">
+    <style>
+        /* Base Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body { background-color: #f5f7fa; color: #333; }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 40px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #34495e;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d8e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flex-row > div {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .btn {
+            padding: 14px 20px;
+            background-color: #3498db;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* Optional: Profile Image Preview */
+        .profile-image-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-image-container img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #3498db;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .flex-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Edit Profile</h1>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- About -->
+            <div>
+                <label>About</label>
+                <textarea name="about">{{ doctor.about }}</textarea>
+            </div>
+
+            <!-- Flex row for qualification and experience -->
+            <div class="flex-row">
+                <div>
+                    <label>Qualification</label>
+                    <input type="text" name="qualification" value="{{ doctor.qualification }}">
+                </div>
+                <div>
+                    <label>Total Experience (years)</label>
+                    <input type="number" name="total_experience" value="{{ doctor.total_experience }}">
+                </div>
+            </div>
+
+            <!-- BMDC number -->
+            <div>
+                <label>BMDC Number</label>
+                <input type="text" name="bmdc_number" value="{{ doctor.bmdc_number }}">
+            </div>
+
+            <!-- Flex row for location -->
+            <div class="flex-row">
+                <div>
+                    <label>Division</label>
+                    <select name="division">
+                        {% for div in divisions %}
+                            <option value="{{ div.id }}" {% if doctor.division.id == div.id %}selected{% endif %}>
+                                {{ div.division_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>District</label>
+                    <select name="district">
+                        {% for dist in districts %}
+                            <option value="{{ dist.id }}" {% if doctor.district.id == dist.id %}selected{% endif %}>
+                                {{ dist.district_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Upazila</label>
+                    <select name="upazila">
+                        {% for upz in upazilas %}
+                            <option value="{{ upz.id }}" {% if doctor.upazila.id == upz.id %}selected{% endif %}>
+                                {{ upz.upazila_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Profile Image -->
+            <div class="profile-image-container">
+                {% if doctor.profile_image %}
+                    <img src="{{ doctor.profile_image.url }}" alt="Profile Image">
+                {% endif %}
+                <div>
+                    <label>Profile Image</label>
+                    <input type="file" name="profile_image">
+                </div>
+            </div>
+
+            <button type="submit" class="btn"><i class="fas fa-save"></i> Update Profile</button>
+        </form>
+    </div>
+</body>
+</html>

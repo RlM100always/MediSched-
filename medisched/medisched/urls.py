@@ -18,6 +18,10 @@ def work_view(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('home.urls')),  # Home app
+    path('users/', include('users.urls', namespace='users')),  # ajax endpoints + dashboards
+    path('users/doctor/', include('doctor.urls', namespace='doctor')),
+
+
     
 ]
 
