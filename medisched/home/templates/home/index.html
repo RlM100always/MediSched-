@@ -1,0 +1,576 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSched - Your Health, Anytime, Anywhere</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+        <!-- Local static CSS -->
+    <link rel="stylesheet" href="{% static 'home/css/style.css' %}">
+   
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <a href="#" class="logo">
+            <i class="fas fa-heartbeat"></i>
+            <span>MediSched</span>
+        </a>
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#doctors">Doctors</a></li>
+            <li><a href="#appointments">Appointments</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <div class="nav-buttons">
+            {% if is_authenticated %}
+                <a href="/dashboard/" class="btn btn-primary">Dashboard</a>
+                <a href="{% url 'home:logout' %}" class="btn btn-outline">Logout</a>
+            {% else %}
+                <button class="btn btn-outline" onclick="openModal('signin')">Login</button>
+                <button class="btn btn-primary" onclick="openModal('signup')">Register</button>
+            {% endif %}
+        </div>
+        <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <div class="hero-text fade-in">
+                <h1>
+                    Your Health, <span class="highlight">Anytime, Anywhere</span>
+                </h1>
+                <p>
+                    Book appointments, consult online, track prescriptions, and get reminders instantly. 
+                    Your complete healthcare solution in one platform.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary btn-large" onclick="openModal('signup')">
+                        <i class="fas fa-calendar-check"></i> Book Appointment
+                    </button>
+                    <button class="btn btn-secondary btn-large" onclick="document.getElementById('doctors').scrollIntoView({behavior: 'smooth'})">
+                        <i class="fas fa-user-md"></i> Find a Doctor
+                    </button>
+                </div>
+            </div>
+            <div class="hero-image fade-in">
+                <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#2D9CDB;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#27AE60;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="300" cy="300" r="250" fill="url(#grad1)" opacity="0.1"/>
+                    <circle cx="300" cy="300" r="200" fill="url(#grad1)" opacity="0.2"/>
+                    <circle cx="300" cy="300" r="150" fill="url(#grad1)" opacity="0.3"/>
+                    <g transform="translate(200, 200)">
+                        <rect x="70" y="70" width="60" height="60" rx="10" fill="white" opacity="0.9"/>
+                        <path d="M100 85 L100 115 M85 100 L115 100" stroke="#2D9CDB" stroke-width="8" stroke-linecap="round"/>
+                    </g>
+                    <circle cx="450" cy="150" r="25" fill="white" opacity="0.7"/>
+                    <circle cx="150" cy="450" r="30" fill="white" opacity="0.6"/>
+                    <circle cx="500" cy="400" r="28" fill="white" opacity="0.65"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="services">
+        <div class="section-header fade-in">
+            <h2>Core Features</h2>
+            <p>Everything you need for modern healthcare management</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <div class="feature-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <h3>Online Consultation</h3>
+                <p>Connect with doctors through chat, audio, and video calls from the comfort of your home.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h3>Easy Appointments</h3>
+                <p>Book and track appointments with verified doctors. Real-time availability and instant confirmations.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">
+                    <i class="fas fa-file-medical"></i>
+                </div>
+                <h3>Medical Records</h3>
+                <p>Access your prescriptions and health history anytime. Digital records at your fingertips.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3>Reminders & Notifications</h3>
+                <p>Never miss an appointment with automated SMS and email reminders.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3>Trusted Doctors</h3>
+                <p>All doctors are verified and experienced healthcare professionals you can trust.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Secure Payments</h3>
+                <p>Multiple payment methods with bank-level security and transparent transaction tracking.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="about">
+        <div class="section-header fade-in">
+            <h2>How It Works</h2>
+            <p>Getting started is simple and quick</p>
+        </div>
+        <div class="steps-container">
+            <div class="step-card fade-in">
+                <div class="step-number">1</div>
+                <h3>Register/Login</h3>
+                <p>Create your account in minutes. Simple, secure registration process.</p>
+            </div>
+            <div class="step-card fade-in">
+                <div class="step-number">2</div>
+                <h3>Search & Book Doctor</h3>
+                <p>Find the right doctor by specialty, location, or symptoms and book instantly.</p>
+            </div>
+            <div class="step-card fade-in">
+                <div class="step-number">3</div>
+                <h3>Consult Online</h3>
+                <p>Connect via chat, audio, or video call at your scheduled time.</p>
+            </div>
+            <div class="step-card fade-in">
+                <div class="step-number">4</div>
+                <h3>Get Prescription</h3>
+                <p>Receive digital prescriptions and follow-up care instructions.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Doctors Section -->
+    <section class="doctors" id="doctors">
+        <div class="section-header fade-in">
+            <h2>Featured Doctors</h2>
+            <p>Consult with our verified and experienced healthcare professionals</p>
+        </div>
+        
+        <div class="search-bar fade-in">
+            <input type="text" placeholder="Search by name or specialty...">
+            <select>
+                <option value="">All Specialties</option>
+                <option value="cardiology">Cardiology</option>
+                <option value="dermatology">Dermatology</option>
+                <option value="pediatrics">Pediatrics</option>
+                <option value="orthopedics">Orthopedics</option>
+                <option value="neurology">Neurology</option>
+            </select>
+            <select>
+                <option value="">All Locations</option>
+                <option value="dhaka">Dhaka</option>
+                <option value="chittagong">Chittagong</option>
+                <option value="sylhet">Sylhet</option>
+            </select>
+            <button class="btn btn-primary">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+
+        <div class="doctors-grid">
+            <div class="doctor-card fade-in">
+                <div class="doctor-image">
+                    <img src="https://doctime-core-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/persons/164173/profile_photos/K6baVjrFSLUlNHfK0dMyCDuJTscT6fpZpFTzrsBx.jpg">
+                </div>
+                <div class="doctor-info">
+                    <h3>Dr. Sarah Ahmed</h3>
+                    <p class="doctor-specialty">Cardiologist</p>
+                    <div class="doctor-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                        <span>(4.8)</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="openModal('signup')">
+                        <i class="fas fa-calendar-plus"></i> Book Appointment
+                    </button>
+                </div>
+            </div>
+
+            <div class="doctor-card fade-in">
+                <div class="doctor-image">
+                    <img src="https://doctime-core-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/persons/282/profile_photos/v4MKuQWdynZ9umIVgvejF2L6voevtFErsDpFjoPZ.jpg">
+                </div>
+                <div class="doctor-info">
+                    <h3>Dr. Kamal Hossain</h3>
+                    <p class="doctor-specialty">Pediatrician</p>
+                    <div class="doctor-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <span>(5.0)</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="openModal('signup')">
+                        <i class="fas fa-calendar-plus"></i> Book Appointment
+                    </button>
+                </div>
+            </div>
+
+            <div class="doctor-card fade-in">
+                <div class="doctor-image">
+                    <img src="blob:https://doctime.com.bd/cd21eef4-bc86-4158-9ce6-5b8cef274c89">
+                </div>
+                <div class="doctor-info">
+                    <h3>Dr. Fatima Rahman</h3>
+                    <p class="doctor-specialty">Dermatologist</p>
+                    <div class="doctor-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                        <span>(4.7)</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="openModal('signup')">
+                        <i class="fas fa-calendar-plus"></i> Book Appointment
+                    </button>
+                </div>
+            </div>
+
+            <div class="doctor-card fade-in">
+                <div class="doctor-image">
+                        <img src="https://doctime-core-ap-southeast-1.s3.ap-southeast-1.amazonaws.com/persons/3160518/profile_photos/e4GP78X5FKwc4BCz1LN6OeH5wkBC2G4vA90GViyo.png">
+                </div>
+                <div class="doctor-info">
+                    <h3>Dr. Rahim Khan</h3>
+                    <p class="doctor-specialty">Orthopedic Surgeon</p>
+                    <div class="doctor-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <span>(4.9)</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="openModal('signup')">
+                        <i class="fas fa-calendar-plus"></i> Book Appointment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="section-header fade-in">
+            <h2>What Our Patients Say</h2>
+            <p>Real experiences from real people</p>
+        </div>
+        <div class="testimonials-slider">
+            <div class="testimonial-card fade-in">
+                <p class="testimonial-text">
+                    MediSched made it so easy to consult with my doctor from home. The video quality was excellent 
+                    and I received my prescription immediately. Highly recommended!
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-image"></div>
+                    <div class="author-info">
+                        <h4>Ayesha Begum</h4>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card fade-in">
+                <p class="testimonial-text">
+                    As a busy professional, MediSched is a lifesaver. I can book appointments during my breaks 
+                    and consult with doctors without taking time off work.
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-image"></div>
+                    <div class="author-info">
+                        <h4>Rakib Hassan</h4>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card fade-in">
+                <p class="testimonial-text">
+                    The reminder system is fantastic! I never miss my appointments anymore. The doctors are 
+                    professional and caring. Great platform!
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-image"></div>
+                    <div class="author-info">
+                        <h4>Nazia Islam</h4>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="section-header fade-in">
+            <h2 style="color: white;">Trusted by Thousands</h2>
+            <p style="color: rgba(255,255,255,0.9);">Join our growing community of healthcare professionals and patients</p>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-item fade-in">
+                <div class="stat-number">15,000+</div>
+                <div class="stat-label">Active Patients</div>
+            </div>
+            <div class="stat-item fade-in">
+                <div class="stat-number">850+</div>
+                <div class="stat-label">Verified Doctors</div>
+            </div>
+            <div class="stat-item fade-in">
+                <div class="stat-number">75,000+</div>
+                <div class="stat-label">Consultations</div>
+            </div>
+            <div class="stat-item fade-in">
+                <div class="stat-number">4.9★</div>
+                <div class="stat-label">Average Rating</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog/Health Tips Section -->
+    <section class="blog">
+        <div class="section-header fade-in">
+            <h2>Health Tips & Articles</h2>
+            <p>Stay informed with our latest health and wellness content</p>
+        </div>
+        <div class="blog-grid">
+            
+ 
+
+            
+            <div class="blog-card">
+    <div class="blog-image">
+        <img src="https://www.loyolamedicine.org/sites/default/files/hg_features/hg_post/6c79e7f4be21b1cc22484854264e4f6c.jpg" alt="Heart Health">
+    </div>
+    <div class="blog-content">
+        <h3>5 Ways to Maintain Heart Health</h3>
+        <p>Discover simple lifestyle changes that can significantly improve your cardiovascular health and reduce risks.</p>
+        <a href="#" class="blog-link">Read More <i class="fas fa-arrow-right"></i></a>
+    </div>
+</div>
+
+
+            <div class="blog-card fade-in">
+                <div class="blog-image">
+                            <img src="https://www.care-learning.com/images/blogs/imagebbb662ec2fe32d42bea0c5c18794ad2303718f12.jpg" alt="Heart Health">
+                </div>
+                <div class="blog-content">
+                    <h3>Managing Diabetes Through Diet</h3>
+                    <p>Learn about the best dietary practices to control blood sugar levels and live a healthy life with diabetes.</p>
+                    <a href="#" class="blog-link">
+                        Read More <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="blog-card fade-in">
+                <div class="blog-image">
+                    <img src="https://www.drmaidhospital.in/wp-content/uploads/2022/02/man-at-doctor-stock-today-150608.jpg" alt="Heart Health">
+                </div>
+                <div class="blog-content">
+                    <h3>The Importance of Regular Checkups</h3>
+                    <p>Why preventive healthcare matters and how regular medical checkups can save lives.</p>
+                    <a href="#" class="blog-link">
+                        Read More <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta" id="appointments">
+        <div class="cta-content fade-in">
+            <h2>Start Your Health Journey Today</h2>
+            <p>Join thousands of satisfied patients who trust MediSched for their healthcare needs. 
+               Book your first appointment now!</p>
+            <div class="cta-buttons">
+                <button class="btn btn-primary btn-large" onclick="openModal('signup')">
+                    <i class="fas fa-user-plus"></i> Sign Up Now
+                </button>
+                <button class="btn btn-secondary btn-large" onclick="openModal('signup')">
+                    <i class="fas fa-calendar-check"></i> Book Appointment
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>MediSched</h3>
+                <p>Modern telemedicine platform connecting patients with healthcare providers across Bangladesh.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#doctors">Find Doctors</a></li>
+                    <li><a href="#appointments">Book Appointment</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>For Doctors</h3>
+                <ul>
+                    <li><a href="#">Register as Doctor</a></li>
+                    <li><a href="#">Doctor Dashboard</a></li>
+                    <li><a href="#">Resources</a></li>
+                    <li><a href="#">Support</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <ul>
+                    <li><i class="fas fa-envelope"></i> info@medisched.com</li>
+                    <li><i class="fas fa-phone"></i> +880 1234-567890</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Dhaka, Bangladesh</li>
+                    <li><i class="fas fa-clock"></i> 24/7 Support</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 MediSched. All rights reserved. Built with ❤️ in Bangladesh</p>
+        </div>
+    </footer>
+
+    <!-- Floating CTA Button (Mobile) -->
+    <div class="floating-cta">
+        <button class="btn btn-primary btn-large" onclick="openModal('signup')">
+            <i class="fas fa-calendar-check"></i> Book Now
+        </button>
+    </div>
+
+    <!-- Sign In Modal -->
+    <div id="signinModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('signin')">&times;</span>
+            <h2>Welcome Back</h2>
+            <div id="signinAlert" class="alert"></div>
+            <form id="signinForm" onsubmit="handleSignin(event)">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="signin-username">Username or Email</label>
+                    <input type="text" id="signin-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="signin-password">Password</label>
+                    <input type="password" id="signin-password" name="password" required>
+                </div>
+                <button type="submit" class="form-submit">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </form>
+            <div class="switch-form">
+                Don't have an account? <a href="#" onclick="switchModal('signin', 'signup')">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('signup')">&times;</span>
+            <h2>Create Account</h2>
+            <div id="signupAlert" class="alert"></div>
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="signup-username">Username</label>
+                    <input type="text" id="signup-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" name="password" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="signup-usertype">I am a</label>
+                    <select id="signup-usertype" name="user_type" required>
+                        <option value="patient">Patient</option>
+                        <option value="doctor">Doctor</option>
+                    </select>
+                </div>
+                <button type="submit" class="form-submit">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+            <div class="switch-form">
+                Already have an account? <a href="#" onclick="switchModal('signup', 'signin')">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Django URL গুলো JS এর ভেতর ব্যবহার করার জন্য
+    const signinUrl = "{% url 'home:signin' %}";
+    const signupUrl = "{% url 'home:signup' %}";
+</script>
+<script src="{% static 'home/js/main.js' %}"></script>
+
+
+   
+</body>
+</html>
