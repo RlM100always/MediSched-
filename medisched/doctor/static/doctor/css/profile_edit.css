@@ -1,0 +1,218 @@
+/* ================================== */
+/* 0. ROOT VARIABLES & BASE STYLES (Executive Theme) */
+/* ================================== */
+:root {
+    --primary-color-exec: #008080; /* Teal/Aqua Accent */
+    --primary-hover-exec: #006666; 
+    --bg-main: #f0f3f6; /* Light Grey Background */
+    --bg-card: #ffffff; /* Main Card White */
+    --bg-section: #fafafa; /* Section Background */
+    --text-main: #2c3e50; /* Deep Navy Text */
+    --text-secondary: #7f8c8d; /* Grey Text */
+    --border-color: #ecf0f1; /* Light Border */
+    --shadow-deep: 0 10px 40px rgba(44, 62, 80, 0.12); 
+    --shadow-inner: 0 2px 5px rgba(0, 0, 0, 0.05);
+    --sidebar-width: 260px; /* IMPORTANT: Must match the sidebar width */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+}
+
+/* Layout */
+.main-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width); 
+    padding: 40px; 
+    background: var(--bg-main);
+}
+
+/* Main Container Card */
+.profile-container {
+    max-width: 950px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    padding: 40px 50px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-deep);
+}
+
+/* Profile Header */
+.profile-header {
+    text-align: center;
+    margin-bottom: 40px !important;
+    padding-bottom: 25px;
+    border-bottom: 1px solid var(--border-color);
+}
+.profile-header img {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid var(--primary-color-exec); 
+    padding: 3px;
+    box-shadow: 0 0 20px rgba(0, 128, 128, 0.4);
+}
+.profile-header h3 {
+    font-weight: 800;
+    color: var(--text-main);
+    margin-top: 15px !important;
+}
+.profile-header p {
+     color: var(--text-secondary);
+     font-size: 0.95rem;
+}
+
+/* Form Sections */
+.form-section {
+    background: var(--bg-section);
+    padding: 25px;
+    border-radius: 8px;
+    margin-bottom: 35px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-inner);
+}
+.section-title {
+    font-weight: 700;
+    color: var(--primary-color-exec);
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(0, 128, 128, 0.1);
+    padding-bottom: 10px;
+}
+.section-title i {
+    color: var(--primary-color-exec);
+}
+
+/* Form Controls */
+label {
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    display: block;
+}
+
+.form-control, .form-select, textarea {
+    border-radius: 6px; 
+    padding: 10px 12px; 
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    background-color: #fff;
+}
+.form-control:focus, .form-select:focus, textarea:focus {
+    box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.25); 
+    border-color: var(--primary-color-exec);
+    background-color: #fff;
+}
+
+.text-muted-dark {
+    color: var(--text-secondary) !important;
+    font-size: 0.85rem;
+}
+
+/* Work Experience Card */
+.experience-card {
+    background: #ecf0f1; /* Lighter background for nested elements */
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--primary-color-exec);
+    transition: background-color 0.2s;
+}
+.experience-card:hover {
+    background-color: #e4e7ea;
+}
+.remove-exp {
+    color: #e74c3c; /* Red for deletion */
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 38px;
+    transition: color 0.2s;
+}
+.remove-exp:hover {
+    color: #c0392b;
+}
+
+/* Working Hours */
+.working-hours .input-group-text {
+    width: 90px;
+    font-weight: 500;
+    background-color: var(--primary-color-exec);
+    color: #fff;
+    border-color: var(--primary-color-exec);
+    border-radius: 6px 0 0 6px !important;
+}
+.btn-remove-day {
+    background-color: #c0392b;
+    color: #fff;
+    border-color: #c0392b;
+    border-radius: 0 6px 6px 0 !important;
+    transition: background-color 0.2s;
+    padding: 0 10px;
+}
+.btn-remove-day:hover {
+    background-color: #a93226;
+    color: #fff;
+}
+
+.add-day-panel {
+    display: flex;
+    align-items: center;
+    background: var(--bg-card);
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+.add-day-panel .form-control,
+.add-day-panel .form-select {
+    height: 40px;
+}
+
+/* Buttons */
+.btn-primary-alt {
+    background-color: var(--primary-color-exec);
+    color: #fff;
+    border: 1px solid var(--primary-color-exec);
+    transition: all 0.2s;
+    font-weight: 600;
+}
+.btn-primary-alt:hover {
+    background-color: var(--primary-hover-exec);
+    color: #fff;
+}
+
+.btn-save {
+    background-color: var(--primary-color-exec);
+    color: #fff;
+    padding: 15px; 
+    font-weight: 700;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(0, 128, 128, 0.4);
+    transition: all 0.3s;
+}
+.btn-save:hover {
+    background-color: var(--primary-hover-exec);
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(0, 128, 128, 0.6);
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .main-content {
+        margin-left: 0;
+        padding: 20px 15px;
+    }
+}

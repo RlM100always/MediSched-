@@ -32,8 +32,6 @@
             <a href="/users/patient/dashboard/" class="btn btn-primary">Dashboard</a>
         {% elif user_type == 'doctor' %}
             <a href="/users/doctor/dashboard/" class="btn btn-primary">Dashboard</a>
-        {% elif user_type == 'admin' %}
-            <a href="users/admin/dashboard/" class="btn btn-primary">Dashboard</a>
         {% endif %}
         <a href="{% url 'home:logout' %}" class="btn btn-outline">Logout</a>
     {% else %}

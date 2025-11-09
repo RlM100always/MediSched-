@@ -5,194 +5,218 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Doctor Profile | MediSched</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'doctor/css/profile.css' %}">
-    <style>
-        /* Base Reset */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
-        body { background-color: #f5f7fa; color: #333; }
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-        .container {
-            max-width: 900px;
-            margin: 50px auto;
-            padding: 40px;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        }
 
-        h1 {
-            font-size: 28px;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            text-align: center;
-        }
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
-        label {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #34495e;
-        }
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
 
-        input[type="text"],
-        input[type="number"],
-        input[type="file"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #d1d8e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: 0.3s;
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .flex-row {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .flex-row > div {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .btn {
-            padding: 14px 20px;
-            background-color: #3498db;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .btn:hover {
-            background-color: #2980b9;
-        }
-
-        /* Optional: Profile Image Preview */
-        .profile-image-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .profile-image-container img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #3498db;
-        }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            .flex-row { flex-direction: column; }
-        }
-    </style>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'doctor/css/profile_edit.css' %}">
 </head>
 <body>
-    <div class="container">
-        <h1>Edit Profile</h1>
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
+    <!-- Sidebar -->
+    {% include 'doctor/doctor_sidebar.html' %}
 
-            <!-- About -->
-            <div>
-                <label>About</label>
-                <textarea name="about">{{ doctor.about }}</textarea>
-            </div>
+    <div class="main-wrapper">
+        <div class="main-content">
+            <div class="profile-container">
+                <div class="profile-header mb-4">
+                    {% if doctor.profile_image %}
+                        <img src="{{ doctor.profile_image.url }}" alt="Doctor Photo">
+                    {% else %}
+                        <img src="{% static 'img/default-doctor.png' %}" alt="Default Doctor">
+                    {% endif %}
+                    <h3 class="mt-3">Dr. {{ doctor.doctor.first_name }} {{ doctor.doctor.last_name }}</h3>
+                    <p class="text-muted">{{ doctor.doctor.email }}</p>
+                </div>
 
-            <!-- Flex row for qualification and experience -->
-            <div class="flex-row">
-                <div>
-                    <label>Qualification</label>
-                    <input type="text" name="qualification" value="{{ doctor.qualification }}">
-                </div>
-                <div>
-                    <label>Total Experience (years)</label>
-                    <input type="number" name="total_experience" value="{{ doctor.total_experience }}">
-                </div>
-            </div>
+                <form method="POST" enctype="multipart/form-data" id="doctorProfileForm">
+                    {% csrf_token %}
 
-            <!-- BMDC number -->
-            <div>
-                <label>BMDC Number</label>
-                <input type="text" name="bmdc_number" value="{{ doctor.bmdc_number }}">
-            </div>
+                    <div class="mb-3">
+                        <label>About</label>
+                        <textarea name="about" class="form-control" rows="3" placeholder="A brief professional summary">{{ doctor.about }}</textarea>
+                    </div>
 
-            <!-- Flex row for location -->
-            <div class="flex-row">
-                <div>
-                    <label>Division</label>
-                    <select name="division">
-                        {% for div in divisions %}
-                            <option value="{{ div.id }}" {% if doctor.division.id == div.id %}selected{% endif %}>
-                                {{ div.division_name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label>District</label>
-                    <select name="district">
-                        {% for dist in districts %}
-                            <option value="{{ dist.id }}" {% if doctor.district.id == dist.id %}selected{% endif %}>
-                                {{ dist.district_name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label>Upazila</label>
-                    <select name="upazila">
-                        {% for upz in upazilas %}
-                            <option value="{{ upz.id }}" {% if doctor.upazila.id == upz.id %}selected{% endif %}>
-                                {{ upz.upazila_name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Qualification</label>
+                            <input type="text" name="qualification" class="form-control" value="{{ doctor.qualification }}" placeholder="e.g., MBBS, MD, FCPS">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Total Experience (Years)</label>
+                            <input type="number" name="total_experience" class="form-control" value="{{ doctor.total_experience }}" min="0" placeholder="e.g., 10">
+                        </div>
+                    </div>
 
-            <!-- Profile Image -->
-            <div class="profile-image-container">
-                {% if doctor.profile_image %}
-                    <img src="{{ doctor.profile_image.url }}" alt="Profile Image">
-                {% endif %}
-                <div>
-                    <label>Profile Image</label>
-                    <input type="file" name="profile_image">
-                </div>
-            </div>
+                    <div class="mb-3">
+                        <label>BMDC Number</label>
+                        <input type="text" name="bmdc_number" class="form-control" value="{{ doctor.bmdc_number }}" placeholder="e.g., BMDC Reg-A1234">
+                    </div>
 
-            <button type="submit" class="btn"><i class="fas fa-save"></i> Update Profile</button>
-        </form>
+                  <div class="row">
+    <div class="col-md-4 mb-3">
+        <label>Division</label>
+        <select name="division" id="divisionSelect" class="form-select">
+            <option value="">Select Division</option>
+            {% for div in divisions %}
+                <option value="{{ div.id }}"
+                    {% if doctor.division and doctor.division.id == div.id %}selected{% endif %}>
+                    {{ div.division_name }}
+                </option>
+            {% endfor %}
+        </select>
     </div>
+
+    <div class="col-md-4 mb-3">
+        <label>District</label>
+        <select name="district" id="districtSelect" class="form-select">
+            <option value="">Select District</option>
+            {% for dist in districts %}
+                <option value="{{ dist.id }}"
+                    {% if doctor.district and doctor.district.id == dist.id %}selected{% endif %}>
+                    {{ dist.district_name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label>Upazila</label>
+        <select name="upazila" id="upazilaSelect" class="form-select">
+            <option value="">Select Upazila</option>
+            {% for upz in upazilas %}
+                <option value="{{ upz.id }}"
+                    {% if doctor.upazila and doctor.upazila.id == upz.id %}selected{% endif %}>
+                    {{ upz.upazila_name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+
+
+                    <div class="mb-3">
+                        <label>Profile Image</label>
+                        <input type="file" name="profile_image" class="form-control">
+                        {% if doctor.profile_image %}<small class="text-muted">Current image set.</small>{% endif %}
+                    </div>
+
+<!-- Departments (Specializations) -->
+<div class="mb-3">
+    <label>Departments (Specializations)</label>
+    <select name="departments" class="form-select select2-departments" multiple>
+        {% for dept in departments %}
+            <option value="{{ dept.id }}"
+                {% if dept in doctor.departments.all %}selected{% endif %}>
+                {{ dept.department_name }}
+            </option>
+        {% endfor %}
+    </select>
+    <small class="text-muted">Select one or more departments.</small>
+</div>
+
+<!-- Symptoms Expertise -->
+<div class="mb-3">
+    <label>Symptoms Expertise</label>
+    <select name="symptoms" class="form-select select2-symptoms" multiple>
+        {% for sym in symptoms %}
+            <option value="{{ sym.id }}"
+                {% if sym in doctor.symptoms.all %}selected{% endif %}>
+                {{ sym.symptom_name }}
+            </option>
+        {% endfor %}
+    </select>
+    <small class="text-muted">Select one or more areas of expertise.</small>
+</div>
+
+
+
+
+                    <div class="mb-3">
+                        <label>Work Experience</label>
+                        <div id="experienceList">
+                            {% for exp in doctor.experiences.all %}
+                            <div class="experience-card">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-md-4"><input type="text" class="form-control" name="hospital_name" value="{{ exp.hospital_name }}" placeholder="Hospital Name"></div>
+                                    <div class="col-md-4"><input type="text" class="form-control" name="designation" value="{{ exp.designation }}" placeholder="Designation"></div>
+                                    <div class="col-md-3"><input type="text" class="form-control" name="department" value="{{ exp.department }}" placeholder="Department (Optional)"></div>
+                                    <div class="col-md-1 text-end"><i class="fa-solid fa-trash remove-exp"></i></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" id="addExperience" class="btn btn-outline-primary btn-sm mt-2"><i class="fa fa-plus"></i> Add Experience</button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Working Hours (Day/Time)</label>
+                        <div id="workingHoursContainer" class="working-hours">
+                            <div class="row g-2 mb-2" id="workingHoursFields">
+                                {% for day, time in doctor.working_hours.items %}
+                                    <div class="col-md-6 mb-2 day-field">
+                                        <div class="input-group">
+                                            <span class="input-group-text">{{ day }}</span>
+                                            <input type="text" class="form-control time-input" data-day="{{ day }}" value="{{ time }}">
+                                            <button type="button" class="btn btn-outline-danger remove-day"><i class="fa fa-trash"></i></button>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="d-flex gap-2 mt-2">
+                                <select id="daySelect" class="form-select" style="max-width: 150px;">
+                                    <option value="">Select Day</option>
+                                    <option>Monday</option>
+                                    <option>Tuesday</option>
+                                    <option>Wednesday</option>
+                                    <option>Thursday</option>
+                                    <option>Friday</option>
+                                    <option>Saturday</option>
+                                    <option>Sunday</option>
+                                </select>
+                                <input type="text" id="timeInput" class="form-control" placeholder="e.g. 10AM-4PM" style="max-width: 200px;">
+                                <button type="button" id="addDay" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+                        <textarea id="workingHoursInput" name="working_hours" class="form-control mt-3" rows="3" readonly style="display:none;"></textarea>
+                        <small class="text-muted">Working hours are automatically compiled for submission.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-save w-100 mt-4"><i class="fas fa-save"></i> Update Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+
+
+ <!-- 👇 এখানে URL গুলো define করো -->
+<script>
+    const loadDistrictsUrl = "{% url 'doctor:ajax_load_districts' %}";
+    const loadUpazilasUrl = "{% url 'doctor:ajax_load_upazilas' %}";
+</script>
+
+<!-- jQuery CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+    <!-- Custom JS -->
+    <script src="{% static 'doctor/js/profile_edit.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 </body>
 </html>

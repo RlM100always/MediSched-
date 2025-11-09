@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}MediSched Admin{% endblock %}</title>
+
+  <!-- Bootstrap + FontAwesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      height: 100vh;
+      width: 240px;
+      background: #1f2937;
+      color: #fff;
+      position: fixed;
+      padding: 2rem 1rem;
+    }
+
+    .sidebar h4 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      color: #cbd5e1;
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .sidebar a:hover {
+      background: #374151;
+      color: #fff;
+      transform: translateX(3px);
+    }
+
+    .sidebar a i {
+      margin-right: 0.75rem;
+      font-size: 1.1rem;
+    }
+
+    /* Active link */
+    .sidebar a.active {
+      background: #2563eb;
+      color: #fff !important;
+      font-weight: 600;
+      transform: none;
+    }
+    .sidebar a.active i {
+      color: #fff;
+    }
+
+    /* Content */
+    .content {
+      margin-left: 260px;
+      padding: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+      .content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="d-flex">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h4>MediSched Admin</h4>
+    
+<a href="{% url 'division_list' %}" class="{% if request.resolver_match.url_name|slice:'0:8' == 'division' %}active{% endif %}">
+      <i class="fa-solid fa-map"></i> Divisions
+    </a>
+    <a href="{% url 'district_list' %}" class="{% if request.resolver_match.url_name == 'district_list' %}active{% endif %}">
+      <i class="fa-solid fa-city"></i> Districts
+    </a>
+    <a href="{% url 'upazila_list' %}" class="{% if request.resolver_match.url_name == 'upazila_list' %}active{% endif %}">
+      <i class="fa-solid fa-map-pin"></i> Upazilas
+    </a>
+    <a href="{% url 'department_list' %}" class="{% if request.resolver_match.url_name == 'department_list' %}active{% endif %}">
+      <i class="fa-solid fa-building"></i> Departments
+    </a>
+    <a href="{% url 'symptom_list' %}" class="{% if request.resolver_match.url_name == 'symptom_list' %}active{% endif %}">
+      <i class="fa-solid fa-stethoscope"></i> Symptoms
+    </a>
+    <a href="{% url 'appointment_list' %}" class="{% if request.resolver_match.url_name == 'appointment_list' %}active{% endif %}">
+      <i class="fa-solid fa-calendar-check"></i> Appointments
+    </a>
+    <a href="{% url 'payment_list' %}" class="{% if request.resolver_match.url_name == 'payment_list' %}active{% endif %}">
+      <i class="fa-solid fa-credit-card"></i> Payments
+    </a>
+    <a href="{% url 'logout' %}" class="mt-5">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </a>
+  </div>
+
+  <!-- Page Content -->
+  <div class="content flex-grow-1">
+    {% block content %}
+    {% endblock %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+{% extends 'adminapp/base_admin.html' %}
+{% load static %}
+
+{% block title %}Edit Symptom | MediSched Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card p-4 shadow-lg rounded">
+    <h3 class="mb-4 text-primary">
+      <i class="fa-solid fa-pen-to-square me-2"></i>Edit Symptom
+    </h3>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Symptom Name -->
+      <div class="mb-3">
+        <label for="symptom_name" class="form-label fw-semibold">Symptom Name</label>
+        <input type="text" 
+               name="symptom_name" 
+               id="symptom_name" 
+               class="form-control" 
+               value="{{ symptom.symptom_name }}" 
+               required>
+      </div>
+
+      <!-- Current Image Preview -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Current Image</label><br>
+        {% if symptom.symptom_image %}
+          <img src="{{ symptom.symptom_image.url }}" 
+               alt="{{ symptom.symptom_name }}" 
+               class="rounded shadow-sm" 
+               width="150" height="150">
+        {% else %}
+          <p class="text-muted">No image uploaded.</p>
+        {% endif %}
+      </div>
+
+      <!-- Upload New Image -->
+      <div class="mb-4">
+        <label for="symptom_image" class="form-label fw-semibold">Upload New Image (optional)</label>
+        <input type="file" 
+               name="symptom_image" 
+               id="symptom_image" 
+               class="form-control" 
+               accept="image/*">
+        <div class="form-text text-muted">
+          Leave this empty if you don’t want to change the image.
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="d-flex justify-content-between">
+        <a href="{% url 'symptom_list' %}" class="btn btn-secondary">
+          <i class="fa-solid fa-arrow-left me-2"></i>Back
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-save me-2"></i>Update Symptom
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
