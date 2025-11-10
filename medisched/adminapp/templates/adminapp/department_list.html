@@ -12,12 +12,15 @@
 
   <!-- Add Department Form -->
   <div class="card p-4 mb-4">
-    <form method="POST" action="{% url 'add_department' %}" class="row g-3">
+    <form method="POST" action="{% url 'add_department' %}" class="row g-3" enctype="multipart/form-data">
       {% csrf_token %}
-      <div class="col-9">
+      <div class="col-md-5">
         <input type="text" name="department_name" class="form-control" placeholder="New Department Name" required>
       </div>
-      <div class="col-3 d-grid">
+      <div class="col-md-5">
+        <input type="file" name="department_image" class="form-control" accept="image/*">
+      </div>
+      <div class="col-md-2 d-grid">
         <button class="btn btn-success"><i class="fa-solid fa-plus me-2"></i>Add</button>
       </div>
     </form>
@@ -30,6 +33,7 @@
         <thead class="table-dark">
           <tr>
             <th>#ID</th>
+            <th>Image</th>
             <th>Department Name</th>
             <th>Actions</th>
           </tr>
@@ -38,6 +42,13 @@
           {% for dept in departments %}
           <tr>
             <td>{{ dept.id }}</td>
+            <td>
+              {% if dept.department_image %}
+                <img src="{{ dept.department_image.url }}" alt="{{ dept.department_name }}" width="60" height="60" class="rounded">
+              {% else %}
+                <span class="text-muted">No Image</span>
+              {% endif %}
+            </td>
             <td>{{ dept.department_name }}</td>
             <td>
               <div class="d-flex gap-2">
@@ -52,7 +63,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="3" class="text-center text-muted">No departments found. Add a new department above.</td>
+            <td colspan="4" class="text-center text-muted">No departments found. Add a new department above.</td>
           </tr>
           {% endfor %}
         </tbody>

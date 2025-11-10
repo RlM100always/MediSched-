@@ -117,27 +117,38 @@ def department_list(request):
 
 def add_department(request):
     if request.method == 'POST':
-        name = request.POST['department_name']
-        Department.objects.create(department_name=name)
+        name = request.POST.get('department_name')
+        image = request.FILES.get('department_image')  # get uploaded image
+        Department.objects.create(department_name=name, department_image=image)
         messages.success(request, 'Department added!')
         return redirect('department_list')
     return redirect('department_list')
-# ---------- Department ----------
+
 def edit_department(request, id):
     department = get_object_or_404(Department, id=id)
     if request.method == 'POST':
         name = request.POST.get('department_name')
+        image = request.FILES.get('department_image')  # get uploaded image (optional)
+
         department.department_name = name
+        if image:  # only update if a new image is uploaded
+            department.department_image = image
+
         department.save()
         messages.success(request, 'Department updated!')
         return redirect('department_list')
+
     return render(request, 'adminapp/edit_department.html', {'department': department})
 
 def delete_department(request, id):
     department = get_object_or_404(Department, id=id)
+    # Optional: delete image file from storage when deleting record
+    if department.department_image:
+        department.department_image.delete(save=False)
     department.delete()
     messages.success(request, 'Department deleted!')
     return redirect('department_list')
+
 
 
 # ---------- Symptom List ----------

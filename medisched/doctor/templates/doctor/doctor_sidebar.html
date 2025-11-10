@@ -35,6 +35,33 @@
             </a>
         </li>
 
+
+        <li class="{% if request.resolver_match.url_name == 'expertise_edit' %}active{% endif %}">
+    <a href="{% url 'doctor:expertise_edit' %}">
+        <i class="fa-solid fa-stethoscope"></i>
+        <span>Manage Expertise</span>
+    </a>
+</li>
+
+
+
+
+    <li class="{% if request.resolver_match.url_name == 'experience_manage' %}active{% endif %}">
+    <a href="{% url 'doctor:experience_manage' %}">
+        <i class="fa-solid fa-briefcase"></i>
+        <span>Work Experience</span>
+    </a>
+</li>
+
+
+<li>
+    <a href="#">
+        <i class="fa-solid fa-clock"></i>
+        <span>Available times</span>
+    </a>
+</li>
+
+
         <li class="has-submenu">
             <a href="#">
                 <i class="fa-solid fa-calendar-check"></i>

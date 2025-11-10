@@ -35,7 +35,7 @@ class Upazila(models.Model):
 # Department (Specialization)
 class Department(models.Model):
     department_name = models.CharField(max_length=100, unique=True)
-    department_image = models.CharField(max_length=255, blank=True, null=True)
+    department_image = models.ImageField(upload_to='department/',  blank=True, null=True)
 
     def __str__(self):
         return self.department_name

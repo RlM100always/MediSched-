@@ -121,17 +121,5 @@ $(document).ready(function() {
 });
 
 
-$(document).ready(function() {
-    // Departments Select2
-    $('.select2-departments').select2({
-        placeholder: "Select Departments",
-        allowClear: true
-    });
 
-    // Symptoms Select2
-    $('.select2-symptoms').select2({
-        placeholder: "Select Symptoms Expertise",
-        allowClear: true
-    });
-});
 

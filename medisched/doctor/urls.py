@@ -15,5 +15,13 @@ urlpatterns = [
     # path('payments/', views.doctor_payments, name='doctor_payments'),
     # path('reviews/', views.doctor_reviews, name='doctor_reviews'),
     path('profile/edit/', views.doctor_profile_edit, name='profile_edit'),
+    path('profile/expertise/', views.doctor_expertise_edit, name='expertise_edit'),
+    path('profile/expertise/update/', views.update_doctor_expertise, name='expertise_update'),
+    
+    
+    path('experience/', views.doctor_experience_manage, name='experience_manage'),
+    path('experience/edit/<int:exp_id>/', views.doctor_experience_manage, name='experience_edit'),
+    path('experience/delete/<int:exp_id>/', views.doctor_experience_delete, name='experience_delete'),
+
 ]
 

@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Doctor Panel{% endblock %}</title>
+
+    <!-- Bootstrap -->
+    <link href="{% static 'doctor/css/bootstrap.min.css' %}" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{% static 'doctor/css/style.css' %}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Sidebar -->
+    {% include 'doctor/doctor_sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper p-4" style="margin-left: 260px;">  <!-- sidebar width -->
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- JS -->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

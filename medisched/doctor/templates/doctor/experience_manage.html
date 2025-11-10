@@ -1,0 +1,157 @@
+{% extends 'doctor/base.html' %}
+{% load static %}
+
+{% block title %}Manage Experience & Working Hours{% endblock %}
+
+{% block extra_css %}
+<style>
+    .experience-card, .working-hour-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        background-color: #f8f9fa;
+        position: relative;
+    }
+    .remove-exp, .remove-day {
+        cursor: pointer;
+    }
+    .badge-day {
+        min-width: 80px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Manage Experience & Working Hours</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- WORK EXPERIENCE -->
+        <div class="mb-4">
+            <label class="form-label fw-bold">Work Experience</label>
+            <div id="experienceList">
+                {% for exp in doctor.experiences.all %}
+                <div class="experience-card row g-2 align-items-center">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control hospital_name" value="{{ exp.hospital_name }}" placeholder="Hospital Name" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control designation" value="{{ exp.designation }}" placeholder="Designation" required>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control department" value="{{ exp.department }}" placeholder="Department (Optional)">
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <i class="fa-solid fa-trash remove-exp text-danger fs-5"></i>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" id="addExperience" class="btn btn-outline-primary btn-sm mt-2">
+                <i class="fa fa-plus"></i> Add Experience
+            </button>
+        </div>
+
+        <!-- WORKING HOURS -->
+        <div class="mb-4">
+            <label class="form-label fw-bold">Working Hours</label>
+            <div id="workingHoursContainer">
+                <div class="row g-2 mb-2" id="workingHoursFields">
+                    {% for day, time in doctor.working_hours.items %}
+                    <div class="col-md-6 working-hour-card">
+                        <div class="input-group">
+                            <span class="input-group-text badge bg-primary badge-day">{{ day }}</span>
+                            <input type="text" class="form-control time-input" data-day="{{ day }}" value="{{ time }}" placeholder="e.g. 10AM-4PM">
+                            <button type="button" class="btn btn-outline-danger remove-day"><i class="fa fa-trash"></i></button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="d-flex gap-2 mt-2">
+                    <select id="daySelect" class="form-select" style="max-width: 150px;">
+                        <option value="">Select Day</option>
+                        <option>Monday</option>
+                        <option>Tuesday</option>
+                        <option>Wednesday</option>
+                        <option>Thursday</option>
+                        <option>Friday</option>
+                        <option>Saturday</option>
+                        <option>Sunday</option>
+                    </select>
+                    <input type="text" id="timeInput" class="form-control" placeholder="e.g. 10AM-4PM" style="max-width: 200px;">
+                    <button type="button" id="addDay" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add</button>
+                </div>
+            </div>
+            <textarea id="workingHoursInput" name="working_hours" class="form-control mt-3" rows="3" readonly style="display:none;"></textarea>
+            <small class="text-muted">Working hours are automatically compiled for submission.</small>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3 w-100">Save All</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function(){
+
+    // ADD EXPERIENCE
+    $('#addExperience').click(function(){
+        let expHtml = `
+        <div class="experience-card row g-2 align-items-center">
+            <div class="col-md-4"><input type="text" class="form-control hospital_name" placeholder="Hospital Name" required></div>
+            <div class="col-md-4"><input type="text" class="form-control designation" placeholder="Designation" required></div>
+            <div class="col-md-3"><input type="text" class="form-control department" placeholder="Department (Optional)"></div>
+            <div class="col-md-1 text-end"><i class="fa-solid fa-trash remove-exp text-danger fs-5"></i></div>
+        </div>`;
+        $('#experienceList').append(expHtml);
+    });
+
+    // REMOVE EXPERIENCE
+    $(document).on('click', '.remove-exp', function(){
+        $(this).closest('.experience-card').remove();
+    });
+
+    // ADD WORKING HOURS
+    $('#addDay').click(function(){
+        let day = $('#daySelect').val();
+        let time = $('#timeInput').val();
+        if(day && time){
+            let html = `<div class="col-md-6 working-hour-card mb-2">
+                <div class="input-group">
+                    <span class="input-group-text badge bg-primary badge-day">${day}</span>
+                    <input type="text" class="form-control time-input" data-day="${day}" value="${time}" placeholder="e.g. 10AM-4PM">
+                    <button type="button" class="btn btn-outline-danger remove-day"><i class="fa fa-trash"></i></button>
+                </div>
+            </div>`;
+            $('#workingHoursFields').append(html);
+            $('#daySelect').val('');
+            $('#timeInput').val('');
+        }
+    });
+
+    // REMOVE WORKING HOUR
+    $(document).on('click', '.remove-day', function(){
+        $(this).closest('.working-hour-card').remove();
+    });
+
+    // BEFORE SUBMIT: COLLECT WORKING HOURS
+    $('form').submit(function(){
+        let whData = {};
+        $('.time-input').each(function(){
+            let day = $(this).data('day');
+            let time = $(this).val();
+            if(day && time){
+                whData[day] = time;
+            }
+        });
+        $('#workingHoursInput').val(JSON.stringify(whData));
+        return true;
+    });
+
+});
+</script>
+{% endblock %}

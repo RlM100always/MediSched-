@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 
 from adminapp.models import Division, District, Upazila, Department, Symptom
-from .models import Doctor
+from .models import Doctor,DoctorSpecializationDepartment,DoctorSpecializationSymptom,DoctorExperience
 
 
 @login_required
@@ -86,15 +86,6 @@ def doctor_profile_edit(request):
 
         doctor.save()  # Save before ManyToMany assignment
 
-        # --- Safe ManyToMany assignment ---
-        dept_ids = request.POST.getlist('departments')
-        sym_ids = request.POST.getlist('symptoms')
-
-        valid_depts = Department.objects.filter(id__in=dept_ids)
-        valid_syms = Symptom.objects.filter(id__in=sym_ids)
-
-        doctor.departments.set(valid_depts)
-        doctor.symptoms.set(valid_syms)
 
         # --- Profile image upload ---
         if 'profile_image' in request.FILES:
@@ -116,7 +107,53 @@ def doctor_profile_edit(request):
     return render(request, 'doctor/profile_edit.html', context)
 
 
+# Expertise section
+@login_required
+def doctor_expertise_edit(request):
+    """
+    Display Departments & Symptoms form for the logged-in doctor
+    """
+    doctor = get_object_or_404(Doctor, user=request.user)
+    departments = Department.objects.all()
+    symptoms = Symptom.objects.all()
 
+    context = {
+        'doctor': doctor,
+        'departments': departments,
+        'symptoms': symptoms,
+    }
+    return render(request, 'doctor/expertise_edit.html', context)
+
+
+@login_required
+def update_doctor_expertise(request):
+    """
+    Update Doctor's Departments and Symptoms (Expertise) only
+    """
+    doctor = get_object_or_404(Doctor, user=request.user)
+
+    if request.method == 'POST':
+        dept_ids = request.POST.getlist('departments')
+        sym_ids = request.POST.getlist('symptoms')
+
+        # Remove existing entries and add new ones
+        DoctorSpecializationDepartment.objects.filter(doctor=doctor).delete()
+        DoctorSpecializationDepartment.objects.bulk_create([
+            DoctorSpecializationDepartment(doctor=doctor, department=Department.objects.get(id=dept_id))
+            for dept_id in dept_ids
+        ])
+
+        DoctorSpecializationSymptom.objects.filter(doctor=doctor).delete()
+        DoctorSpecializationSymptom.objects.bulk_create([
+            DoctorSpecializationSymptom(doctor=doctor, symptom=Symptom.objects.get(id=sym_id))
+            for sym_id in sym_ids
+        ])
+
+        messages.success(request, "Your specializations and expertise have been updated.")
+        return redirect('doctor:expertise_edit')
+
+    # Redirect if not POST
+    return redirect('doctor:expertise_edit')
 
 
 
@@ -133,3 +170,77 @@ def ajax_load_upazilas(request):
     district_id = request.GET.get('district_id')
     upazilas = Upazila.objects.filter(district_id=district_id).values('id', 'upazila_name')
     return JsonResponse(list(upazilas), safe=False)
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import DoctorExperience, Doctor
+
+DAYS_OF_WEEK = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+
+@login_required
+def doctor_experience_manage(request, exp_id=None):
+    doctor = get_object_or_404(Doctor, user=request.user)
+    experiences = doctor.experiences.all()
+    working_hours = doctor.working_hours or {}
+
+    # For edit
+    experience = None
+    if exp_id:
+        experience = get_object_or_404(DoctorExperience, id=exp_id, doctor=doctor)
+
+    if request.method == 'POST':
+        hospital_name = request.POST.get('hospital_name')
+        designation = request.POST.get('designation')
+        department = request.POST.get('department')
+
+        if hospital_name and designation:
+            if experience:
+                # Update existing
+                experience.hospital_name = hospital_name
+                experience.designation = designation
+                experience.department = department
+                experience.save()
+                messages.success(request, "Experience updated successfully.")
+            else:
+                # Add new
+                DoctorExperience.objects.create(
+                    doctor=doctor,
+                    hospital_name=hospital_name,
+                    designation=designation,
+                    department=department
+                )
+                messages.success(request, "Experience added successfully.")
+        else:
+            messages.error(request, "Hospital name and designation are required.")
+            return redirect('doctor:experience_manage')
+
+        # Update working hours
+        updated_hours = {}
+        for day in DAYS_OF_WEEK:
+            time = request.POST.get(f'wh_{day}')
+            if time:
+                updated_hours[day] = time
+        doctor.working_hours = updated_hours
+        doctor.save()
+
+        return redirect('doctor:experience_manage')
+
+    context = {
+        'experiences': experiences,
+        'days': DAYS_OF_WEEK,
+        'working_hours': working_hours,
+        'experience': experience,
+    }
+    return render(request, 'doctor/experience_manage.html', context)
+
+
+@login_required
+def doctor_experience_delete(request, exp_id):
+    doctor = get_object_or_404(Doctor, user=request.user)
+    experience = get_object_or_404(DoctorExperience, id=exp_id, doctor=doctor)
+    experience.delete()
+    messages.success(request, "Experience deleted successfully.")
+    return redirect('doctor:experience_manage')
