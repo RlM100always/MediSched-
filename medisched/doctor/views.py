@@ -2,6 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import DoctorExperience, Doctor
 
 from adminapp.models import Division, District, Upazila, Department, Symptom
 from .models import Doctor,DoctorSpecializationDepartment,DoctorSpecializationSymptom,DoctorExperience
@@ -110,51 +113,64 @@ def doctor_profile_edit(request):
 # Expertise section
 @login_required
 def doctor_expertise_edit(request):
-    """
-    Display Departments & Symptoms form for the logged-in doctor
-    """
+
     doctor = get_object_or_404(Doctor, user=request.user)
+
     departments = Department.objects.all()
     symptoms = Symptom.objects.all()
 
-    context = {
-        'doctor': doctor,
-        'departments': departments,
-        'symptoms': symptoms,
-    }
-    return render(request, 'doctor/expertise_edit.html', context)
+    # ✅ Doctor’s selected departments
+    selected_departments = DoctorSpecializationDepartment.objects.filter(
+        doctor=doctor
+    ).values_list('department_id', flat=True)
 
+    # ✅ Doctor’s selected symptoms
+    selected_symptoms = DoctorSpecializationSymptom.objects.filter(
+        doctor=doctor
+    ).values_list('symptom_id', flat=True)
+
+    context = {
+        "doctor": doctor,
+        "departments": departments,
+        "symptoms": symptoms,
+        "selected_departments": list(selected_departments),
+        "selected_symptoms": list(selected_symptoms),
+    }
+
+    return render(request, "doctor/expertise_edit.html", context)
 
 @login_required
 def update_doctor_expertise(request):
-    """
-    Update Doctor's Departments and Symptoms (Expertise) only
-    """
+
     doctor = get_object_or_404(Doctor, user=request.user)
 
-    if request.method == 'POST':
-        dept_ids = request.POST.getlist('departments')
-        sym_ids = request.POST.getlist('symptoms')
+    if request.method == "POST":
 
-        # Remove existing entries and add new ones
+        dept_ids = request.POST.getlist("departments[]")
+        sym_ids = request.POST.getlist("symptoms[]")
+
+        # ✅ clear old relations
         DoctorSpecializationDepartment.objects.filter(doctor=doctor).delete()
-        DoctorSpecializationDepartment.objects.bulk_create([
-            DoctorSpecializationDepartment(doctor=doctor, department=Department.objects.get(id=dept_id))
-            for dept_id in dept_ids
-        ])
-
         DoctorSpecializationSymptom.objects.filter(doctor=doctor).delete()
-        DoctorSpecializationSymptom.objects.bulk_create([
-            DoctorSpecializationSymptom(doctor=doctor, symptom=Symptom.objects.get(id=sym_id))
-            for sym_id in sym_ids
-        ])
 
-        messages.success(request, "Your specializations and expertise have been updated.")
-        return redirect('doctor:expertise_edit')
+        # ✅ add departments
+        for d_id in dept_ids:
+            DoctorSpecializationDepartment.objects.create(
+                doctor=doctor,
+                department_id=d_id
+            )
 
-    # Redirect if not POST
-    return redirect('doctor:expertise_edit')
+        # ✅ add symptoms
+        for s_id in sym_ids:
+            DoctorSpecializationSymptom.objects.create(
+                doctor=doctor,
+                symptom_id=s_id
+            )
 
+        messages.success(request, "Your expertise has been updated successfully!")
+        return redirect("doctor:expertise_edit")
+
+    return redirect("doctor:expertise_edit")
 
 
 # --- AJAX endpoints ---
@@ -173,10 +189,7 @@ def ajax_load_upazilas(request):
 
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import DoctorExperience, Doctor
+
 
 DAYS_OF_WEEK = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
 

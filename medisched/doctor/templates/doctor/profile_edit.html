@@ -34,37 +34,36 @@
                     {% else %}
                         <img src="{% static 'img/default-doctor.png' %}" alt="Default Doctor">
                     {% endif %}
-                    <h3 class="mt-3">Dr. {{ doctor.doctor.first_name }} {{ doctor.doctor.last_name }}</h3>
-                    <p class="text-muted">{{ doctor.doctor.email }}</p>
+                    
                 </div>
 
                 <form method="POST" enctype="multipart/form-data" id="doctorProfileForm">
                     {% csrf_token %}
 
                     <div class="mb-3">
-                        <label>About</label>
+                        <label class="text-primary">About</label>
                         <textarea name="about" class="form-control" rows="3" placeholder="A brief professional summary">{{ doctor.about }}</textarea>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label>Qualification</label>
+                            <label class="text-primary">Qualification</label>
                             <input type="text" name="qualification" class="form-control" value="{{ doctor.qualification }}" placeholder="e.g., MBBS, MD, FCPS">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label>Total Experience (Years)</label>
+                            <label class="text-primary">Total Experience (Years)</label>
                             <input type="number" name="total_experience" class="form-control" value="{{ doctor.total_experience }}" min="0" placeholder="e.g., 10">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label>BMDC Number</label>
+                        <label class="text-primary">BMDC Number</label>
                         <input type="text" name="bmdc_number" class="form-control" value="{{ doctor.bmdc_number }}" placeholder="e.g., BMDC Reg-A1234">
                     </div>
 
                   <div class="row">
     <div class="col-md-4 mb-3">
-        <label>Division</label>
+<label class="text-primary">Division</label>
         <select name="division" id="divisionSelect" class="form-select">
             <option value="">Select Division</option>
             {% for div in divisions %}
@@ -77,7 +76,7 @@
     </div>
 
     <div class="col-md-4 mb-3">
-        <label>District</label>
+        <label class="text-primary">District</label>
         <select name="district" id="districtSelect" class="form-select">
             <option value="">Select District</option>
             {% for dist in districts %}
@@ -90,7 +89,7 @@
     </div>
 
     <div class="col-md-4 mb-3">
-        <label>Upazila</label>
+        <label class="text-primary" >Upazila</label>
         <select name="upazila" id="upazilaSelect" class="form-select">
             <option value="">Select Upazila</option>
             {% for upz in upazilas %}
@@ -106,7 +105,7 @@
 
 
                     <div class="mb-3">
-                        <label>Profile Image</label>
+                        <label class="text-primary" >Profile Image</label>
                         <input type="file" name="profile_image" class="form-control">
                         {% if doctor.profile_image %}<small class="text-muted">Current image set.</small>{% endif %}
                     </div>
@@ -114,59 +113,13 @@
 
 
 
+<button type="submit" class="btn btn-primary w-100 mt-6">
+    <i class="fas fa-save"></i> Update Profile
+</button>
 
 
-                    <!-- <div class="mb-3">
-                        <label>Work Experience</label>
-                        <div id="experienceList">
-                            {% for exp in doctor.experiences.all %}
-                            <div class="experience-card">
-                                <div class="row g-2 align-items-center">
-                                    <div class="col-md-4"><input type="text" class="form-control" name="hospital_name" value="{{ exp.hospital_name }}" placeholder="Hospital Name"></div>
-                                    <div class="col-md-4"><input type="text" class="form-control" name="designation" value="{{ exp.designation }}" placeholder="Designation"></div>
-                                    <div class="col-md-3"><input type="text" class="form-control" name="department" value="{{ exp.department }}" placeholder="Department (Optional)"></div>
-                                    <div class="col-md-1 text-end"><i class="fa-solid fa-trash remove-exp"></i></div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        <button type="button" id="addExperience" class="btn btn-outline-primary btn-sm mt-2"><i class="fa fa-plus"></i> Add Experience</button>
-                    </div>
+                    
 
-                    <div class="mb-3">
-                        <label>Working Hours (Day/Time)</label>
-                        <div id="workingHoursContainer" class="working-hours">
-                            <div class="row g-2 mb-2" id="workingHoursFields">
-                                {% for day, time in doctor.working_hours.items %}
-                                    <div class="col-md-6 mb-2 day-field">
-                                        <div class="input-group">
-                                            <span class="input-group-text">{{ day }}</span>
-                                            <input type="text" class="form-control time-input" data-day="{{ day }}" value="{{ time }}">
-                                            <button type="button" class="btn btn-outline-danger remove-day"><i class="fa fa-trash"></i></button>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            <div class="d-flex gap-2 mt-2">
-                                <select id="daySelect" class="form-select" style="max-width: 150px;">
-                                    <option value="">Select Day</option>
-                                    <option>Monday</option>
-                                    <option>Tuesday</option>
-                                    <option>Wednesday</option>
-                                    <option>Thursday</option>
-                                    <option>Friday</option>
-                                    <option>Saturday</option>
-                                    <option>Sunday</option>
-                                </select>
-                                <input type="text" id="timeInput" class="form-control" placeholder="e.g. 10AM-4PM" style="max-width: 200px;">
-                                <button type="button" id="addDay" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add</button>
-                            </div>
-                        </div>
-                        <textarea id="workingHoursInput" name="working_hours" class="form-control mt-3" rows="3" readonly style="display:none;"></textarea>
-                        <small class="text-muted">Working hours are automatically compiled for submission.</small>
-                    </div> -->
-
-                    <button type="submit" class="btn btn-save w-100 mt-4"><i class="fas fa-save"></i> Update Profile</button>
                 </form>
             </div>
         </div>

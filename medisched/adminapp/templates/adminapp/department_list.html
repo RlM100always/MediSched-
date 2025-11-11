@@ -44,7 +44,9 @@
             <td>{{ dept.id }}</td>
             <td>
               {% if dept.department_image %}
-                <img src="{{ dept.department_image.url }}" alt="{{ dept.department_name }}" width="60" height="60" class="rounded">
+                <img src="{{ dept.department_image.url }}" 
+                     alt="{{ dept.department_name }}" 
+                     class="table-img">
               {% else %}
                 <span class="text-muted">No Image</span>
               {% endif %}
@@ -71,4 +73,15 @@
     </div>
   </div>
 </div>
+
+<!-- Inline CSS for images -->
+<style>
+.table-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover; /* maintain aspect ratio and fill */
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+</style>
 {% endblock %}
