@@ -105,9 +105,11 @@ def patient_dashboard(request):
 
 @login_required
 def doctor_dashboard(request):
+    # Ensure only doctors can access this
     if not request.user.is_doctor():
         return redirect('/')
-    return render(request, 'users/doctor_dashboard.html')
+    # ✅ MUST return an HttpResponse object
+    return render(request, 'doctor/dashboard.html')
 
 
 @login_required

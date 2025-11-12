@@ -17,6 +17,7 @@ def home(request):
     }
     return render(request, 'home/index.html', context)
 
+
 @csrf_protect
 def signup_view(request):
     """Handle user registration"""
@@ -26,36 +27,44 @@ def signup_view(request):
             username = data.get('username')
             email = data.get('email')
             password = data.get('password')
-            user_type = data.get('user_type', 'patient')
-            
+            user_type = data.get('user_type', 'patient')  # default patient
+
             # Validation
-            if User.objects.filter(username=username).exists():
+            if CustomUser.objects.filter(username=username).exists():
                 return JsonResponse({'success': False, 'message': 'Username already exists'})
             
-            if User.objects.filter(email=email).exists():
+            if CustomUser.objects.filter(email=email).exists():
                 return JsonResponse({'success': False, 'message': 'Email already registered'})
-            
+
             # Create user
-            user = User.objects.create_user(
+            user = CustomUser.objects.create_user(
                 username=username,
                 email=email,
-                password=password
+                password=password,
+                role=user_type
             )
-            
-            # TODO: Create associated patient/doctor profile based on user_type
-            # This should link to your patients or doctors app models
-            
+
             login(request, user)
+
+            # Redirect based on role
+            if user.is_doctor():
+                redirect_url = '/users/doctor/dashboard/'
+            elif user.is_patient():
+                redirect_url = '/patient/dashboard/'
+            else:
+                redirect_url = '/admin/'
+
             return JsonResponse({
-                'success': True, 
+                'success': True,
                 'message': 'Account created successfully!',
-                'redirect': '/dashboard/'  # Change based on user type
+                'redirect': redirect_url
             })
-            
+
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
-    
+
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
 
 @csrf_protect
 def signin_view(request):
@@ -65,29 +74,41 @@ def signin_view(request):
             data = json.loads(request.body)
             username = data.get('username')
             password = data.get('password')
-            
+
             user = authenticate(request, username=username, password=password)
-            
+
             if user is not None:
                 login(request, user)
+
+                # ✅ redirect based on role
+                if user.is_doctor():
+                    redirect_url = '/users/doctor/dashboard/'
+                elif user.is_patient():
+                    redirect_url = '/patient/dashboard/'
+                elif user.is_platform_admin():
+                    redirect_url = '/admin/'
+                else:
+                    redirect_url = '/'
+
                 return JsonResponse({
                     'success': True,
                     'message': 'Login successful!',
-                    'redirect': '/dashboard/'  # Change based on user role
+                    'redirect': redirect_url
                 })
             else:
                 return JsonResponse({
                     'success': False,
                     'message': 'Invalid username or password'
                 })
-                
+
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
-    
+
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
 
 def logout_view(request):
     """Handle user logout"""
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
-    return redirect('home')
+    return redirect('home:home')
