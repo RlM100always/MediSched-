@@ -1,157 +1,203 @@
-{% extends 'doctor/base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Experience | MediSched</title>
 
-{% block title %}Manage Experience & Working Hours{% endblock %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-{% block extra_css %}
-<style>
-    .experience-card, .working-hour-card {
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 12px;
-        margin-bottom: 10px;
-        background-color: #f8f9fa;
-        position: relative;
-    }
-    .remove-exp, .remove-day {
-        cursor: pointer;
-    }
-    .badge-day {
-        min-width: 80px;
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Manage Experience & Working Hours</h2>
-
-    <form method="POST">
-        {% csrf_token %}
-
-        <!-- WORK EXPERIENCE -->
-        <div class="mb-4">
-            <label class="form-label fw-bold">Work Experience</label>
-            <div id="experienceList">
-                {% for exp in doctor.experiences.all %}
-                <div class="experience-card row g-2 align-items-center">
-                    <div class="col-md-4">
-                        <input type="text" class="form-control hospital_name" value="{{ exp.hospital_name }}" placeholder="Hospital Name" required>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="text" class="form-control designation" value="{{ exp.designation }}" placeholder="Designation" required>
-                    </div>
-                    <div class="col-md-3">
-                        <input type="text" class="form-control department" value="{{ exp.department }}" placeholder="Department (Optional)">
-                    </div>
-                    <div class="col-md-1 text-end">
-                        <i class="fa-solid fa-trash remove-exp text-danger fs-5"></i>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            <button type="button" id="addExperience" class="btn btn-outline-primary btn-sm mt-2">
-                <i class="fa fa-plus"></i> Add Experience
-            </button>
-        </div>
-
-        <!-- WORKING HOURS -->
-        <div class="mb-4">
-            <label class="form-label fw-bold">Working Hours</label>
-            <div id="workingHoursContainer">
-                <div class="row g-2 mb-2" id="workingHoursFields">
-                    {% for day, time in doctor.working_hours.items %}
-                    <div class="col-md-6 working-hour-card">
-                        <div class="input-group">
-                            <span class="input-group-text badge bg-primary badge-day">{{ day }}</span>
-                            <input type="text" class="form-control time-input" data-day="{{ day }}" value="{{ time }}" placeholder="e.g. 10AM-4PM">
-                            <button type="button" class="btn btn-outline-danger remove-day"><i class="fa fa-trash"></i></button>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="d-flex gap-2 mt-2">
-                    <select id="daySelect" class="form-select" style="max-width: 150px;">
-                        <option value="">Select Day</option>
-                        <option>Monday</option>
-                        <option>Tuesday</option>
-                        <option>Wednesday</option>
-                        <option>Thursday</option>
-                        <option>Friday</option>
-                        <option>Saturday</option>
-                        <option>Sunday</option>
-                    </select>
-                    <input type="text" id="timeInput" class="form-control" placeholder="e.g. 10AM-4PM" style="max-width: 200px;">
-                    <button type="button" id="addDay" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add</button>
-                </div>
-            </div>
-            <textarea id="workingHoursInput" name="working_hours" class="form-control mt-3" rows="3" readonly style="display:none;"></textarea>
-            <small class="text-muted">Working hours are automatically compiled for submission.</small>
-        </div>
-
-        <button type="submit" class="btn btn-success mt-3 w-100">Save All</button>
-    </form>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-$(document).ready(function(){
-
-    // ADD EXPERIENCE
-    $('#addExperience').click(function(){
-        let expHtml = `
-        <div class="experience-card row g-2 align-items-center">
-            <div class="col-md-4"><input type="text" class="form-control hospital_name" placeholder="Hospital Name" required></div>
-            <div class="col-md-4"><input type="text" class="form-control designation" placeholder="Designation" required></div>
-            <div class="col-md-3"><input type="text" class="form-control department" placeholder="Department (Optional)"></div>
-            <div class="col-md-1 text-end"><i class="fa-solid fa-trash remove-exp text-danger fs-5"></i></div>
-        </div>`;
-        $('#experienceList').append(expHtml);
-    });
-
-    // REMOVE EXPERIENCE
-    $(document).on('click', '.remove-exp', function(){
-        $(this).closest('.experience-card').remove();
-    });
-
-    // ADD WORKING HOURS
-    $('#addDay').click(function(){
-        let day = $('#daySelect').val();
-        let time = $('#timeInput').val();
-        if(day && time){
-            let html = `<div class="col-md-6 working-hour-card mb-2">
-                <div class="input-group">
-                    <span class="input-group-text badge bg-primary badge-day">${day}</span>
-                    <input type="text" class="form-control time-input" data-day="${day}" value="${time}" placeholder="e.g. 10AM-4PM">
-                    <button type="button" class="btn btn-outline-danger remove-day"><i class="fa fa-trash"></i></button>
-                </div>
-            </div>`;
-            $('#workingHoursFields').append(html);
-            $('#daySelect').val('');
-            $('#timeInput').val('');
+    <style>
+        /* ================== Variables & Global ================== */
+        :root {
+            --sidebar-width: 260px;
+            --primary-color: #00bfa5;
+            --primary-dark: #00796b;
+            --accent: #009688;
+            --bg-main: #eef4f7;
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --bg-blur: rgba(255, 255, 255, 0.6);
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --border-light: rgba(255, 255, 255, 0.5);
+            --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --shadow-glow: 0 0 30px rgba(0, 191, 165, 0.35);
+            --transition: all 0.3s ease;
         }
-    });
 
-    // REMOVE WORKING HOUR
-    $(document).on('click', '.remove-day', function(){
-        $(this).closest('.working-hour-card').remove();
-    });
+        body {
+            font-family: 'Poppins', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e8f0f2, #ffffff);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
 
-    // BEFORE SUBMIT: COLLECT WORKING HOURS
-    $('form').submit(function(){
-        let whData = {};
-        $('.time-input').each(function(){
-            let day = $(this).data('day');
-            let time = $(this).val();
-            if(day && time){
-                whData[day] = time;
+        /* ================== Layout ================== */
+        .main-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 50px 60px;
+            background: var(--bg-main);
+            transition: var(--transition);
+        }
+
+        .profile-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-light);
+            border-radius: 18px;
+            box-shadow: var(--shadow-card);
+            padding: 40px 50px;
+        }
+
+        .section-title {
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title i {
+            color: var(--primary-color);
+        }
+
+        /* ================== Experience Cards ================== */
+        .experience-card {
+            background: rgba(0, 191, 165, 0.08);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--primary-color);
+            transition: var(--transition);
+            position: relative;
+        }
+        .experience-card:hover {
+            background: rgba(0, 191, 165, 0.15);
+        }
+        .remove-exp {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #e11d48;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .remove-exp:hover {
+            color: #9f1239;
+        }
+
+        /* Buttons */
+        .btn-save {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px 0;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: var(--shadow-glow);
+            transition: var(--transition);
+        }
+        .btn-save:hover {
+            background: var(--primary-dark);
+            transform: scale(1.03);
+        }
+
+        .btn-primary-alt {
+            background: linear-gradient(135deg, #00bfa5, #009688);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            box-shadow: var(--shadow-glow);
+            transition: var(--transition);
+        }
+        .btn-primary-alt:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 191, 165, 0.45);
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .main-content {
+                margin-left: 0;
+                padding: 25px;
             }
-        });
-        $('#workingHoursInput').val(JSON.stringify(whData));
-        return true;
-    });
+            .profile-container {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <!-- Sidebar inside wrapper -->
+        {% include 'doctor/doctor_sidebar.html' %}
 
-});
-</script>
-{% endblock %}
+        <div class="main-content">
+            <div class="profile-container">
+                <div class="section-title"><i class="fa-solid fa-briefcase"></i> Work Experience</div>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div id="experienceList">
+                        {% for exp in doctor.experiences.all %}
+                            <div class="experience-card">
+                                <span class="remove-exp" onclick="this.parentElement.remove();"><i class="fas fa-times"></i></span>
+                                <input type="text" name="hospital_name_{{ forloop.counter }}" class="form-control mb-2" value="{{ exp.hospital_name }}" placeholder="Hospital Name" required>
+                                <input type="text" name="designation_{{ forloop.counter }}" class="form-control mb-2" value="{{ exp.designation }}" placeholder="Designation" required>
+                                <input type="text" name="department_{{ forloop.counter }}" class="form-control" value="{{ exp.department }}" placeholder="Department (Optional)">
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="button" class="btn btn-primary-alt w-100 mb-3" id="addExperience"><i class="fas fa-plus"></i> Add Experience</button>
+
+                    <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Experience</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        // Dynamic experience addition
+        let expCounter = {{ doctor.experiences.count|default:0 }} + 1;
+
+        $('#addExperience').click(function() {
+            let html = `
+            <div class="experience-card">
+                <span class="remove-exp" onclick="this.parentElement.remove();"><i class="fas fa-times"></i></span>
+                <input type="text" name="hospital_name_${expCounter}" class="form-control mb-2" placeholder="Hospital Name" required>
+                <input type="text" name="designation_${expCounter}" class="form-control mb-2" placeholder="Designation" required>
+                <input type="text" name="department_${expCounter}" class="form-control" placeholder="Department (Optional)">
+            </div>`;
+            $('#experienceList').append(html);
+            expCounter++;
+        });
+    </script>
+</body>
+</html>

@@ -1,277 +1,566 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Dashboard | MediSched</title>
+<!-- dashboard.html -->
+{% extends 'doctor/doctor_sidebar.html' %}
 
-    <!-- Bootstrap + FontAwesome + Boxicons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+{% block title %}Dashboard | MediSched{% endblock %}
 
-    <!-- <link rel="stylesheet" href="{% static 'doctor/css/dashboard.css' %}"> -->
+{% block content %}
+<style>
+    
+    /* Dashboard Header */
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
 
-    <style>
-        /* Main content area */
-        .main-content {
-            margin-left: 260px; /* Match sidebar width */
-            padding: 2rem;
-            min-height: 100vh;
-            background-color: #f4f6f9;
+    .dashboard-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .dashboard-header p {
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .header-icons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .icon-btn {
+        width: 45px;
+        height: 45px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        backdrop-filter: blur(10px);
+    }
+
+    .icon-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .icon-btn i {
+        font-size: 1.3rem;
+        color: white;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+        border: 1px solid #f0f0f0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #667eea, #764ba2);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .stat-icon.purple {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .stat-icon.blue {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+
+    .stat-icon.green {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .stat-icon.orange {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .stat-change {
+        font-size: 0.85rem;
+        color: #10b981;
+        margin-top: 0.5rem;
+    }
+
+    .stat-change.negative {
+        color: #ef4444;
+    }
+
+    /* Appointments Section */
+    .appointments-section {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .view-all-btn {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .view-all-btn:hover {
+        color: #764ba2;
+    }
+
+    /* Modern Table */
+    .modern-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .modern-table thead th {
+        background: #f9fafb;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .modern-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        color: #374151;
+    }
+
+    .modern-table tbody tr {
+        transition: all 0.2s;
+    }
+
+    .modern-table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .patient-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .patient-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .patient-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .patient-name {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .patient-id {
+        font-size: 0.8rem;
+        color: #9ca3af;
+    }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .status-confirmed {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-completed {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.5rem;
+        border: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-view {
+        background: #ede9fe;
+        color: #6d28d9;
+    }
+
+    .btn-view:hover {
+        background: #ddd6fe;
+    }
+
+    .btn-complete {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .btn-complete:hover {
+        background: #a7f3d0;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .quick-action-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        text-decoration: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+        border: 1px solid #f0f0f0;
+    }
+
+    .quick-action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-action-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 1rem;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .quick-action-card:nth-child(2) .quick-action-icon {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+
+    .quick-action-card:nth-child(3) .quick-action-icon {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .quick-action-card p {
+        margin: 0;
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 1rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #9ca3af;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1.5rem;
         }
 
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                padding: 1rem;
-            }
-        }
-
-        /* Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .header h1 {
+        .dashboard-header h1 {
             font-size: 1.5rem;
-            font-weight: 600;
         }
 
-        .header-icons i {
-            font-size: 1.5rem;
-            margin-left: 1rem;
-            cursor: pointer;
-            color: #374151;
+        .stats-grid {
+            grid-template-columns: 1fr;
         }
 
-        /* Stats Cards */
-        .stats-cards {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-        }
-
-        .stats-cards .card {
-            flex: 1 1 200px;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            text-align: center;
-        }
-
-        .stats-cards .card h3 {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .stats-cards .card p {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        /* Appointments Table */
-        .appointments-section {
-            margin-bottom: 2rem;
-        }
-
-        .appointments-section h2 {
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        .appointments-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-
-        .appointments-table th, .appointments-table td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid #e5e7eb;
-            text-align: left;
-        }
-
-        .appointments-table th {
-            background: #f3f4f6;
-            font-weight: 600;
-        }
-
-        .appointments-table .badge {
+        .modern-table {
             font-size: 0.85rem;
         }
 
-        .appointments-table .btn {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            margin-right: 0.25rem;
+        .action-buttons {
+            flex-direction: column;
         }
-
-        /* Quick Links */
-        .quick-links h2 {
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        .quick-cards {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .quick-card {
-            flex: 1 1 180px;
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            border-radius: 0.5rem;
-            text-align: center;
-            padding: 1rem;
-            transition: all 0.2s ease;
-            color: #374151;
-        }
-
-        .quick-card:hover {
-            transform: translateY(-2px);
-            background: #f3f4f6;
-        }
-
-        .quick-card i {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            color: #2563eb;
-        }
-
-        .quick-card p {
-            margin: 0;
-            font-weight: 600;
-        }
-        /* Dashboard container */
-.d-flex {
-    height: 100vh;       /* full viewport height */
-    overflow: hidden;    /* prevent overall page scroll */
-}
-
-/* Main content area */
-.main-content {
-    margin-left: 260px;  /* match sidebar width */
-    padding: 2rem;
-    background-color: #f4f6f9;
-    height: 100vh;       /* full height for scroll */
-    overflow-y: auto;    /* make it scrollable */
-}
-
-/* For small screens */
-@media (max-width: 768px) {
-    .main-content {
-        margin-left: 0;
-        padding: 1rem;
-        height: auto;
-        overflow-y: visible;
     }
-}
-    </style>
-</head>
-<body>
+</style>
 
-<div class="d-flex">
-    <!-- Sidebar -->
-    {% include 'doctor/doctor_sidebar.html' %}
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <header class="header">
-            <h1>Welcome, Dr. {{ doctor_user.first_name }} 👋</h1>
-            <div class="header-icons">
-                <i class='bx bx-bell'></i>
-                <i class='bx bx-message-square'></i>
-            </div>
-        </header>
-
-        <!-- Stats Cards -->
-        <section class="stats-cards">
-            <div class="card">
-                <h3>Upcoming Appointments</h3>
-                <p>{{ upcoming_appointments_count }}</p>
-            </div>
-            <div class="card">
-                <h3>Patients Today</h3>
-                <p>{{ patients_today_count }}</p>
-            </div>
-            <div class="card">
-                <h3>Earnings (Today)</h3>
-                <p>${{ earnings_today|default:"0.00" }}</p>
-            </div>
-            <div class="card">
-                <h3>Total Reviews</h3>
-                <p>{{ total_reviews|default:"0" }}</p>
-            </div>
-        </section>
-
-        <!-- Appointments Table -->
-        <section class="appointments-section">
-            <h2>Upcoming Appointments</h2>
-            <div class="table-responsive">
-                <table class="appointments-table">
-                    <thead>
-                        <tr>
-                            <th>Patient</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for appointment in upcoming_appointments %}
-                        <tr>
-                            <td>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</td>
-                            <td>{{ appointment.appointment_date }}</td>
-                            <td>{{ appointment.appointment_time }}</td>
-                            <td><span class="badge rounded-pill text-bg-info">{{ appointment.status.status_name }}</span></td>
-                            <td>
-                                <button class="btn btn-sm btn-primary">View</button>
-                                <button class="btn btn-sm btn-success">Complete</button>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-3">No upcoming appointments scheduled.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Quick Actions -->
-        <section class="quick-links">
-            <h2>Quick Actions</h2>
-            <div class="quick-cards">
-                <a href="#" class="quick-card text-decoration-none">
-                    <i class='bx bx-user-plus'></i>
-                    <p>New Patient</p>
-                </a>
-                <a href="#" class="quick-card text-decoration-none">
-                    <i class='bx bx-calendar-plus'></i>
-                    <p>Schedule Appointment</p>
-                </a>
-                <a href="#" class="quick-card text-decoration-none">
-                    <i class='bx bx-file'></i>
-                    <p>Create Prescription</p>
-                </a>
-            </div>
-        </section>
-    </main>
+<!-- Dashboard Header -->
+<div class="dashboard-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1>Welcome back, Dr. {{ doctor.user.first_name }}! 👋</h1>
+        <p>Here's what's happening with your practice today</p>
+    </div>
+    <div class="header-icons">
+        <div class="icon-btn">
+            <i class="fa-solid fa-bell"></i>
+        </div>
+        <div class="icon-btn">
+            <i class="fa-solid fa-envelope"></i>
+        </div>
+    </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-value">{{ upcoming_appointments_count|default:"0" }}</div>
+                <div class="stat-label">Upcoming Appointments</div>
+                <div class="stat-change">
+                    <i class="fa-solid fa-arrow-up"></i> 12% from last week
+                </div>
+            </div>
+            <div class="stat-icon purple">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-value">{{ patients_today_count|default:"0" }}</div>
+                <div class="stat-label">Patients Today</div>
+                <div class="stat-change">
+                    <i class="fa-solid fa-arrow-up"></i> 8% from yesterday
+                </div>
+            </div>
+            <div class="stat-icon blue">
+                <i class="fa-solid fa-user-doctor"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-value">${{ earnings_today|default:"0" }}</div>
+                <div class="stat-label">Today's Earnings</div>
+                <div class="stat-change">
+                    <i class="fa-solid fa-arrow-up"></i> 23% from yesterday
+                </div>
+            </div>
+            <div class="stat-icon green">
+                <i class="fa-solid fa-dollar-sign"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div>
+                <div class="stat-value">{{ total_reviews|default:"0" }}</div>
+                <div class="stat-label">Total Reviews</div>
+                <div class="stat-change">
+                    <i class="fa-solid fa-star"></i> 4.8 Average Rating
+                </div>
+            </div>
+            <div class="stat-icon orange">
+                <i class="fa-solid fa-star"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Appointments Section -->
+<div class="appointments-section">
+    <div class="section-header">
+        <h2>Upcoming Appointments</h2>
+        <a href="#" class="view-all-btn">View All <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="modern-table">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in upcoming_appointments %}
+                <tr>
+                    <td>
+                        <div class="patient-info">
+                            <div class="patient-avatar">
+                                {{ appointment.patient.first_name.0 }}{{ appointment.patient.last_name.0 }}
+                            </div>
+                            <div class="patient-details">
+                                <span class="patient-name">{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</span>
+                                <span class="patient-id">ID: #{{ appointment.patient.id }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>{{ appointment.appointment_date|date:"M d, Y" }}</div>
+                        <div style="color: #9ca3af; font-size: 0.85rem;">{{ appointment.appointment_time }}</div>
+                    </td>
+                    <td>
+                        <span class="status-badge status-confirmed">{{ appointment.status.status_name }}</span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-view">
+                                <i class="fa-solid fa-eye"></i> View
+                            </button>
+                            <button class="action-btn btn-complete">
+                                <i class="fa-solid fa-check"></i> Complete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-calendar-xmark"></i>
+                            <p>No upcoming appointments scheduled</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="section-header">
+    <h2>Quick Actions</h2>
+</div>
+<div class="quick-actions">
+    <a href="#" class="quick-action-card">
+        <div class="quick-action-icon">
+            <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <p>Add New Patient</p>
+    </a>
+    <a href="#" class="quick-action-card">
+        <div class="quick-action-icon">
+            <i class="fa-solid fa-calendar-plus"></i>
+        </div>
+        <p>Schedule Appointment</p>
+    </a>
+    <a href="#" class="quick-action-card">
+        <div class="quick-action-icon">
+            <i class="fa-solid fa-file-prescription"></i>
+        </div>
+        <p>Create Prescription</p>
+    </a>
+</div>
+
+{% endblock %}

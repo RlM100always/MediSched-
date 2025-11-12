@@ -1,3 +1,4 @@
+<!-- doctor_sidebar.html  -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -128,21 +129,7 @@
 
     <h4>Doctor Panel</h4>
 
-    <!-- ✅ Profile Box -->
-    <div class="profile-box">
-      {% if doctor.profile_image %}
-          <img src="{{ doctor.profile_image.url }}" alt="Profile">
-      {% else %}
-          <img src="{% static 'img/default-doctor.png' %}" alt="Default">
-      {% endif %}
-
-      <div class="name">{{ doctor.user.username }}</div>
-      <div class="email">{{ doctor.user.email }}</div>
-
-      <a href="{% url 'doctor:profile_edit' %}" class="edit-btn">
-        <i class="fa-solid fa-pen"></i> Edit Profile
-      </a>
-    </div>
+  
 
 
     <!-- Menu Items -->
