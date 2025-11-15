@@ -4,10 +4,12 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import DoctorExperience, Doctor
+from .models import DoctorExperience, Doctor,DoctorAppointmentFee
 
 from adminapp.models import Division, District, Upazila, Department, Symptom
 from .models import Doctor,DoctorSpecializationDepartment,DoctorSpecializationSymptom,DoctorExperience
+
+
 
 
 @login_required
@@ -37,15 +39,15 @@ def doctor_dashboard(request):
 def doctor_profile(request):
     doctor = get_object_or_404(Doctor, user=request.user)
     context = {'doctor': doctor}
-    return render(request, 'doctor/profile.html', context)
+    return render(request, 'doctor/dashboard.html', context)
 
 
 @login_required
 def doctor_profile_edit(request):
-    # Get or create doctor profile
+    """Allow doctor to edit both User and Doctor profile info"""
     doctor, created = Doctor.objects.get_or_create(user=request.user)
 
-    # Load selectable options
+    # Fetch dropdown options
     divisions = Division.objects.all()
     districts = District.objects.all()
     upazilas = Upazila.objects.all()
@@ -53,52 +55,37 @@ def doctor_profile_edit(request):
     symptoms = Symptom.objects.all()
 
     if request.method == 'POST':
-        # --- Update User fields ---
+        # ---------- USER MODEL UPDATE ----------
         user = request.user
-        user.first_name = request.POST.get('first_name', user.first_name)
-        user.last_name = request.POST.get('last_name', user.last_name)
+        user.username = request.POST.get('username', user.username)
         user.email = request.POST.get('email', user.email)
-        user.phone = request.POST.get('phone', getattr(user, 'phone', ''))
+        user.phone = request.POST.get('phone', user.phone)
         user.save()
 
-        # --- Update Doctor profile fields ---
+        # ---------- DOCTOR MODEL UPDATE ----------
         doctor.about = request.POST.get('about', doctor.about)
         doctor.qualification = request.POST.get('qualification', doctor.qualification)
         doctor.total_experience = request.POST.get('total_experience', doctor.total_experience)
         doctor.bmdc_number = request.POST.get('bmdc_number', doctor.bmdc_number)
 
-        # --- Safe ForeignKey assignment ---
+        # ---------- Safe ForeignKey Assignment ----------
         division_id = request.POST.get('division')
         district_id = request.POST.get('district')
         upazila_id = request.POST.get('upazila')
 
-        try:
-            doctor.division = Division.objects.get(id=division_id) if division_id else None
-        except Division.DoesNotExist:
-            doctor.division = None
+        doctor.division = Division.objects.filter(id=division_id).first() if division_id else None
+        doctor.district = District.objects.filter(id=district_id).first() if district_id else None
+        doctor.upazila = Upazila.objects.filter(id=upazila_id).first() if upazila_id else None
 
-        try:
-            doctor.district = District.objects.get(id=district_id) if district_id else None
-        except District.DoesNotExist:
-            doctor.district = None
-
-        try:
-            doctor.upazila = Upazila.objects.get(id=upazila_id) if upazila_id else None
-        except Upazila.DoesNotExist:
-            doctor.upazila = None
-
-        doctor.save()  # Save before ManyToMany assignment
-
-
-        # --- Profile image upload ---
+        # ---------- Profile Image ----------
         if 'profile_image' in request.FILES:
             doctor.profile_image = request.FILES['profile_image']
-            doctor.save()
 
-        messages.success(request, "Profile updated successfully!")
-        return redirect('doctor:profile_edit')
+        doctor.save()
 
-    # --- Context for template ---
+        messages.success(request, "✅ Profile updated successfully!")
+        return redirect('doctor:doctor_profile_edit')
+
     context = {
         'doctor': doctor,
         'divisions': divisions,
@@ -108,6 +95,8 @@ def doctor_profile_edit(request):
         'symptoms': symptoms,
     }
     return render(request, 'doctor/profile_edit.html', context)
+
+
 
 
 # Expertise section
@@ -193,62 +182,71 @@ def ajax_load_upazilas(request):
 
 DAYS_OF_WEEK = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
 
+
 @login_required
 def doctor_experience_manage(request, exp_id=None):
     doctor = get_object_or_404(Doctor, user=request.user)
     experiences = doctor.experiences.all()
     working_hours = doctor.working_hours or {}
 
-    # For edit
+    # For editing specific experience
     experience = None
     if exp_id:
         experience = get_object_or_404(DoctorExperience, id=exp_id, doctor=doctor)
 
-    if request.method == 'POST':
-        hospital_name = request.POST.get('hospital_name')
-        designation = request.POST.get('designation')
-        department = request.POST.get('department')
-
-        if hospital_name and designation:
-            if experience:
-                # Update existing
-                experience.hospital_name = hospital_name
-                experience.designation = designation
-                experience.department = department
-                experience.save()
-                messages.success(request, "Experience updated successfully.")
-            else:
-                # Add new
-                DoctorExperience.objects.create(
-                    doctor=doctor,
-                    hospital_name=hospital_name,
-                    designation=designation,
-                    department=department
-                )
-                messages.success(request, "Experience added successfully.")
-        else:
-            messages.error(request, "Hospital name and designation are required.")
-            return redirect('doctor:experience_manage')
-
-        # Update working hours
+    # ------------------------------
+    #   WHEN ONLY WORKING HOURS SAVED
+    # ------------------------------
+    if request.method == "POST" and "working_hours_submit" in request.POST:
         updated_hours = {}
         for day in DAYS_OF_WEEK:
-            time = request.POST.get(f'wh_{day}')
-            if time:
-                updated_hours[day] = time
+            time_value = request.POST.get(f"wh_{day}", "")
+            updated_hours[day] = time_value
+
         doctor.working_hours = updated_hours
         doctor.save()
+        messages.success(request, "Working hours updated successfully.")
+        return redirect("doctor:experience_manage")
 
-        return redirect('doctor:experience_manage')
+    # ------------------------------
+    #   WHEN EXPERIENCE ADD / EDIT
+    # ------------------------------
+    if request.method == "POST" and "experience_submit" in request.POST:
+        hospital_name = request.POST.get("hospital_name")
+        designation = request.POST.get("designation")
+        department = request.POST.get("department")
+
+        if not hospital_name or not designation:
+            messages.error(request, "Hospital name and designation are required.")
+            return redirect("doctor:experience_manage")
+
+        if experience:
+            # Update
+            experience.hospital_name = hospital_name
+            experience.designation = designation
+            experience.department = department
+            experience.save()
+            messages.success(request, "Experience updated successfully.")
+        else:
+            # Add
+            DoctorExperience.objects.create(
+                doctor=doctor,
+                hospital_name=hospital_name,
+                designation=designation,
+                department=department,
+            )
+            messages.success(request, "Experience added successfully.")
+
+        return redirect("doctor:experience_manage")
 
     context = {
-        'experiences': experiences,
-        'days': DAYS_OF_WEEK,
-        'working_hours': working_hours,
-        'experience': experience,
+        "experiences": experiences,
+        "experience": experience,
+        "days": DAYS_OF_WEEK,
+        "working_hours": working_hours,
     }
-    return render(request, 'doctor/experience_manage.html', context)
 
+    return render(request, "doctor/experience_manage.html", context)
 
 @login_required
 def doctor_experience_delete(request, exp_id):
@@ -257,3 +255,34 @@ def doctor_experience_delete(request, exp_id):
     experience.delete()
     messages.success(request, "Experience deleted successfully.")
     return redirect('doctor:experience_manage')
+
+
+
+@login_required
+def manage_appointment_fees(request):
+    doctor = get_object_or_404(Doctor, user=request.user)
+    categories = [choice[0] for choice in DoctorAppointmentFee.APPOINTMENT_CATEGORIES]
+    fees = {fee.category: fee for fee in doctor.appointment_fees.all()}
+
+    if request.method == 'POST':
+        for category in categories:
+            price = request.POST.get(f'price_{category}')
+            if price:
+                # Update or create fee
+                DoctorAppointmentFee.objects.update_or_create(
+                    doctor=doctor,
+                    category=category,
+                    defaults={'price': price}
+                )
+            else:
+                # Delete if empty
+                DoctorAppointmentFee.objects.filter(doctor=doctor, category=category).delete()
+
+        messages.success(request, "Appointment fees updated successfully!")
+        return redirect('doctor:manage_appointment_fees')
+
+    context = {
+        'categories': DoctorAppointmentFee.APPOINTMENT_CATEGORIES,
+        'fees': fees,
+    }
+    return render(request, 'doctor/manage_appointment_fees.html', context)

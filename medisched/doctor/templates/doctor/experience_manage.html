@@ -1,203 +1,339 @@
+{% extends 'doctor/doctor_sidebar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Experience | MediSched</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <!-- Select2 -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% block title %}Experience Management | Doctor Panel{% endblock %}
 
-    <style>
-        /* ================== Variables & Global ================== */
-        :root {
-            --sidebar-width: 260px;
-            --primary-color: #00bfa5;
-            --primary-dark: #00796b;
-            --accent: #009688;
-            --bg-main: #eef4f7;
-            --bg-glass: rgba(255, 255, 255, 0.85);
-            --bg-blur: rgba(255, 255, 255, 0.6);
-            --text-main: #1f2937;
-            --text-secondary: #6b7280;
-            --border-light: rgba(255, 255, 255, 0.5);
-            --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.08);
-            --shadow-glow: 0 0 30px rgba(0, 191, 165, 0.35);
-            --transition: all 0.3s ease;
-        }
+{% block content %}
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2 class="fw-bold mb-3">
+        <i class="fa-solid fa-briefcase text-primary"></i> Experience & Working Hours
+      </h2>
+      <p class="text-muted">Manage your professional experience and set your working schedule</p>
+    </div>
+  </div>
 
-        body {
-            font-family: 'Poppins', 'Inter', sans-serif;
-            background: linear-gradient(135deg, #e8f0f2, #ffffff);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
 
-        /* ================== Layout ================== */
-        .main-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            padding: 50px 60px;
-            background: var(--bg-main);
-            transition: var(--transition);
-        }
-
-        .profile-container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: var(--bg-glass);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--border-light);
-            border-radius: 18px;
-            box-shadow: var(--shadow-card);
-            padding: 40px 50px;
-        }
-
-        .section-title {
-            font-weight: 700;
-            color: var(--primary-dark);
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .section-title i {
-            color: var(--primary-color);
-        }
-
-        /* ================== Experience Cards ================== */
-        .experience-card {
-            background: rgba(0, 191, 165, 0.08);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            border-left: 4px solid var(--primary-color);
-            transition: var(--transition);
-            position: relative;
-        }
-        .experience-card:hover {
-            background: rgba(0, 191, 165, 0.15);
-        }
-        .remove-exp {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: #e11d48;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .remove-exp:hover {
-            color: #9f1239;
-        }
-
-        /* Buttons */
-        .btn-save {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 14px 0;
-            border-radius: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            box-shadow: var(--shadow-glow);
-            transition: var(--transition);
-        }
-        .btn-save:hover {
-            background: var(--primary-dark);
-            transform: scale(1.03);
-        }
-
-        .btn-primary-alt {
-            background: linear-gradient(135deg, #00bfa5, #009688);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 10px 18px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            box-shadow: var(--shadow-glow);
-            transition: var(--transition);
-        }
-        .btn-primary-alt:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 191, 165, 0.45);
-        }
-
-        /* Responsive */
-        @media (max-width: 992px) {
-            .main-content {
-                margin-left: 0;
-                padding: 25px;
-            }
-            .profile-container {
-                padding: 25px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="main-wrapper">
-        <!-- Sidebar inside wrapper -->
-        {% include 'doctor/doctor_sidebar.html' %}
-
-        <div class="main-content">
-            <div class="profile-container">
-                <div class="section-title"><i class="fa-solid fa-briefcase"></i> Work Experience</div>
-
-                <form method="POST">
-                    {% csrf_token %}
-                    <div id="experienceList">
-                        {% for exp in doctor.experiences.all %}
-                            <div class="experience-card">
-                                <span class="remove-exp" onclick="this.parentElement.remove();"><i class="fas fa-times"></i></span>
-                                <input type="text" name="hospital_name_{{ forloop.counter }}" class="form-control mb-2" value="{{ exp.hospital_name }}" placeholder="Hospital Name" required>
-                                <input type="text" name="designation_{{ forloop.counter }}" class="form-control mb-2" value="{{ exp.designation }}" placeholder="Designation" required>
-                                <input type="text" name="department_{{ forloop.counter }}" class="form-control" value="{{ exp.department }}" placeholder="Department (Optional)">
-                            </div>
-                        {% endfor %}
-                    </div>
-
-                    <button type="button" class="btn btn-primary-alt w-100 mb-3" id="addExperience"><i class="fas fa-plus"></i> Add Experience</button>
-
-                    <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Experience</button>
-                </form>
-            </div>
+  <div class="row">
+    <!-- Left Column: Experience Form -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fa-solid fa-plus-circle"></i> 
+            {% if experience %}Edit Experience{% else %}Add New Experience{% endif %}
+          </h5>
         </div>
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+              <label for="hospital_name" class="form-label fw-semibold">
+                <i class="fa-solid fa-hospital"></i> Hospital/Clinic Name *
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="hospital_name" 
+                name="hospital_name" 
+                value="{{ experience.hospital_name|default:'' }}"
+                placeholder="Enter hospital or clinic name"
+                required
+              >
+            </div>
+
+            <div class="mb-3">
+              <label for="designation" class="form-label fw-semibold">
+                <i class="fa-solid fa-id-badge"></i> Designation *
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="designation" 
+                name="designation" 
+                value="{{ experience.designation|default:'' }}"
+                placeholder="e.g., Consultant, Senior Doctor"
+                required
+              >
+            </div>
+
+            <div class="mb-3">
+              <label for="department" class="form-label fw-semibold">
+                <i class="fa-solid fa-building"></i> Department
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="department" 
+                name="department" 
+                value="{{ experience.department|default:'' }}"
+                placeholder="e.g., Cardiology, Neurology"
+              >
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" name="experience_submit" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-save"></i> 
+                {% if experience %}Update Experience{% else %}Add Experience{% endif %}
+              </button>
+              {% if experience %}
+                <a href="{% url 'doctor:experience_manage' %}" class="btn btn-secondary">
+                  <i class="fa-solid fa-times"></i> Cancel Edit
+                </a>
+              {% endif %}
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Right Column: Experience List -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="fa-solid fa-list"></i> Your Experiences
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if experiences %}
+            <div class="list-group">
+              {% for exp in experiences %}
+                <div class="list-group-item mb-2 border rounded">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1 fw-bold text-primary">{{ exp.hospital_name }}</h6>
+                      <p class="mb-1">
+                        <i class="fa-solid fa-user-md text-secondary"></i> 
+                        <strong>{{ exp.designation }}</strong>
+                      </p>
+                      {% if exp.department %}
+                        <p class="mb-1 text-muted">
+                          <i class="fa-solid fa-building"></i> {{ exp.department }}
+                        </p>
+                      {% endif %}
+                    </div>
+                    <div class="btn-group-vertical" role="group">
+                      <a 
+                        href="{% url 'doctor:experience_edit' exp.id %}" 
+                        class="btn btn-sm btn-outline-primary"
+                        title="Edit"
+                      >
+                        <i class="fa-solid fa-edit"></i>
+                      </a>
+                      <a 
+                        href="{% url 'doctor:experience_delete' exp.id %}" 
+                        class="btn btn-sm btn-outline-danger"
+                        onclick="return confirm('Are you sure you want to delete this experience?')"
+                        title="Delete"
+                      >
+                        <i class="fa-solid fa-trash"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="fa-solid fa-inbox fa-3x text-muted mb-3"></i>
+              <p class="text-muted">No experience added yet. Add your first experience above.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <script>
-        // Dynamic experience addition
-        let expCounter = {{ doctor.experiences.count|default:0 }} + 1;
+  <!-- Working Hours Section -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">
+            <i class="fa-solid fa-clock"></i> Working Hours Schedule
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-3">Select your working hours for each day of the week</p>
+          <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+              {% for day in days %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                  <label class="form-label fw-semibold">
+                    <i class="fa-solid fa-calendar-day"></i> {{ day }}
+                  </label>
+                  
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <label for="wh_{{ day }}_start" class="form-label text-muted small">Start Time</label>
+                      <select class="form-select" id="wh_{{ day }}_start" name="wh_{{ day }}_start">
+                        <option value="">Select</option>
+                        <option value="12:00 AM" {% if day == 'Mon' and working_hours.Mon and '12:00 AM' in working_hours.Mon %}selected{% elif day == 'Tue' and working_hours.Tue and '12:00 AM' in working_hours.Tue %}selected{% elif day == 'Wed' and working_hours.Wed and '12:00 AM' in working_hours.Wed %}selected{% elif day == 'Thu' and working_hours.Thu and '12:00 AM' in working_hours.Thu %}selected{% elif day == 'Fri' and working_hours.Fri and '12:00 AM' in working_hours.Fri %}selected{% elif day == 'Sat' and working_hours.Sat and '12:00 AM' in working_hours.Sat %}selected{% elif day == 'Sun' and working_hours.Sun and '12:00 AM' in working_hours.Sun %}selected{% endif %}>12:00 AM</option>
+                        <option value="1:00 AM">1:00 AM</option>
+                        <option value="2:00 AM">2:00 AM</option>
+                        <option value="3:00 AM">3:00 AM</option>
+                        <option value="4:00 AM">4:00 AM</option>
+                        <option value="5:00 AM">5:00 AM</option>
+                        <option value="6:00 AM">6:00 AM</option>
+                        <option value="7:00 AM">7:00 AM</option>
+                        <option value="8:00 AM">8:00 AM</option>
+                        <option value="9:00 AM">9:00 AM</option>
+                        <option value="10:00 AM">10:00 AM</option>
+                        <option value="11:00 AM">11:00 AM</option>
+                        <option value="12:00 PM">12:00 PM</option>
+                        <option value="1:00 PM">1:00 PM</option>
+                        <option value="2:00 PM">2:00 PM</option>
+                        <option value="3:00 PM">3:00 PM</option>
+                        <option value="4:00 PM">4:00 PM</option>
+                        <option value="5:00 PM">5:00 PM</option>
+                        <option value="6:00 PM">6:00 PM</option>
+                        <option value="7:00 PM">7:00 PM</option>
+                        <option value="8:00 PM">8:00 PM</option>
+                        <option value="9:00 PM">9:00 PM</option>
+                        <option value="10:00 PM">10:00 PM</option>
+                        <option value="11:00 PM">11:00 PM</option>
+                      </select>
+                    </div>
+                    
+                    <div class="col-6">
+                      <label for="wh_{{ day }}_end" class="form-label text-muted small">End Time</label>
+                      <select class="form-select" id="wh_{{ day }}_end" name="wh_{{ day }}_end">
+                        <option value="">Select</option>
+                        <option value="12:00 AM">12:00 AM</option>
+                        <option value="1:00 AM">1:00 AM</option>
+                        <option value="2:00 AM">2:00 AM</option>
+                        <option value="3:00 AM">3:00 AM</option>
+                        <option value="4:00 AM">4:00 AM</option>
+                        <option value="5:00 AM">5:00 AM</option>
+                        <option value="6:00 AM">6:00 AM</option>
+                        <option value="7:00 AM">7:00 AM</option>
+                        <option value="8:00 AM">8:00 AM</option>
+                        <option value="9:00 AM">9:00 AM</option>
+                        <option value="10:00 AM">10:00 AM</option>
+                        <option value="11:00 AM">11:00 AM</option>
+                        <option value="12:00 PM">12:00 PM</option>
+                        <option value="1:00 PM">1:00 PM</option>
+                        <option value="2:00 PM">2:00 PM</option>
+                        <option value="3:00 PM">3:00 PM</option>
+                        <option value="4:00 PM">4:00 PM</option>
+                        <option value="5:00 PM">5:00 PM</option>
+                        <option value="6:00 PM">6:00 PM</option>
+                        <option value="7:00 PM">7:00 PM</option>
+                        <option value="8:00 PM">8:00 PM</option>
+                        <option value="9:00 PM">9:00 PM</option>
+                        <option value="10:00 PM">10:00 PM</option>
+                        <option value="11:00 PM">11:00 PM</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <!-- Hidden input to store combined value -->
+                  <input type="hidden" id="wh_{{ day }}" name="wh_{{ day }}" value="{% if day == 'Mon' %}{{ working_hours.Mon|default:'' }}{% elif day == 'Tue' %}{{ working_hours.Tue|default:'' }}{% elif day == 'Wed' %}{{ working_hours.Wed|default:'' }}{% elif day == 'Thu' %}{{ working_hours.Thu|default:'' }}{% elif day == 'Fri' %}{{ working_hours.Fri|default:'' }}{% elif day == 'Sat' %}{{ working_hours.Sat|default:'' }}{% elif day == 'Sun' %}{{ working_hours.Sun|default:'' }}{% endif %}">
+                </div>
+              {% endfor %}
+            </div>
 
-        $('#addExperience').click(function() {
-            let html = `
-            <div class="experience-card">
-                <span class="remove-exp" onclick="this.parentElement.remove();"><i class="fas fa-times"></i></span>
-                <input type="text" name="hospital_name_${expCounter}" class="form-control mb-2" placeholder="Hospital Name" required>
-                <input type="text" name="designation_${expCounter}" class="form-control mb-2" placeholder="Designation" required>
-                <input type="text" name="department_${expCounter}" class="form-control" placeholder="Department (Optional)">
-            </div>`;
-            $('#experienceList').append(html);
-            expCounter++;
+            <div class="d-grid gap-2 mt-3">
+              <button type="submit" name="working_hours_submit" class="btn btn-info btn-lg text-white">
+                <i class="fa-solid fa-save"></i> Save Working Hours
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+  }
+
+  .list-group-item {
+    transition: all 0.3s ease;
+  }
+
+  .list-group-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+  }
+
+  .btn-group-vertical .btn {
+    margin-bottom: 0.25rem;
+  }
+
+  .form-label {
+    color: #495057;
+  }
+
+  .form-select:focus,
+  .form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+  }
+
+  .form-select {
+    cursor: pointer;
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // Parse existing working hours and populate dropdowns
+  document.addEventListener('DOMContentLoaded', function() {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    
+    days.forEach(day => {
+      const hiddenInput = document.getElementById('wh_' + day);
+      const startSelect = document.getElementById('wh_' + day + '_start');
+      const endSelect = document.getElementById('wh_' + day + '_end');
+      
+      if (hiddenInput && hiddenInput.value) {
+        const times = hiddenInput.value.split(' - ');
+        if (times.length === 2) {
+          startSelect.value = times[0].trim();
+          endSelect.value = times[1].trim();
+        }
+      }
+      
+      // Combine start and end times when form is submitted
+      const form = startSelect.closest('form');
+      form.addEventListener('submit', function(e) {
+        days.forEach(d => {
+          const start = document.getElementById('wh_' + d + '_start').value;
+          const end = document.getElementById('wh_' + d + '_end').value;
+          const hidden = document.getElementById('wh_' + d);
+          
+          if (start && end) {
+            hidden.value = start + ' - ' + end;
+          } else {
+            hidden.value = '';
+          }
         });
-    </script>
-</body>
-</html>
+      });
+    });
+  });
+</script>
+
+{% endblock %}

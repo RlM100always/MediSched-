@@ -56,3 +56,23 @@ class DoctorSpecializationSymptom(models.Model):
 
     def __str__(self):
         return f"{self.doctor.user.first_name} - {self.symptom.symptom_name}"
+
+
+class DoctorAppointmentFee(models.Model):
+    """
+    Represents the fee a doctor charges for a predefined appointment category.
+    """
+    APPOINTMENT_CATEGORIES = [
+        ('General', 'General Consultation'),
+        ('Special', 'Special Consultation'),
+    ]
+
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='appointment_fees')
+    category = models.CharField(max_length=50, choices=APPOINTMENT_CATEGORIES)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        unique_together = ('doctor', 'category')  # Prevent duplicates
+
+    def __str__(self):
+        return f"{self.doctor.user.username} - {self.category} : {self.price}"

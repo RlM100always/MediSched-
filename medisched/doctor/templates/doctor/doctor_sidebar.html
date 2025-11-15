@@ -129,7 +129,8 @@
 
     <h4>Doctor Panel</h4>
 
-  
+
+     
 
 
     <!-- Menu Items -->
@@ -137,28 +138,28 @@
       <i class="fa-solid fa-house"></i> Dashboard
     </a>
 
-    <a href="{% url 'doctor:profile_edit' %}" class="{% if request.resolver_match.url_name == 'profile_edit' %}active{% endif %}">
+    <a href="{% url 'doctor:doctor_profile_edit' %}" class="{% if request.resolver_match.url_name == 'doctor_profile_edit' %}active{% endif %}">
       <i class="fa-solid fa-user"></i> Profile Settings
     </a>
 
     <a href="{% url 'doctor:expertise_edit' %}" class="{% if request.resolver_match.url_name == 'expertise_edit' %}active{% endif %}">
-      <i class="fa-solid fa-stethoscope"></i> Expertise
+      <i class="fa-solid fa-stethoscope"></i>Manage Expertise
     </a>
 
     <a href="{% url 'doctor:experience_manage' %}" class="{% if request.resolver_match.url_name == 'experience_manage' %}active{% endif %}">
-      <i class="fa-solid fa-briefcase"></i> Experience
+      <i class="fa-solid fa-briefcase"></i>Manage Experience
+    </a>
+
+    <a href="{% url 'doctor:manage_appointment_fees' %} " class="{% if request.resolver_match.url_name == 'manage_appointment_fees' %}active{% endif %}">
+    <i class="fa-solid fa-clock"></i> Set Price
     </a>
 
     <a href="#">
-      <i class="fa-solid fa-clock"></i> Available Times
+      <i class="fa-solid fa-calendar-check"></i>Appointments
     </a>
 
     <a href="#">
-      <i class="fa-solid fa-calendar-check"></i> Appointments
-    </a>
-
-    <a href="#">
-      <i class="fa-solid fa-file-medical"></i> Patient Records
+      <i class="fa-solid fa-file-medical"></i>Patient Records
     </a>
 
     <a href="#">
