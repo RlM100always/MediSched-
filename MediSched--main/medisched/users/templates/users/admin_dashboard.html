@@ -1,0 +1,12 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h1>Patient Dashboard</h1>
+    <p>Welcome {{ request.user.username }} ({{ request.user.role }})</p>
+</body>
+</html>

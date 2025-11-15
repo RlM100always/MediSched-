@@ -1,0 +1,79 @@
+{% extends 'adminapp/base_admin.html' %}
+{% load static %}
+
+{% block title %}Manage Symptoms | MediSched Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="fa-solid fa-stethoscope me-2"></i> Manage Symptoms</h3>
+  </div>
+
+  <!-- Add Symptom Form -->
+  <div class="card p-4 mb-4">
+    <form method="POST" action="{% url 'add_symptom' %}" class="row g-3" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="col-md-5">
+        <input type="text" name="symptom_name" class="form-control" placeholder="New Symptom Name" required>
+      </div>
+      <div class="col-md-5">
+        <input type="file" name="symptom_image" class="form-control" accept="image/*">
+      </div>
+      <div class="col-md-2 d-grid">
+        <button class="btn btn-success"><i class="fa-solid fa-plus me-2"></i>Add</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Symptom Table -->
+  <div class="card p-4">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>#ID</th>
+            <th>Image</th>
+            <th>Symptom Name</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sym in symptoms %}
+          <tr>
+            <td>{{ sym.id }}</td>
+            <td>
+              {% if sym.symptom_image %}
+              {% if sym.symptom_image %}
+    <img src="{{ sym.symptom_image.url }}" alt="{{ sym.symptom_name }}" width="60" height="60" class="rounded">
+{% else %}
+    <img src="{% static 'img/no-image.png' %}" alt="No image" width="60" height="60" class="rounded">
+{% endif %}
+
+              {% else %}
+                <span class="text-muted">No Image</span>
+              {% endif %}
+            </td>
+            <td>{{ sym.symptom_name }}</td>
+            <td>
+              <div class="d-flex gap-2">
+                <a href="{% url 'edit_symptom' sym.id %}" class="btn btn-primary btn-sm">
+                  <i class="fa-solid fa-pen-to-square"></i> Edit
+                </a>
+                <a href="{% url 'delete_symptom' sym.id %}" class="btn btn-danger btn-sm">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center text-muted">No symptoms found. Add a new symptom above.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

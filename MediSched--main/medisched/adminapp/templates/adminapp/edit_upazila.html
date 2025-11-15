@@ -1,0 +1,40 @@
+{% extends 'adminapp/base_admin.html' %}
+{% load static %}
+
+{% block title %}Edit Upazila | MediSched Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card p-4">
+    <h3 class="mb-4"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Upazila</h3>
+    
+    <form method="POST">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="upazila_name" class="form-label">Upazila Name</label>
+        <input type="text" name="upazila_name" id="upazila_name" class="form-control" value="{{ upazila.upazila_name }}" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="district_id" class="form-label">District</label>
+        <select name="district_id" id="district_id" class="form-select" required>
+          {% for dist in districts %}
+          <option value="{{ dist.id }}" {% if dist.id == upazila.district.id %}selected{% endif %}>
+            {{ dist.district_name }} ({{ dist.division.division_name }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="d-flex justify-content-between">
+        <a href="{% url 'upazila_list' %}" class="btn btn-secondary">
+          <i class="fa-solid fa-arrow-left me-2"></i>Back
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-save me-2"></i>Update
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

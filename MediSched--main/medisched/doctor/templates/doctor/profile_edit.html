@@ -1,0 +1,409 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Doctor Profile | MediSched</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <!-- <link rel="stylesheet" href="{% static 'doctor/css/profile_edit.css' %}"> -->
+     <style>
+       
+/* ================================== */
+/* GLASSMED AURA THEME (Doctor Dashboard, Sidebar-Optimized) */
+/* ================================== */
+
+:root {
+    --sidebar-width: 260px;
+    --primary-color: #00bfa5;
+    --primary-dark: #00796b;
+    --accent: #009688;
+    --bg-main: #eef4f7;
+    --bg-glass: rgba(255, 255, 255, 0.85);
+    --bg-blur: rgba(255, 255, 255, 0.6);
+    --text-main: #1f2937;
+    --text-secondary: #6b7280;
+    --border-light: rgba(255, 255, 255, 0.5);
+    --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-glow: 0 0 30px rgba(0, 191, 165, 0.35);
+    --transition: all 0.3s ease;
+}
+
+/* Global */
+body {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    background: linear-gradient(135deg, #e8f0f2, #ffffff);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* Layout with Sidebar */
+.main-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    padding: 50px 60px;
+    background: var(--bg-main);
+    transition: var(--transition);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Profile Card Container */
+.profile-container {
+    max-width: 950px;
+    margin: 0 auto;
+    background: var(--bg-glass);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--border-light);
+    border-radius: 18px;
+    box-shadow: var(--shadow-card);
+    padding: 45px 55px;
+    animation: slideUp 0.6s ease;
+}
+
+/* Header Section */
+.profile-header {
+    text-align: center;
+    margin-bottom: 40px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 30px;
+}
+.profile-header img {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary-color);
+    box-shadow: var(--shadow-glow);
+    transition: var(--transition);
+}
+.profile-header img:hover {
+    transform: scale(1.1) rotate(1deg);
+}
+.profile-header h3 {
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin-top: 20px;
+    font-size: 1.6rem;
+}
+.profile-header p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* Form Sections */
+.form-section {
+    background: var(--bg-blur);
+    padding: 30px;
+    border-radius: 14px;
+    margin-bottom: 35px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: var(--transition);
+}
+.form-section:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0, 191, 165, 0.25);
+}
+
+/* Section Title */
+.section-title {
+    font-weight: 700;
+    color: var(--primary-dark);
+    font-size: 1.25rem;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.section-title i {
+    color: var(--primary-color);
+}
+
+/* Form Controls */
+label {
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    display: block;
+}
+.form-control,
+.form-select,
+textarea {
+    width: 100%;
+    border-radius: 10px;
+    padding: 12px 15px;
+    border: 1px solid #e5e7eb;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    transition: var(--transition);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+.form-control:focus,
+textarea:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(0, 191, 165, 0.2);
+}
+
+/* Experience & Working Hours */
+.experience-card {
+    background: rgba(0, 191, 165, 0.08);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--primary-color);
+    transition: var(--transition);
+}
+.experience-card:hover {
+    background: rgba(0, 191, 165, 0.15);
+}
+.remove-exp {
+    color: #e11d48;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.remove-exp:hover {
+    color: #9f1239;
+}
+.working-hours .input-group-text {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    border: none;
+}
+
+/* Buttons */
+.btn-primary-alt {
+    background: linear-gradient(135deg, #00bfa5, #009688);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    box-shadow: var(--shadow-glow);
+    transition: var(--transition);
+}
+.btn-primary-alt:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 191, 165, 0.45);
+}
+
+.btn-save {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 14px 0;
+    border-radius: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    box-shadow: var(--shadow-glow);
+    transition: var(--transition);
+}
+.btn-save:hover {
+    background: var(--primary-dark);
+    transform: scale(1.03);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .main-content {
+        margin-left: 0;
+        padding: 25px;
+    }
+    .profile-container {
+        padding: 25px;
+    }
+}
+
+     </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    {% include 'doctor/doctor_sidebar.html' %}
+
+      <!-- ✅ Profile Box -->
+    <div class="profile-box">
+      {% if doctor.profile_image %}
+          <img src="{{ doctor.profile_image.url }}" alt="Profile">
+      {% else %}
+          <img src="{% static 'img/default-doctor.png' %}" alt="Default">
+      {% endif %}
+
+      <div class="name">{{ doctor.user.username }}</div>
+      <div class="email">{{ doctor.user.email }}</div>
+
+      <a href="{% url 'doctor:profile_edit' %}" class="edit-btn">
+        <i class="fa-solid fa-pen"></i> Edit Profile
+      </a>
+    </div>
+     
+
+    <div class="main-wrapper">
+    <div class="main-content">
+        <div class="profile-container">
+            <div class="profile-header mb-4 text-center">
+                {% if doctor.profile_image %}
+                    <img src="{{ doctor.profile_image.url }}" alt="Doctor Photo" class="rounded-circle" width="120">
+                {% else %}
+                    <img src="{% static 'img/default-doctor.png' %}" alt="Default Doctor" class="rounded-circle" width="120">
+                {% endif %}
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" id="doctorProfileForm">
+                {% csrf_token %}
+
+                <!-- USER ACCOUNT SECTION -->
+                <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                    <h5 class="text-primary mb-3"><i class="fas fa-user"></i> Account Info (User Model)</h5>
+
+                    <div class="mb-3">
+                        <label class="text-secondary">Username</label>
+                        <input type="text" name="username" class="form-control" value="{{ doctor.user.username }}" placeholder="Username" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-secondary">Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ doctor.user.email }}" placeholder="Email" required>
+                    </div>
+                    <small class="text-muted">Note: Changing these updates the User account separately.</small>
+                                    <button type="submit" class="btn btn-primary w-100 mt-2">
+                    <i class="fas fa-save"></i> Update 
+                </button>
+                </div>
+
+                <!-- DOCTOR PROFILE SECTION -->
+                <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+                    <h5 class="text-primary mb-3"><i class="fas fa-briefcase"></i> Doctor Profile</h5>
+
+                    <div class="mb-3">
+                        <label class="text-secondary">About</label>
+                        <textarea name="about" class="form-control" rows="3" placeholder="A brief professional summary">{{ doctor.about }}</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-secondary">Qualification</label>
+                            <input type="text" name="qualification" class="form-control" value="{{ doctor.qualification }}" placeholder="e.g., MBBS, MD, FCPS">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-secondary">Total Experience (Years)</label>
+                            <input type="number" name="total_experience" class="form-control" value="{{ doctor.total_experience }}" min="0" placeholder="e.g., 10">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-secondary">BMDC Number</label>
+                        <input type="text" name="bmdc_number" class="form-control" value="{{ doctor.bmdc_number }}" placeholder="e.g., BMDC Reg-A1234">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="text-secondary">Division</label>
+                            <select name="division" id="divisionSelect" class="form-select">
+                                <option value="">Select Division</option>
+                                {% for div in divisions %}
+                                    <option value="{{ div.id }}" {% if doctor.division and doctor.division.id == div.id %}selected{% endif %}>
+                                        {{ div.division_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="text-secondary">District</label>
+                            <select name="district" id="districtSelect" class="form-select">
+                                <option value="">Select District</option>
+                                {% for dist in districts %}
+                                    <option value="{{ dist.id }}" {% if doctor.district and doctor.district.id == dist.id %}selected{% endif %}>
+                                        {{ dist.district_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="text-secondary">Upazila</label>
+                            <select name="upazila" id="upazilaSelect" class="form-select">
+                                <option value="">Select Upazila</option>
+                                {% for upz in upazilas %}
+                                    <option value="{{ upz.id }}" {% if doctor.upazila and doctor.upazila.id == upz.id %}selected{% endif %}>
+                                        {{ upz.upazila_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-secondary">Profile Image</label>
+                        <input type="file" name="profile_image" class="form-control">
+                        {% if doctor.profile_image %}<small class="text-muted">Current image set.</small>{% endif %}
+                    </div>
+                     <button type="submit" class="btn btn-primary w-100 mt-2">
+                    <i class="fas fa-save"></i> Update Profile
+                </button>
+                </div>
+
+               
+            </form>
+        </div>
+    </div>
+</div>
+
+
+</div>
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+
+
+ <!-- 👇 এখানে URL গুলো define করো -->
+<script>
+    const loadDistrictsUrl = "{% url 'doctor:ajax_load_districts' %}";
+    const loadUpazilasUrl = "{% url 'doctor:ajax_load_upazilas' %}";
+</script>
+
+<!-- jQuery CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+    <!-- Custom JS -->
+    <script src="{% static 'doctor/js/profile_edit.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+</body>
+</html>

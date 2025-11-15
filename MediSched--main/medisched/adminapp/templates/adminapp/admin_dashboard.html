@@ -1,0 +1,90 @@
+{% extends 'adminapp/base_admin.html' %}
+{% block title %}Admin Dashboard | MediSched{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <h2 class="mb-4">Dashboard Overview</h2>
+
+  <!-- Stats Cards -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-3">
+      <div class="card stats-card bg-primary text-white">
+        <div class="card-body">
+          <div>
+            <h5>Doctors</h5>
+            <h3>120</h3>
+          </div>
+          <i class="fa-solid fa-user-doctor fa-2x"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stats-card bg-success text-white">
+        <div class="card-body">
+          <div>
+            <h5>Patients</h5>
+            <h3>450</h3>
+          </div>
+          <i class="fa-solid fa-user-injured fa-2x"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stats-card bg-warning text-dark">
+        <div class="card-body">
+          <div>
+            <h5>Appointments</h5>
+            <h3>320</h3>
+          </div>
+          <i class="fa-solid fa-calendar-check fa-2x"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stats-card bg-danger text-white">
+        <div class="card-body">
+          <div>
+            <h5>Revenue</h5>
+            <h3>$12.5k</h3>
+          </div>
+          <i class="fa-solid fa-dollar-sign fa-2x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="row g-4">
+    <div class="col-md-4">
+      <a href="{% url 'division_list' %}" class="btn btn-outline-primary action-btn w-100">
+        <i class="fa-solid fa-map"></i> Manage Divisions
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="{% url 'district_list' %}" class="btn btn-outline-primary action-btn w-100">
+        <i class="fa-solid fa-city"></i> Manage Districts
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="{% url 'upazila_list' %}" class="btn btn-outline-primary action-btn w-100">
+        <i class="fa-solid fa-map-pin"></i> Manage Upazilas
+      </a>
+    </div>
+    <div class="col-md-4 mt-3">
+      <a href="{% url 'department_list' %}" class="btn btn-outline-success action-btn w-100">
+        <i class="fa-solid fa-building"></i> Manage Departments
+      </a>
+    </div>
+    <div class="col-md-4 mt-3">
+      <a href="{% url 'symptom_list' %}" class="btn btn-outline-success action-btn w-100">
+        <i class="fa-solid fa-stethoscope"></i> Manage Symptoms
+      </a>
+    </div>
+    <div class="col-md-4 mt-3">
+      <a href="{% url 'appointment_list' %}" class="btn btn-outline-warning action-btn w-100">
+        <i class="fa-solid fa-calendar-check"></i> Manage Appointments
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
