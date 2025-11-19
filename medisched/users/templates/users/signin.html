@@ -554,48 +554,44 @@
         </div>
         
         <!-- Right Form Panel -->
-       <div class="form-panel">
-
-    <div class="form-header">
-        <h3>Welcome Back</h3>
-        <p>Sign in to continue</p>
-    </div>
-
-    <!-- Messages -->
-    <div class="messages-container">
-        {% if messages %}
-            {% for msg in messages %}
-                <div class="alert alert-{{ msg.tags }}">
-                    {{ msg }}
-                    <button class="btn-close" onclick="this.parentElement.style.display='none'">&times;</button>
+        <div class="form-panel">
+            <div class="form-header">
+                <h3>Sign In to Your Account</h3>
+                <p>Access your health dashboard and consultations</p>
+            </div>
+            
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                            <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'">×</button>
+                        </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
-        {% endif %}
-    </div>
-
-    <!-- SIGNIN FORM -->
-    <form method="POST" action="{% url 'users:signin' %}">
-        {% csrf_token %}
-
-        <p>
-            <label for="username">Username</label>
-            <input type="text" name="username" placeholder="Enter username" required>
-        </p>
-
-        <p>
-            <label for="password">Password</label>
-            <input type="password" name="password" placeholder="Enter password" required>
-        </p>
-
-        <div class="forgot-link">
-            <a href="#">Forgot password?</a>
+            {% endif %}
+            
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                
+                <div class="forgot-link">
+                    <a href="#">Forgot Password?</a>
+                </div>
+                
+                <button type="submit" class="btn-submit">
+                    Sign In 🏥
+                </button>
+            </form>
+            
+            <div class="divider">
+                <span>New to HealthCare?</span>
+            </div>
+            
+            <p class="signup-link">
+                Don't have an account? <a href="{% url 'users:signup' %}">Sign Up</a>
+            </p>
         </div>
-
-        <button type="submit" class="btn-submit">Sign In</button>
-    </form>
-
-</div>
-
     </div>
 </div>
 {% endblock %}

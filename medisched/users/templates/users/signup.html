@@ -2,41 +2,36 @@
 {% block title %}Sign Up - MediSched{% endblock %}
 {% block content %}
 <style>
-    body {
-        background: linear-gradient(135deg, #f8f8f9 0%, #fcfbfd 100%);
-        min-height: 100vh;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    
-    .signup-container {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        padding: 40px 0;
-    }
-    
-    .signup-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        overflow: hidden;
-    }
-    
-    .left-panel {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);; /* full solid color */
+body {
+    background: linear-gradient(135deg, #f8f8f9 0%, #fcfbfd 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.signup-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 40px 0;
+}
+
+.signup-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.left-panel {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     padding: 60px 40px;
     color: white;
     display: flex;
     flex-direction: column;
     justify-content: center;
     position: relative;
-    height: 100%; /* full height of the card */
-    border-radius: 0; /* optional: remove rounding if full color */
-    overflow: hidden;
-}
-
-.left-panel::before {
-    content: none; /* remove the radial gradient overlay/pulse animation */
+    height: 100%;
+    border-radius: 0;
 }
 
 .left-panel h2 {
@@ -47,166 +42,148 @@
     z-index: 1;
 }
 
-    
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-    }
-    
-    
-    
-    .feature-item {
-        display: flex;
-        align-items: center;
-        margin: 20px 0;
-        position: relative;
-        z-index: 1;
-    }
-    
-    .feature-icon {
-        width: 50px;
-        height: 50px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 15px;
-        font-size: 24px;
-        backdrop-filter: blur(10px);
-    }
-    
-    .feature-text h5 {
-        margin: 0;
-        font-weight: 600;
-    }
-    
-    .feature-text p {
-        margin: 0;
-        opacity: 0.9;
-        font-size: 0.9rem;
-    }
-    
-    .right-panel {
-        padding: 60px 50px;
-    }
-    
-    .form-header {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-    
-    .form-header h3 {
-        color: #2d3748;
-        font-weight: 700;
-        font-size: 2rem;
-        margin-bottom: 10px;
-    }
-    
-    .form-header p {
-        color: #718096;
-        font-size: 1rem;
-    }
-    
-    .form-control {
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 12px 15px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .form-control:focus {
-        border-color: #4facfe;
-        box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
-    }
-    
-    .form-label {
-        color: #2d3748;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-    
-    .btn-signup {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        border: none;
-        border-radius: 10px;
-        padding: 15px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: white;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    }
-    
-    .btn-signup:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(24, 196, 2, 0.6);
-    }
-    
-    .alert {
-        border-radius: 10px;
-        border: none;
-        padding: 15px 20px;
-    }
-    
-     /* Sign Up Link */
-    .signup-link {
-        text-align: center;
-        color: #718096;
-        font-size: 14px;
-    }
-    
-    .signup-link a {
-        color: #11998e;
-        text-decoration: none;
-        font-weight: 700;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-    
-    .signup-link a::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 0;
-        width: 0;
-        height: 2px;
-        background: #11998e;
-        transition: width 0.3s ease;
-    }
-    
-    .signup-link a:hover::after {
-        width: 100%;
-    }
-    
-    .signup-link a:hover {
-        color: #38ef7d;
-    }
-    
-    .health-icons {
-        position: absolute;
-        opacity: 0.1;
-        font-size: 100px;
-    }
-    
-    .icon-1 { top: 10%; left: 10%; animation: float 6s ease-in-out infinite; }
-    .icon-2 { top: 60%; right: 15%; animation: float 8s ease-in-out infinite; }
-    .icon-3 { bottom: 15%; left: 20%; animation: float 7s ease-in-out infinite; }
-    
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-20px); }
-    }
-    
-    @media (max-width: 768px) {
-        .left-panel {
-            display: none;
-        }
-        .right-panel {
-            padding: 40px 30px;
-        }
-    }
+.feature-item {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.feature-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 24px;
+    backdrop-filter: blur(10px);
+}
+
+.feature-text h5 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.feature-text p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+.right-panel {
+    padding: 60px 50px;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.form-header h3 {
+    color: #2d3748;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.form-header p {
+    color: #718096;
+    font-size: 1rem;
+}
+
+.form-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 15px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #4facfe;
+    box-shadow: 0 0 0 3px rgba(79,172,254,0.1);
+}
+
+.btn-signup {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+}
+
+.btn-signup:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(24,196,2,0.6);
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+    padding: 15px 20px;
+}
+
+/* Sign Up Link */
+.signup-link {
+    text-align: center;
+    color: #718096;
+    font-size: 14px;
+}
+
+.signup-link a {
+    color: #11998e;
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.signup-link a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #11998e;
+    transition: width 0.3s ease;
+}
+
+.signup-link a:hover::after {
+    width: 100%;
+}
+
+.signup-link a:hover {
+    color: #38ef7d;
+}
+
+.health-icons {
+    position: absolute;
+    opacity: 0.1;
+    font-size: 100px;
+}
+
+.icon-1 { top: 10%; left: 10%; animation: float 6s ease-in-out infinite; }
+.icon-2 { top: 60%; right: 15%; animation: float 8s ease-in-out infinite; }
+.icon-3 { bottom: 15%; left: 20%; animation: float 7s ease-in-out infinite; }
+
+@keyframes float {
+    0%,100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+@media (max-width: 768px) {
+    .left-panel { display: none; }
+    .right-panel { padding: 40px 30px; }
+}
 </style>
 
 <div class="signup-container">
@@ -223,7 +200,9 @@
                                 <div class="health-icons icon-3">⚕️</div>
                                 
                                 <h2>Welcome to MediSched</h2>
-                                <p style="font-size: 1.1rem; margin-bottom: 40px;">Your health journey starts here. Connect with qualified doctors anytime, anywhere.</p>
+                                <p style="font-size: 1.1rem; margin-bottom: 40px;">
+                                    Your health journey starts here. Connect with qualified doctors anytime, anywhere.
+                                </p>
                                 
                                 <div class="feature-item">
                                     <div class="feature-icon">🩺</div>
@@ -258,35 +237,36 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Right Panel - Form -->
+
+                        <!-- Right Panel -->
                         <div class="col-md-7">
                             <div class="right-panel">
                                 <div class="form-header">
                                     <h3>Create Your Account</h3>
                                     <p>Join thousands of patients getting better healthcare</p>
                                 </div>
-                                
+
                                 {% if messages %}
                                     {% for message in messages %}
                                         <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                                             {{ message }}
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                         </div>
                                     {% endfor %}
                                 {% endif %}
-                                
+
                                 <form method="POST">
                                     {% csrf_token %}
                                     {{ form.as_p }}
                                     <button type="submit" class="btn btn-signup w-100 mt-3">Create Account</button>
                                 </form>
-                                
-                                <div class="signup-link">
+
+                                <div class="signup-link mt-3">
                                     Already have an account? <a href="{% url 'users:signin' %}">Sign In</a>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
