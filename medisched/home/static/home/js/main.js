@@ -74,44 +74,13 @@ function showAlert(type, elementId, message) {
     }, 5000);
 }
 
-// Handle Sign In
-async function handleSignin(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = {
-        username: form.username.value,
-        password: form.password.value
-    };
-
-    try {
-        const response = await fetch(signinUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify(formData)
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            showAlert('success', 'signinAlert', data.message);
-            setTimeout(() => {
-                window.location.href = data.redirect;
-            }, 1000);
-        } else {
-            showAlert('error', 'signinAlert', data.message);
-        }
-    } catch (error) {
-        showAlert('error', 'signinAlert', 'An error occurred. Please try again.');
-    }
-}
+const signupUrl = '/users/ajax/signup/';
+const signinUrl = '/users/ajax/signin/';
 
 // Handle Sign Up
-async function handleSignup(event) {
-    event.preventDefault();
-    const form = event.target;
+document.getElementById('signupForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const form = e.target;
     const formData = {
         username: form.username.value,
         email: form.email.value,
@@ -120,29 +89,51 @@ async function handleSignup(event) {
     };
 
     try {
-        const response = await fetch(signupUrl, {
+        const res = await fetch(signupUrl, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
             body: JSON.stringify(formData)
         });
-
-        const data = await response.json();
-
-        if (data.success) {
-            showAlert('success', 'signupAlert', data.message);
-            setTimeout(() => {
-                window.location.href = data.redirect;
-            }, 1000);
+        const data = await res.json();
+        const alertDiv = document.getElementById('signupAlert');
+        if(data.success){
+            alertDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+            setTimeout(()=>{ window.location.href = data.redirect; }, 1000);
         } else {
-            showAlert('error', 'signupAlert', data.message);
+            alertDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
         }
-    } catch (error) {
-        showAlert('error', 'signupAlert', 'An error occurred. Please try again.');
+    } catch(err){
+        console.error(err);
     }
-}
+});
+
+// Handle Sign In
+document.getElementById('signinForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const form = e.target;
+    const formData = {
+        username: form.username.value,
+        password: form.password.value
+    };
+
+    try {
+        const res = await fetch(signinUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+            body: JSON.stringify(formData)
+        });
+        const data = await res.json();
+        const alertDiv = document.getElementById('signinAlert');
+        if(data.success){
+            alertDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+            setTimeout(()=>{ window.location.href = data.redirect; }, 1000);
+        } else {
+            alertDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+        }
+    } catch(err){
+        console.error(err);
+    }
+});
 
 // Scroll Animation
 const fadeElements = document.querySelectorAll('.fade-in');

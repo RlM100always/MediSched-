@@ -9,7 +9,7 @@ class CustomUser(AbstractUser):
     ROLE_CHOICES = [
         (ROLE_PATIENT, 'Patient'),
         (ROLE_DOCTOR, 'Doctor'),
-        (ROLE_ADMIN, 'Admin'),
+        
     ]
 
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_PATIENT)
@@ -22,8 +22,6 @@ class CustomUser(AbstractUser):
     def is_doctor(self):
         return self.role == self.ROLE_DOCTOR
 
-    def is_platform_admin(self):
-        return self.role == self.ROLE_ADMIN
 
     def __str__(self):
         return f"{self.username} ({self.role})"

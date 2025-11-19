@@ -434,21 +434,21 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta" id="appointments">
-        <div class="cta-content fade-in">
-            <h2>Start Your Health Journey Today</h2>
-            <p>Join thousands of satisfied patients who trust MediSched for their healthcare needs. 
-               Book your first appointment now!</p>
-            <div class="cta-buttons">
-                <button class="btn btn-primary btn-large" onclick="openModal('signup')">
-                    <i class="fas fa-user-plus"></i> Sign Up Now
-                </button>
-                <button class="btn btn-secondary btn-large" onclick="openModal('signup')">
-                    <i class="fas fa-calendar-check"></i> Book Appointment
-                </button>
-            </div>
+<section class="cta" id="appointments">
+    <div class="cta-content fade-in text-center">
+        <h2>Start Your Health Journey Today</h2>
+        <p>Join thousands of satisfied patients who trust MediSched for their healthcare needs. 
+           Book your first appointment now!</p>
+        <div class="cta-buttons mt-3">
+            <a href="{% url 'users:signup' %}" class="btn btn-primary btn-lg me-2">
+                <i class="fas fa-user-plus"></i> Sign Up Now
+            </a>
+            <a href="{% url 'users:signin' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-calendar-check"></i> Book Appointment
+            </a>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- Footer -->
     <footer id="contact">
@@ -568,11 +568,7 @@
         </div>
     </div>
 
-<script>
-  const signupUrl = "{% url 'users:signup_ajax' %}";
-  const signinUrl = "{% url 'users:signin_ajax' %}";
-  const logoutUrl = "{% url 'users:logout_ajax' %}";
-</script>
+
 <script src="{% static 'home/js/main.js' %}"></script>
 
 
