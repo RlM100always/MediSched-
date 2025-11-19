@@ -55,7 +55,7 @@ class DoctorSpecializationSymptom(models.Model):
         unique_together = ('doctor', 'symptom')  # Prevent duplicates
 
     def __str__(self):
-        return f"{self.doctor.user.first_name} - {self.symptom.symptom_name}"
+        return f"{self.doctor.user.username} - {self.symptom.symptom_name}"
 
 
 class DoctorAppointmentFee(models.Model):

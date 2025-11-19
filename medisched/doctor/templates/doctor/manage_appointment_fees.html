@@ -9,26 +9,32 @@
 
     {% if messages %}
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         {% endfor %}
     {% endif %}
 
-    <div class="card shadow-sm border-0">
+    <div class="card shadow-sm">
         <div class="card-body">
             <form method="POST">
                 {% csrf_token %}
-                {% for key, label in categories %}
+
+                {% for item in fees_list %}
                     <div class="mb-3 row align-items-center">
-                        <label class="col-md-4 col-form-label fw-semibold">{{ label }}</label>
+                        <label class="col-md-4 col-form-label fw-semibold">
+                            {{ item.label }}
+                        </label>
+
                         <div class="col-md-4">
-                            <input type="number" step="1" min="0"
-                                   name="price_{{ key }}"
+                            <input type="number"
+                                   step="1"
+                                   min="0"
+                                   name="price_{{ item.key }}"
                                    class="form-control"
                                    placeholder="Enter fee"
-                                   value="{{ fees.key.price|default:'' }}">
+                                   value="{{ item.fee }}">
                         </div>
                     </div>
                 {% endfor %}

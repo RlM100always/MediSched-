@@ -23,7 +23,7 @@ urlpatterns = [
     path('experience/', views.doctor_experience_manage, name='experience_manage'),
     path('experience/edit/<int:exp_id>/', views.doctor_experience_manage, name='experience_edit'),
     path('experience/delete/<int:exp_id>/', views.doctor_experience_delete, name='experience_delete'),
-    path('appointment-fees/', views.manage_appointment_fees, name='manage_appointment_fees'),
+    path('manage-fees/', views.manage_appointment_fees, name='manage_appointment_fees'),
 
 
 ]

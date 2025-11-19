@@ -258,31 +258,39 @@ def doctor_experience_delete(request, exp_id):
 
 
 
+
+
 @login_required
 def manage_appointment_fees(request):
     doctor = get_object_or_404(Doctor, user=request.user)
-    categories = [choice[0] for choice in DoctorAppointmentFee.APPOINTMENT_CATEGORIES]
-    fees = {fee.category: fee for fee in doctor.appointment_fees.all()}
+    categories = DoctorAppointmentFee.APPOINTMENT_CATEGORIES
+
+    # Build a list of fees for the template
+    fees_list = []
+    for key, label in categories:
+        fee = doctor.appointment_fees.filter(category=key).first()
+        fees_list.append({
+            'key': key,
+            'label': label,
+            'fee': fee.price if fee else ''
+        })
 
     if request.method == 'POST':
-        for category in categories:
-            price = request.POST.get(f'price_{category}')
+        for key, label in categories:
+            price = request.POST.get(f'price_{key}')
             if price:
-                # Update or create fee
                 DoctorAppointmentFee.objects.update_or_create(
                     doctor=doctor,
-                    category=category,
+                    category=key,
                     defaults={'price': price}
                 )
             else:
-                # Delete if empty
-                DoctorAppointmentFee.objects.filter(doctor=doctor, category=category).delete()
-
+                DoctorAppointmentFee.objects.filter(doctor=doctor, category=key).delete()
         messages.success(request, "Appointment fees updated successfully!")
         return redirect('doctor:manage_appointment_fees')
 
     context = {
-        'categories': DoctorAppointmentFee.APPOINTMENT_CATEGORIES,
-        'fees': fees,
+        'fees_list': fees_list
     }
     return render(request, 'doctor/manage_appointment_fees.html', context)
+
