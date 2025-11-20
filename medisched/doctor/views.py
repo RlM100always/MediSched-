@@ -6,10 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import DoctorExperience, Doctor,DoctorAppointmentFee
 from django.contrib.auth import logout
-from django.views.decorators.cache import never_cache,cache_control
-
-
-
+from django.views.decorators.cache import cache_control
 from adminapp.models import Division, District, Upazila, Department, Symptom
 from .models import Doctor,DoctorSpecializationDepartment,DoctorSpecializationSymptom,DoctorExperience
 

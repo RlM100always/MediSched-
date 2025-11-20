@@ -286,6 +286,60 @@
         </div>
     </section>
 
+
+
+<!-- Featured Departments and Symptomps -->
+<!-- Departments Section -->
+<section class="departments-section" style="padding: 4rem 5%;">
+    <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; color: #111827; margin-bottom: 0.5rem;">Departments</h2>
+        <p style="font-size: 1.125rem; color: #6B7280;">Explore our main medical departments</p>
+    </div>
+
+    <div class="card-container-dept" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-top: 2rem;">
+        {% for dept in departments %}
+        <div class="card-dept" style="border-radius: 16px; overflow: hidden; padding: 16px; text-align: center; display: flex; flex-direction: column; align-items: center; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 6px 18px rgba(0,0,0,0.08); cursor: pointer; background: #fff;">
+            {% if dept.department_image %}
+            <img src="{{ dept.department_image.url }}" alt="{{ dept.department_name }}" style="width: 180px; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 14px; transition: transform 0.3s ease;">
+            {% endif %}
+            <h3 style="font-size: 18px; color: #111827; font-weight: 700; margin-bottom: 6px;">{{ dept.department_name }}</h3>
+            <span style="font-size: 14px; color: #2563EB; font-weight: 600;">Department</span>
+        </div>
+        {% empty %}
+        <p>No departments available.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Symptoms Section -->
+<section class="symptoms-section" style="padding: 4rem 5%;">
+    <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; color: #111827; margin-bottom: 0.5rem;">Symptoms</h2>
+        <p style="font-size: 1.125rem; color: #6B7280;">Check out common symptoms for various conditions</p>
+    </div>
+
+    <div class="card-container-symp" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 24px; justify-items: center; margin-top: 2rem;">
+        {% for symp in symptoms %}
+        <div>
+            {% if symp.symptom_image %}
+            <img src="{{ symp.symptom_image.url }}" alt="{{ symp.symptom_name }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; margin-bottom: 8px; border: 2px solid #fff; transition: transform 0.3s ease;">
+            {% endif %}
+            <h3 style="font-size: 14px; font-weight: 700; margin: 0;">{{ symp.symptom_name }}</h3>
+        </div>
+        {% empty %}
+        <p>No symptoms available.</p>
+        {% endfor %}
+    </div>
+</section>
+
+
+
+
+
+
+
+
+
     <!-- Testimonials Section -->
     <section class="testimonials">
         <div class="section-header fade-in">
