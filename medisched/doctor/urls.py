@@ -7,6 +7,8 @@ urlpatterns = [
     path('dashboard/', views.doctor_dashboard, name='doctor_dashboard'),
     path('ajax/load-districts/', views.ajax_load_districts, name='ajax_load_districts'),
     path('ajax/load-upazilas/', views.ajax_load_upazilas, name='ajax_load_upazilas'), 
+    path('doctor-logout/', views.doctor_logout_view, name='doctor-logout'),
+
 
 
     # path('appointments/', views.doctor_appointments, name='doctor_appointments'),

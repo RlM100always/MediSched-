@@ -5,6 +5,10 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import DoctorExperience, Doctor,DoctorAppointmentFee
+from django.contrib.auth import logout
+from django.views.decorators.cache import never_cache,cache_control
+
+
 
 from adminapp.models import Division, District, Upazila, Department, Symptom
 from .models import Doctor,DoctorSpecializationDepartment,DoctorSpecializationSymptom,DoctorExperience
@@ -13,6 +17,7 @@ from .models import Doctor,DoctorSpecializationDepartment,DoctorSpecializationSy
 
 
 @login_required
+@cache_control(no_cache=True, no_store=True, must_revalidate=True, max_age=0)
 def doctor_dashboard(request):
     if not hasattr(request.user, 'doctor_profile'):
         return redirect('/')  # Unauthorized access
@@ -294,3 +299,8 @@ def manage_appointment_fees(request):
     }
     return render(request, 'doctor/manage_appointment_fees.html', context)
 
+@login_required
+@cache_control(no_cache=True, no_store=True, must_revalidate=True, max_age=0)
+def doctor_logout_view(request):
+    logout(request)
+    return render(request, "users/logout_replace.html")

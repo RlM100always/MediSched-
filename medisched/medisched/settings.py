@@ -142,3 +142,9 @@ import os
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+
+# settings.py
+
+LOGIN_URL = 'users:signin'   # আপনার login view এর URL name
+LOGIN_REDIRECT_URL = 'users:doctor_dashboard'  # login successful redirect
+LOGOUT_REDIRECT_URL = 'users:signin'  # logout redirect
