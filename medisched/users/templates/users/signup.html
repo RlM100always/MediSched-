@@ -1,275 +1,578 @@
-{% extends 'users/base.html' %}
+{% extends 'base.html' %}
 {% block title %}Sign Up - MediSched{% endblock %}
-{% block content %}
+
+{% block extra_css %}
 <style>
-body {
-    background: linear-gradient(135deg, #f8f8f9 0%, #fcfbfd 100%);
-    min-height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.signup-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    padding: 40px 0;
-}
-
-.signup-card {
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    overflow: hidden;
-}
-
-.left-panel {
-    background: linear-gradient(135deg,  #183afd  0%,#83c6f9 100%);
-    padding: 60px 40px;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    height: 100%;
-    border-radius: 0;
-}
-
-.left-panel h2 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-    position: relative;
-    z-index: 1;
-}
-
-.feature-item {
-    display: flex;
-    align-items: center;
-    margin: 20px 0;
-    position: relative;
-    z-index: 1;
-}
-
-.feature-icon {
-    width: 50px;
-    height: 50px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    font-size: 24px;
-    backdrop-filter: blur(10px);
-}
-
-.feature-text h5 {
-    margin: 0;
-    font-weight: 600;
-}
-
-.feature-text p {
-    margin: 0;
-    opacity: 0.9;
-    font-size: 0.9rem;
-}
-
-.right-panel {
-    padding: 60px 50px;
-}
-
-.form-header {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.form-header h3 {
-    color: #2d3748;
-    font-weight: 700;
-    font-size: 2rem;
-    margin-bottom: 10px;
-}
-
-.form-header p {
-    color: #718096;
-    font-size: 1rem;
-}
-
-.form-control {
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 12px 15px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.form-control:focus {
-    border-color: #4facfe;
-    box-shadow: 0 0 0 3px rgba(79,172,254,0.1);
-}
-
-.btn-signup {
-    background: linear-gradient(135deg, #83c6f9 0%, #183afd 100%);
-    border: none;
-    border-radius: 10px;
-    padding: 15px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: white;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(102,126,234,0.4);
-}
-
-.btn-signup:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(2, 17, 234, 0.6);
-}
-
-.alert {
-    border-radius: 10px;
-    border: none;
-    padding: 15px 20px;
-}
-
-/* Sign Up Link */
-.signup-link {
-    text-align: center;
-    color: #718096;
-    font-size: 14px;
-}
-
-.signup-link a {
-    color: #11998e;
-    text-decoration: none;
-    font-weight: 700;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.signup-link a::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: #11998e;
-    transition: width 0.3s ease;
-}
-
-.signup-link a:hover::after {
-    width: 100%;
-}
-
-.signup-link a:hover {
-    color: #03f961;
-}
-
-.health-icons {
-    position: absolute;
-    opacity: 0.1;
-    font-size: 100px;
-}
-
-.icon-1 { top: 10%; left: 10%; animation: float 6s ease-in-out infinite; }
-.icon-2 { top: 60%; right: 15%; animation: float 8s ease-in-out infinite; }
-.icon-3 { bottom: 15%; left: 20%; animation: float 7s ease-in-out infinite; }
-
-@keyframes float {
-    0%,100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-}
-
-@media (max-width: 768px) {
-    .left-panel { display: none; }
-    .right-panel { padding: 40px 30px; }
-}
+    :root {
+        --primary-blue: #2D9CDB;
+        --primary-dark: #1a7db8;
+        --primary-light: #5eb3e4;
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        padding-top: 80px;
+    }
+    
+    .auth-wrapper {
+        min-height: calc(100vh - 80px);
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+    }
+    
+    .auth-container {
+        max-width: 1100px;
+        width: 100%;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(45, 156, 219, 0.15);
+        overflow: hidden;
+        animation: slideIn 0.6s ease-out;
+        display: grid;
+        grid-template-columns: 45% 55%;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Left Panel */
+    .info-panel {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
+        padding: 60px 45px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .info-panel::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 25s linear infinite;
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .info-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .medical-icon {
+        font-size: 80px;
+        margin-bottom: 30px;
+        animation: float 3s ease-in-out infinite;
+        display: inline-block;
+        filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+    }
+    
+    .info-panel h2 {
+        font-size: 36px;
+        font-weight: 800;
+        margin-bottom: 15px;
+        line-height: 1.2;
+    }
+    
+    .info-panel .subtitle {
+        font-size: 17px;
+        opacity: 0.95;
+        margin-bottom: 40px;
+        line-height: 1.6;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+        margin: 30px 0;
+    }
+    
+    .stat-box {
+        background: rgba(255,255,255,0.15);
+        padding: 25px 18px;
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-box:hover {
+        transform: translateY(-5px);
+        background: rgba(255,255,255,0.25);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .stat-number {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        opacity: 0.95;
+        font-weight: 500;
+    }
+    
+    .trust-badges {
+        margin-top: 30px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .trust-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 10px 16px;
+        border-radius: 25px;
+        font-size: 13px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .trust-badge:hover {
+        background: rgba(255,255,255,0.35);
+        transform: scale(1.05);
+    }
+    
+    /* Right Panel - Form */
+    .form-panel {
+        padding: 60px 50px;
+        background: #ffffff;
+    }
+    
+    .form-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .form-header h3 {
+        color: #1a202c;
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+    
+    .form-header p {
+        color: #718096;
+        font-size: 16px;
+    }
+    
+    /* Alert Messages */
+    .messages-container {
+        margin-bottom: 28px;
+    }
+    
+    .alert {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        border-left: 4px solid;
+        animation: slideDown 0.4s ease-out;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .alert-danger {
+        background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+        color: #c53030;
+        border-color: #fc8181;
+    }
+    
+    .alert-danger::before {
+        content: '⚠️';
+        font-size: 20px;
+    }
+    
+    .alert-success {
+        background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+        color: #2f855a;
+        border-color: #68d391;
+    }
+    
+    .alert-success::before {
+        content: '✓';
+        font-size: 20px;
+        font-weight: bold;
+    }
+    
+    .alert-info {
+        background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
+        color: #1a7db8;
+        border-color: var(--primary-blue);
+    }
+    
+    .alert-info::before {
+        content: 'ℹ️';
+        font-size: 20px;
+    }
+    
+    .alert-warning {
+        background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+        color: #c05621;
+        border-color: #f6ad55;
+    }
+    
+    .alert-warning::before {
+        content: '⚡';
+        font-size: 20px;
+    }
+    
+    .btn-close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: none;
+        border: none;
+        font-size: 22px;
+        cursor: pointer;
+        color: inherit;
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+        line-height: 1;
+        padding: 0;
+        width: 22px;
+        height: 22px;
+    }
+    
+    .btn-close:hover {
+        opacity: 1;
+    }
+    
+    /* Form Styling */
+    form p {
+        margin-bottom: 24px !important;
+    }
+    
+    form p label {
+        display: block;
+        color: #2d3748;
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 14px;
+        letter-spacing: 0.3px;
+    }
+    
+    form p input[type="text"],
+    form p input[type="password"],
+    form p input[type="email"],
+    form p select {
+        width: 100% !important;
+        padding: 15px 18px !important;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        font-size: 15px !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        background: #f7fafc !important;
+        color: #2d3748 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    form p input:focus,
+    form p select:focus {
+        outline: none !important;
+        border-color: var(--primary-blue) !important;
+        background: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(45, 156, 219, 0.1) !important;
+        transform: translateY(-2px);
+    }
+    
+    form p input::placeholder {
+        color: #a0aec0;
+    }
+    
+    form ul {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0 0 0;
+    }
+    
+    form ul li {
+        color: #e53e3e;
+        font-size: 13px;
+        margin-top: 6px;
+        padding: 8px 12px;
+        background: #fff5f5;
+        border-radius: 8px;
+        border-left: 3px solid #fc8181;
+    }
+    
+    .helptext {
+        display: block;
+        color: #718096;
+        font-size: 13px;
+        margin-top: 6px;
+        font-style: italic;
+    }
+    
+    /* Submit Button */
+    .btn-submit {
+        width: 100%;
+        padding: 17px 30px;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 25px rgba(45, 156, 219, 0.35);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        position: relative;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+    
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s;
+    }
+    
+    .btn-submit:hover::before {
+        left: 100%;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(45, 156, 219, 0.5);
+    }
+    
+    .btn-submit:active {
+        transform: translateY(-1px);
+    }
+    
+    /* Divider */
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 35px 0 28px 0;
+        color: #cbd5e0;
+    }
+    
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .divider span {
+        padding: 0 18px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #a0aec0;
+    }
+    
+    /* Sign In Link */
+    .signin-link {
+        text-align: center;
+        color: #718096;
+        font-size: 15px;
+    }
+    
+    .signin-link a {
+        color: var(--primary-blue);
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .signin-link a::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--primary-blue);
+        transition: width 0.3s ease;
+    }
+    
+    .signin-link a:hover::after {
+        width: 100%;
+    }
+    
+    .signin-link a:hover {
+        color: var(--primary-dark);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .auth-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .info-panel {
+            padding: 50px 35px;
+        }
+        
+        .form-panel {
+            padding: 50px 35px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        body {
+            padding-top: 70px;
+        }
+        
+        .auth-wrapper {
+            padding: 30px 15px;
+        }
+        
+        .info-panel, .form-panel {
+            padding: 40px 28px;
+        }
+        
+        .form-header h3 {
+            font-size: 26px;
+        }
+        
+        .medical-icon {
+            font-size: 65px;
+        }
+        
+        .info-panel h2 {
+            font-size: 28px;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
+{% endblock %}
 
-<div class="signup-container">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="signup-card">
-                    <div class="row g-0">
-                        <!-- Left Panel -->
-                        <div class="col-md-5">
-                            <div class="left-panel">
-                                <div class="health-icons icon-1">🏥</div>
-                                <div class="health-icons icon-2">💊</div>
-                                <div class="health-icons icon-3">⚕️</div>
-                                
-                                <h2>Welcome to MediSched</h2>
-                                <p style="font-size: 1.1rem; margin-bottom: 40px;">
-                                    Your health journey starts here. Connect with qualified doctors anytime, anywhere.
-                                </p>
-                                
-                                <div class="feature-item">
-                                    <div class="feature-icon">🩺</div>
-                                    <div class="feature-text">
-                                        <h5>Expert Doctors</h5>
-                                        <p>Access certified healthcare professionals</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="feature-item">
-                                    <div class="feature-icon">📱</div>
-                                    <div class="feature-text">
-                                        <h5>Easy Appointments</h5>
-                                        <p>Book consultations in just a few clicks</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="feature-item">
-                                    <div class="feature-icon">🔒</div>
-                                    <div class="feature-text">
-                                        <h5>Secure & Private</h5>
-                                        <p>Your health data is always protected</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="feature-item">
-                                    <div class="feature-icon">⏰</div>
-                                    <div class="feature-text">
-                                        <h5>24/7 Support</h5>
-                                        <p>Healthcare support whenever you need it</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Right Panel -->
-                        <div class="col-md-7">
-                            <div class="right-panel">
-                                <div class="form-header">
-                                    <h3>Create Your Account</h3>
-                                    <p>Join thousands of patients getting better healthcare</p>
-                                </div>
-
-                                {% if messages %}
-                                    {% for message in messages %}
-                                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                            {{ message }}
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                        </div>
-                                    {% endfor %}
-                                {% endif %}
-
-                                <form method="POST">
-                                    {% csrf_token %}
-                                    {{ form.as_p }}
-                                    <button type="submit" class="btn btn-signup w-100 mt-3">Create Account</button>
-                                </form>
-
-                                <div class="signup-link mt-3">
-                                    Already have an account? <a href="{% url 'users:signin' %}">Sign In</a>
-                                </div>
-                            </div>
-                        </div>
-
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-container">
+        <!-- Left Info Panel -->
+        <div class="info-panel">
+            <div class="info-content">
+                <div class="medical-icon">🏥</div>
+                <h2>Join MediSched Today!</h2>
+                <p class="subtitle">Start your healthcare journey with trusted medical professionals at your fingertips</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-number">50K+</div>
+                        <div class="stat-label">Happy Patients</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Expert Doctors</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Availability</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">4.9★</div>
+                        <div class="stat-label">User Rating</div>
                     </div>
                 </div>
+                
+                <div class="trust-badges">
+                    <span class="trust-badge">🔒 SSL Secured</span>
+                    <span class="trust-badge">✓ HIPAA Compliant</span>
+                    <span class="trust-badge">🏆 Award Winning</span>
+                </div>
             </div>
+        </div>
+        
+        <!-- Right Form Panel -->
+        <div class="form-panel">
+            <div class="form-header">
+                <h3>Create Your Account</h3>
+                <p>Join thousands of patients getting better healthcare</p>
+            </div>
+            
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                            <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'">×</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                
+                <button type="submit" class="btn-submit">
+                    Create Account 🚀
+                </button>
+            </form>
+            
+            <div class="divider">
+                <span>Already a Member?</span>
+            </div>
+            
+            <p class="signin-link">
+                Have an account? <a href="{% url 'users:signin' %}">Sign In</a>
+            </p>
         </div>
     </div>
 </div>

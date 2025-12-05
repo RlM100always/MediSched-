@@ -42,8 +42,12 @@
         {% elif user_type == 'doctor' %}
             <a href="/users/doctor/dashboard/" class="btn btn-primary">Dashboard</a>
     {% else %}
-        <button class="btn btn-outline" onclick="openModal('signin')">Login</button>
-        <button class="btn btn-primary" onclick="openModal('signup')">Register</button>
+         <a href="{% url 'users:signup' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </a>
+                <a href="{% url 'users:signin' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
     {% endif %}
         </div>
 
