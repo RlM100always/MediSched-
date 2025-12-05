@@ -5,7 +5,6 @@ from django.db import models
 class CustomUser(AbstractUser):
     ROLE_PATIENT = 'patient'
     ROLE_DOCTOR = 'doctor'
-    ROLE_ADMIN = 'admin'     # application-level role (not superuser)
     ROLE_CHOICES = [
         (ROLE_PATIENT, 'Patient'),
         (ROLE_DOCTOR, 'Doctor'),

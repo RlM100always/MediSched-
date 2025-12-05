@@ -13,6 +13,224 @@
     <!-- Static CSS -->
     <link rel="stylesheet" href="{% static 'home/css/style.css' %}">
     
+    <style>
+        /* Profile Dropdown Styles */
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #2D9CDB 0%, #1a7db8 100%);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .profile-trigger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 156, 219, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .profile-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: white;
+            color: #2D9CDB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            color: white;
+        }
+
+        .profile-name {
+            font-weight: 700;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+
+        .profile-role {
+            font-size: 11px;
+            opacity: 0.9;
+            text-transform: capitalize;
+        }
+
+        .profile-arrow {
+            color: white;
+            font-size: 12px;
+            transition: transform 0.3s ease;
+            margin-left: 5px;
+        }
+
+        .profile-dropdown.active .profile-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 15px);
+            right: 0;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            min-width: 240px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .profile-dropdown.active .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            right: 25px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            transform: rotate(45deg);
+            box-shadow: -3px -3px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .dropdown-header {
+            padding: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .dropdown-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dropdown-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2D9CDB 0%, #1a7db8 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            border: 3px solid white;
+            box-shadow: 0 3px 10px rgba(45, 156, 219, 0.3);
+        }
+
+        .dropdown-user-details h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 3px;
+        }
+
+        .dropdown-user-details p {
+            font-size: 13px;
+            color: #718096;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            background: rgba(45, 156, 219, 0.1);
+            color: #2D9CDB;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .dropdown-items {
+            padding: 10px 0;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: #4a5568;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .dropdown-item:hover {
+            background: linear-gradient(90deg, rgba(45, 156, 219, 0.05) 0%, transparent 100%);
+            color: #2D9CDB;
+            padding-left: 25px;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        .dropdown-item:hover i {
+            opacity: 1;
+        }
+
+        .dropdown-divider {
+            height: 2px;
+            background: #f0f0f0;
+            margin: 10px 0;
+        }
+
+        .dropdown-item.logout {
+            color: #e53e3e;
+        }
+
+        .dropdown-item.logout:hover {
+            background: linear-gradient(90deg, rgba(229, 62, 62, 0.05) 0%, transparent 100%);
+            color: #c53030;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .profile-info {
+                display: none;
+            }
+
+            .profile-trigger {
+                padding: 8px;
+            }
+
+            .dropdown-menu {
+                min-width: 220px;
+            }
+        }
+    </style>
+    
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -33,22 +251,92 @@
             <li><a href="{% url 'home:index' %}#contact">Contact</a></li>
         </ul>
 
-      
-        
-
         <div class="nav-buttons">
-            {% if user_type == 'patient' %}
-            <a href="/users/patient/dashboard/" class="btn btn-primary">Dashboard</a>
-        {% elif user_type == 'doctor' %}
-            <a href="/users/doctor/dashboard/" class="btn btn-primary">Dashboard</a>
-    {% else %}
-         <a href="{% url 'users:signup' %}" class="btn btn-primary btn-lg">
+            {% if user.is_authenticated %}
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-trigger" onclick="toggleProfileDropdown()">
+                        <div class="profile-avatar">
+                            {{ user.first_name.0|default:user.username.0|upper }}
+                        </div>
+                        <div class="profile-info">
+                            <span class="profile-name">{{ user.first_name|default:user.username }}</span>
+                            <span class="profile-role">{{ user.role }}</span>
+                        </div>
+                        <i class="fas fa-chevron-down profile-arrow"></i>
+                    </div>
+                    
+                    <div class="dropdown-menu">
+                        <div class="dropdown-header">
+                            <div class="dropdown-user-info">
+                                <div class="dropdown-avatar">
+                                    {{ user.first_name.0|default:user.username.0|upper }}
+                                </div>
+                                <div class="dropdown-user-details">
+                                    <h4>{{ user.get_full_name|default:user.username }}</h4>
+                                    <p>
+                                        <i class="fas fa-envelope"></i>
+                                        {{ user.email }}
+                                    </p>
+                                    <span class="role-badge">{{ user.role }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="dropdown-items">
+                            {% if user.role == 'patient' %}
+                                <a href="/users/patient/dashboard/" class="dropdown-item">
+                                    <i class="fas fa-th-large"></i>
+                                    <span>Dashboard</span>
+                                </a>
+                                <a href="{% url 'appointment:list' %}" class="dropdown-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>My Appointments</span>
+                                </a>
+                                <a href="#" class="dropdown-item">
+                                    <i class="fas fa-file-medical"></i>
+                                    <span>Medical Records</span>
+                                </a>
+                            {% elif user.role == 'doctor' %}
+                                <a href="/users/doctor/dashboard/" class="dropdown-item">
+                                    <i class="fas fa-th-large"></i>
+                                    <span>Dashboard</span>
+                                </a>
+                                <a href="#" class="dropdown-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>My Schedule</span>
+                                </a>
+                                <a href="#" class="dropdown-item">
+                                    <i class="fas fa-users"></i>
+                                    <span>Patients</span>
+                                </a>
+                            {% endif %}
+                            
+                            <div class="dropdown-divider"></div>
+                            
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-user-cog"></i>
+                                <span>Profile Settings</span>
+                            </a>
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-bell"></i>
+                                <span>Notifications</span>
+                            </a>
+                            
+                            <div class="dropdown-divider"></div>
+                            
+
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{% url 'users:signup' %}" class="btn btn-primary btn-lg">
                     <i class="fas fa-user-plus"></i> Sign Up
                 </a>
                 <a href="{% url 'users:signin' %}" class="btn btn-secondary btn-lg">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </a>
-    {% endif %}
+            {% endif %}
         </div>
 
         <div class="hamburger" id="hamburger">
@@ -68,6 +356,33 @@
 
     <!-- JS File -->
     <script src="{% static 'home/js/main.js' %}"></script>
+    
+    <!-- Profile Dropdown Script -->
+    <script>
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Close dropdown on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const dropdown = document.getElementById('profileDropdown');
+                if (dropdown) {
+                    dropdown.classList.remove('active');
+                }
+            }
+        });
+    </script>
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>
