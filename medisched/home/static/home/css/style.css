@@ -288,15 +288,15 @@
         }
 
         .feature-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-20px);
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
-            border-color: var(--primary-blue);
+            border-color:  var(--primary-blue);;
         }
 
         .feature-icon {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, var(--primary-blue), var(--success-green));
+            background: var(--primary-blue);
             border-radius: 14px;
             display: flex;
             align-items: center;
@@ -585,7 +585,7 @@
         /* Stats Section */
         .stats {
             padding: 6rem 5%;
-            background: linear-gradient(135deg, var(--primary-blue), var(--success-green));
+            background: var(--primary-blue);
             color: white;
         }
 
