@@ -1,191 +1,474 @@
-<!--chat_home.html-->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Chats - MediSched</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
+{% extends 'base.html' %}
+
+{% block title %}My Chats - MediSched{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html {
+        height: 100%;
+    }
+
+    body {
+        background-color: #f5f7fb;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding-top: 70px;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    /* Navbar always on top with high z-index */
+    #navbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+    }
+
+   
+    /* Main content scrollable area */
+    #main-scroll-container {
+        height: calc(100vh - 70px);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .chat-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 120px);
+        min-height: 500px;
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        flex-shrink: 0;
+        border-radius: 15px 15px 0 0;
+    }
+
+    .chat-header h4 {
+        margin-bottom: 0;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .chat-header p {
+        margin: 5px 0 0 0;
+        font-size: 14px;
+    }
+
+    .chat-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .chat-header-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .chat-header .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        border-radius: 6px;
+    }
+
+    .content-row {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .sidebar {
+        flex: 0 0 35%;
+        border-right: 1px solid #e0e0e0;
+        background: #f8f9fa;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .sidebar-inner {
+        padding: 20px;
+    }
+
+    .sidebar h5 {
+        font-weight: 700;
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 15px;
+        margin-top: 0;
+    }
+
+    .chat-item {
+        padding: 15px;
+        border-bottom: 1px solid #e0e0e0;
+        cursor: pointer;
+        transition: background 0.3s;
+        text-decoration: none !important;
+        color: inherit !important;
+        display: block;
+        border-radius: 8px;
+        margin-bottom: 5px;
+    }
+
+    .chat-item:hover {
+        background: #e9ecef;
+        color: inherit;
+    }
+
+    .chat-item.active {
+        background: #e3f2fd;
+        border-left: 4px solid #667eea;
+        padding-left: 11px;
+    }
+
+    .chat-avatar {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: white;
+        font-weight: 700;
+        font-size: 20px;
+    }
+
+    .chat-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .chat-avatar i {
+        font-size: 24px;
+    }
+
+    .chat-info h6 {
+        margin: 0;
+        color: #333;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .chat-info p {
+        margin: 5px 0 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .chat-info p.small {
+        font-size: 12px;
+        color: #999;
+        margin-top: 2px;
+    }
+
+    .main-content-area {
+        flex: 1;
+        background: #f0f2f5;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .main-content {
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .chat-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: #f0f2f5;
+    }
+
+    .message {
+        margin-bottom: 15px;
+        max-width: 70%;
+        clear: both;
+    }
+
+    .message-sent {
+        float: right;
+        background: #667eea;
+        color: white;
+        border-radius: 15px 15px 5px 15px;
+        padding: 10px 15px;
+    }
+
+    .message-received {
+        float: left;
+        background: white;
+        color: #333;
+        border-radius: 15px 15px 15px 5px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        padding: 10px 15px;
+    }
+
+    .message-content {
+        word-wrap: break-word;
+    }
+
+    .message-time {
+        font-size: 0.8rem;
+        opacity: 0.7;
+        margin-top: 5px;
+    }
+
+    .chat-input {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #e0e0e0;
+        flex-shrink: 0;
+    }
+
+    .message-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .btn-send {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 10px 30px;
+    }
+
+    .btn-send:hover {
+        color: white;
+    }
+
+    .btn-action {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .prescription-card {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border-left: 4px solid #28a745;
+        padding: 10px 15px;
+        border-radius: 8px;
+    }
+
+    .test-report-card {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        border-left: 4px solid #17a2b8;
+        padding: 10px 15px;
+        border-radius: 8px;
+    }
+
+    .video-call-card {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-left: 4px solid #ffc107;
+        padding: 10px 15px;
+        border-radius: 8px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: #6c757d;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.3;
+    }
+
+    .empty-state h4 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+    }
+
+    .no-chats-container {
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .no-chats-container i {
+        font-size: 48px;
+        color: #ddd;
+        margin-bottom: 15px;
+    }
+
+    .no-chats-container h5 {
+        color: #666;
+        font-weight: 600;
+        margin-bottom: 10px;
+        margin-top: 0;
+    }
+
+    .no-chats-container p {
+        color: #999;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    /* Scrollbars */
+    .sidebar::-webkit-scrollbar,
+    .main-content::-webkit-scrollbar,
+    #main-scroll-container::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .sidebar::-webkit-scrollbar-track,
+    .main-content::-webkit-scrollbar-track,
+    #main-scroll-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb,
+    .main-content::-webkit-scrollbar-thumb,
+    #main-scroll-container::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover,
+    .main-content::-webkit-scrollbar-thumb:hover,
+    #main-scroll-container::-webkit-scrollbar-thumb:hover {
+        background: #999;
+    }
+
+    @media (max-width: 768px) {
         body {
-            background-color: #f5f7fb;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 60px;
         }
+
+        #main-scroll-container {
+            height: calc(100vh - 60px);
+        }
+
         .chat-container {
-            max-width: 1200px;
-            margin: 20px auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .sidebar {
-            border-right: 1px solid #e0e0e0;
-            background: #f8f9fa;
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-        }
-        .chat-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-        }
-        .chat-item {
-            padding: 15px;
-            border-bottom: 1px solid #e0e0e0;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .chat-item:hover {
-            background: #e9ecef;
-        }
-        .chat-item.active {
-            background: #e3f2fd;
-            border-left: 4px solid #667eea;
-        }
-        .chat-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            overflow: hidden;
-            background: #dee2e6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .chat-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .chat-info h6 {
-            margin: 0;
-            color: #333;
-        }
-        .chat-info p {
-            margin: 5px 0 0;
-            color: #666;
-            font-size: 0.9rem;
-        }
-        .unread-badge {
-            background: #28a745;
-            color: white;
+            height: calc(100vh - 80px);
+            margin: 10px;
             border-radius: 10px;
-            padding: 2px 8px;
-            font-size: 0.8rem;
         }
-        .main-content {
-            padding: 0;
-            display: flex;
+
+        .content-row {
             flex-direction: column;
-            height: calc(100vh - 100px);
         }
-        .chat-area {
+
+        .sidebar {
+            flex: 0 0 auto;
+            max-height: 250px;
+            border-right: none;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .main-content-area {
             flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: #f0f2f5;
+            min-height: 300px;
         }
+
+        .chat-header {
+            padding: 15px;
+        }
+
+        .chat-header h4 {
+            font-size: 16px;
+        }
+
+        .chat-header-top {
+            flex-direction: column;
+        }
+
+        .chat-header-buttons {
+            width: 100%;
+            gap: 5px;
+        }
+
+        .chat-header .btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
         .message {
-            margin-bottom: 15px;
-            max-width: 70%;
-            clear: both;
+            max-width: 90%;
         }
-        .message-sent {
-            float: right;
-            background: #667eea;
-            color: white;
-            border-radius: 15px 15px 5px 15px;
-        }
-        .message-received {
-            float: left;
-            background: white;
-            color: #333;
-            border-radius: 15px 15px 15px 5px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .message-content {
-            padding: 10px 15px;
-        }
-        .message-time {
-            font-size: 0.8rem;
-            opacity: 0.7;
-            margin-top: 5px;
-        }
-        .chat-input {
-            padding: 20px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-        }
-        .message-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .btn-send {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 10px 30px;
-        }
-        .btn-action {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .prescription-card {
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-            border-left: 4px solid #28a745;
-        }
-        .test-report-card {
-            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
-            border-left: 4px solid #17a2b8;
-        }
-        .video-call-card {
-            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-            border-left: 4px solid #ffc107;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-            color: #6c757d;
-        }
-    </style>
-</head>
-<body>
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="main-scroll-container">
     <div class="chat-container">
         <!-- Header -->
         <div class="chat-header">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="chat-header-top">
                 <div>
-                    <h4 class="mb-0"><i class="fas fa-comments"></i> MediSched Communication</h4>
-                    <p class="mb-0">Chat with your {% if request.user.is_doctor %}patients{% else %}doctors{% endif %}</p>
+                    <h4><i class="fas fa-comments"></i> MediSched Communication</h4>
+                    <p>Chat with your {% if user.role == 'doctor' %}patients{% else %}doctors{% endif %}</p>
                 </div>
-                <div>
+                <div class="chat-header-buttons">
                     <a href="{% url 'home:index' %}" class="btn btn-outline-light">
                         <i class="fas fa-home"></i> Home
                     </a>
-                    <a href="{% url 'appointment:list' %}" class="btn btn-light ms-2">
+                    <a href="{% url 'appointment:list' %}" class="btn btn-light">
                         <i class="fas fa-calendar"></i> Appointments
                     </a>
                 </div>
             </div>
         </div>
 
-        <div class="row g-0">
+        <div class="content-row">
             <!-- Sidebar - Chat List -->
-            <div class="col-md-4 sidebar">
-                <div class="p-3">
-                    <h5 class="mb-3">Active Chats</h5>
+            <div class="sidebar">
+                <div class="sidebar-inner">
+                    <h5>Active Chats</h5>
                     {% if conversations %}
                         {% for conversation in conversations %}
                         <a href="{% url 'communication:chat_detail' conversation.appointment.id %}" 
@@ -193,39 +476,39 @@
                             <div class="chat-item {% if request.resolver_match.kwargs.appointment_id == conversation.appointment.id %}active{% endif %}">
                                 <div class="d-flex align-items-center">
                                     <div class="chat-avatar me-3">
-                                        {% if request.user.is_doctor %}
+                                        {% if user.role == 'doctor' %}
                                             <!-- Patient avatar -->
                                             {% if conversation.patient.profile_image %}
                                                 <img src="{{ conversation.patient.profile_image.url }}" alt="{{ conversation.patient.username }}">
                                             {% else %}
-                                                <i class="fas fa-user fa-lg"></i>
+                                                <i class="fas fa-user"></i>
                                             {% endif %}
                                         {% else %}
                                             <!-- Doctor avatar -->
                                             {% if conversation.doctor.profile_image %}
                                                 <img src="{{ conversation.doctor.profile_image.url }}" alt="Dr. {{ conversation.doctor.user.username }}">
                                             {% else %}
-                                                <i class="fas fa-user-md fa-lg"></i>
+                                                <i class="fas fa-user-md"></i>
                                             {% endif %}
                                         {% endif %}
                                     </div>
                                     <div class="chat-info flex-grow-1">
-                                        <div class="d-flex justify-content-between">
+                                        <div class="d-flex justify-content-between align-items-start">
                                             <h6>
-                                                {% if request.user.is_doctor %}
+                                                {% if user.role == 'doctor' %}
                                                     {{ conversation.patient.get_full_name|default:conversation.patient.username }}
                                                 {% else %}
                                                     Dr. {{ conversation.doctor.user.get_full_name|default:conversation.doctor.user.username }}
                                                 {% endif %}
                                             </h6>
-                                            <span class="text-muted small">
+                                            <span class="text-muted small ms-2">
                                                 {{ conversation.updated_at|date:"M d" }}
                                             </span>
                                         </div>
                                         <p class="mb-0">
                                             Appointment #{{ conversation.appointment.id }}
                                         </p>
-                                        <p class="mb-0 small text-muted">
+                                        <p class="mb-0 small">
                                             {{ conversation.appointment.get_consultation_type_display }}
                                         </p>
                                     </div>
@@ -234,11 +517,11 @@
                         </a>
                         {% endfor %}
                     {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-comment-slash fa-3x mb-3"></i>
+                        <div class="no-chats-container">
+                            <i class="fas fa-comment-slash"></i>
                             <h5>No Active Chats</h5>
                             <p>You don't have any active conversations yet.</p>
-                            <a href="{% url 'appointment:list' %}" class="btn btn-primary">
+                            <a href="{% url 'appointment:list' %}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-calendar-plus"></i> Book Appointment
                             </a>
                         </div>
@@ -247,33 +530,34 @@
             </div>
 
             <!-- Main Content Area -->
-            <div class="col-md-8">
+            <div class="main-content-area">
                 {% block chat_content %}
                 <div class="main-content">
-                    <div class="empty-state d-flex flex-column align-items-center justify-content-center h-100">
-                        <i class="fas fa-comment-dots fa-4x text-muted mb-4"></i>
+                    <div class="empty-state">
+                        <i class="fas fa-comment-dots"></i>
                         <h4>Select a conversation</h4>
-                        <p class="text-muted">Choose a chat from the sidebar to start messaging</p>
+                        <p>Choose a chat from the sidebar to start messaging</p>
                     </div>
                 </div>
                 {% endblock %}
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
     // Simple notification check
     function checkNotifications() {
         fetch('/communication/api/notifications/')
             .then(response => response.json())
             .then(data => {
                 if (data.notifications && data.notifications.length > 0) {
-                    // Show notification badge
                     console.log('New notifications:', data.notifications.length);
                 }
-            });
+            })
+            .catch(error => console.log('Error:', error));
     }
     
     // Check every 30 seconds
@@ -281,6 +565,8 @@
     
     // Initial check
     checkNotifications();
-    </script>
-</body>
-</html>
+</script>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}
