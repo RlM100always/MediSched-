@@ -170,7 +170,7 @@
                     <p class="mb-0">Chat with your {% if request.user.is_doctor %}patients{% else %}doctors{% endif %}</p>
                 </div>
                 <div>
-                    <a href="{% url 'home:home' %}" class="btn btn-outline-light">
+                    <a href="{% url 'home:index' %}" class="btn btn-outline-light">
                         <i class="fas fa-home"></i> Home
                     </a>
                     <a href="{% url 'appointment:list' %}" class="btn btn-light ms-2">
