@@ -1,0 +1,311 @@
+{% extends 'communication/chat_home.html' %}
+
+{% block chat_content %}
+<div class="main-content">
+    <!-- Chat Header -->
+    <div class="p-3 border-bottom bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="chat-avatar me-3">
+                    {% if request.user.is_doctor %}
+                        <!-- Patient avatar -->
+                        {% if appointment.patient.profile_image %}
+                            <img src="{{ appointment.patient.profile_image.url }}" alt="{{ appointment.patient.username }}">
+                        {% else %}
+                            <i class="fas fa-user fa-lg"></i>
+                        {% endif %}
+                    {% else %}
+                        <!-- Doctor avatar -->
+                        {% if appointment.doctor.profile_image %}
+                            <img src="{{ appointment.doctor.profile_image.url }}" alt="Dr. {{ appointment.doctor.user.username }}">
+                        {% else %}
+                            <i class="fas fa-user-md fa-lg"></i>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div>
+                    <h5 class="mb-0">
+                        {% if request.user.is_doctor %}
+                            {{ appointment.patient.get_full_name|default:appointment.patient.username }}
+                        {% else %}
+                            Dr. {{ appointment.doctor.user.get_full_name|default:appointment.doctor.user.username }}
+                        {% endif %}
+                    </h5>
+                    <p class="text-muted mb-0 small">
+                        Appointment #{{ appointment.id }} • 
+                        {{ appointment.get_consultation_type_display }}
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <!-- Action Buttons -->
+                {% if request.user.is_doctor %}
+                <a href="{% url 'communication:create_prescription' appointment.id %}" 
+                   class="btn btn-success btn-sm">
+                    <i class="fas fa-prescription"></i> Prescription
+                </a>
+                {% endif %}
+                
+                {% if not request.user.is_doctor %}
+                <a href="{% url 'communication:upload_test_report' appointment.id %}" 
+                   class="btn btn-info btn-sm">
+                    <i class="fas fa-file-medical"></i> Test Report
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'communication:schedule_video_call' appointment.id %}" 
+                   class="btn btn-warning btn-sm">
+                    <i class="fas fa-video"></i> Video Call
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area" id="chat-messages">
+        <!-- Messages will be loaded here -->
+        {% for message in messages %}
+        <div class="message {% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}">
+            <div class="message-content">
+                {% if message.message_type == 'text' %}
+                    {{ message.content }}
+                {% elif message.message_type == 'image' and message.image %}
+                    <img src="{{ message.image.url }}" alt="Image" style="max-width: 200px; border-radius: 10px;">
+                    {% if message.content %}<p class="mt-2">{{ message.content }}</p>{% endif %}
+                {% elif message.message_type == 'file' and message.file %}
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-pdf fa-2x text-danger me-2"></i>
+                        <div>
+                            <strong>Document</strong><br>
+                            <a href="{{ message.file.url }}" target="_blank" class="small">Download</a>
+                        </div>
+                    </div>
+                    {% if message.content %}<p class="mt-2">{{ message.content }}</p>{% endif %}
+                {% elif message.message_type == 'prescription' %}
+                    <div class="prescription-card p-3 rounded">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-prescription-bottle-alt fa-2x text-success me-3"></i>
+                            <div>
+                                <strong>New Prescription</strong><br>
+                                <small>{{ message.content }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% elif message.message_type == 'test_report' %}
+                    <div class="test-report-card p-3 rounded">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-file-medical-alt fa-2x text-info me-3"></i>
+                            <div>
+                                <strong>Test Report Uploaded</strong><br>
+                                <small>{{ message.content }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% elif message.message_type == 'video_call' %}
+                    <div class="video-call-card p-3 rounded">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-video fa-2x text-warning me-3"></i>
+                            <div>
+                                <strong>Video Call Scheduled</strong><br>
+                                <small>{{ message.content }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="message-time">
+                    {{ message.created_at|time:"H:i" }}
+                    {% if message.sender == request.user %}
+                        <i class="fas fa-check{% if message.is_read %}-double text-info{% endif %} ms-1"></i>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state d-flex flex-column align-items-center justify-content-center h-100">
+            <i class="fas fa-comment-medical fa-3x text-muted mb-3"></i>
+            <h5>No messages yet</h5>
+            <p class="text-muted">Start the conversation by sending a message</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Chat Input -->
+    <div class="chat-input">
+        <form method="POST" enctype="multipart/form-data" id="message-form">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                {{ form.content }}
+            </div>
+            
+            <div class="message-actions">
+                <div class="d-flex gap-2 flex-grow-1">
+                    <label class="btn-action" title="Attach Image">
+                        <i class="fas fa-image"></i>
+                        {{ form.image }}
+                    </label>
+                    <label class="btn-action" title="Attach File">
+                        <i class="fas fa-paperclip"></i>
+                        {{ form.file }}
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-send">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Medical Information Section (Collapsible) -->
+<div class="accordion m-3" id="medicalAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#medicalInfo">
+                <i class="fas fa-medkit me-2"></i> Medical Information
+            </button>
+        </h2>
+        <div id="medicalInfo" class="accordion-collapse collapse">
+            <div class="accordion-body">
+                <!-- Prescriptions -->
+                <div class="mb-4">
+                    <h6><i class="fas fa-prescription text-success me-2"></i> Prescriptions</h6>
+                    {% if prescriptions %}
+                        {% for prescription in prescriptions %}
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h6>Prescription #{{ prescription.id }}</h6>
+                                <p><strong>Diagnosis:</strong> {{ prescription.diagnosis }}</p>
+                                {% if prescription.advice %}<p><strong>Advice:</strong> {{ prescription.advice }}</p>{% endif %}
+                                {% if prescription.follow_up_date %}<p><strong>Follow-up:</strong> {{ prescription.follow_up_date }}</p>{% endif %}
+                                
+                                {% if prescription.medicines %}
+                                <div class="mt-3">
+                                    <strong>Medicines:</strong>
+                                    <ul class="mb-0">
+                                        {% for medicine in prescription.medicines %}
+                                        <li>{{ medicine.name }} - {{ medicine.dosage }} for {{ medicine.duration }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                                
+                                <small class="text-muted">Prescribed on {{ prescription.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No prescriptions yet.</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Test Reports -->
+                <div class="mb-4">
+                    <h6><i class="fas fa-file-medical text-info me-2"></i> Test Reports</h6>
+                    {% if test_reports %}
+                        {% for report in test_reports %}
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h6>{{ report.test_name }}</h6>
+                                <p><strong>Date:</strong> {{ report.test_date }}</p>
+                                {% if report.lab_name %}<p><strong>Lab:</strong> {{ report.lab_name }}</p>{% endif %}
+                                {% if report.findings %}<p><strong>Findings:</strong> {{ report.findings }}</p>{% endif %}
+                                {% if report.doctor_notes %}<p><strong>Doctor's Notes:</strong> {{ report.doctor_notes }}</p>{% endif %}
+                                
+                                <a href="{{ report.report_file.url }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-download"></i> Download Report
+                                </a>
+                                
+                                <small class="text-muted d-block mt-2">
+                                    Status: <span class="badge bg-{% if report.status == 'reviewed' %}success{% elif report.status == 'submitted' %}warning{% else %}secondary{% endif %}">
+                                        {{ report.get_status_display }}
+                                    </span>
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No test reports yet.</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Video Calls -->
+                <div>
+                    <h6><i class="fas fa-video text-warning me-2"></i> Scheduled Calls</h6>
+                    {% if video_calls %}
+                        {% for call in video_calls %}
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ call.get_call_type_display }}</h6>
+                                        <p class="mb-1">
+                                            <i class="fas fa-calendar"></i> 
+                                            {{ call.scheduled_time|date:"M d, Y H:i" }}
+                                        </p>
+                                        <span class="badge bg-{% if call.status == 'scheduled' %}primary{% elif call.status == 'completed' %}success{% elif call.status == 'ongoing' %}warning{% else %}secondary{% endif %}">
+                                            {{ call.get_status_display }}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        {% if call.status == 'scheduled' and call.scheduled_time > now %}
+                                        <a href="{% url 'communication:video_call_room' call.call_id %}" 
+                                           class="btn btn-sm btn-warning">
+                                            <i class="fas fa-video"></i> Join Call
+                                        </a>
+                                        {% elif call.status == 'ongoing' %}
+                                        <a href="{% url 'communication:video_call_room' call.call_id %}" 
+                                           class="btn btn-sm btn-success">
+                                            <i class="fas fa-play"></i> Join Now
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No scheduled calls.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-scroll to bottom of chat
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Auto-refresh messages every 5 seconds
+function refreshMessages() {
+    fetch(`/communication/api/messages/{{ appointment.id }}/`)
+        .then(response => response.json())
+        .then(data => {
+            // Update messages (simplified - in real app, use Vue/React)
+            console.log('Messages updated:', data.messages.length);
+        });
+}
+
+// Initial scroll
+window.onload = scrollToBottom;
+
+// Refresh every 5 seconds
+setInterval(refreshMessages, 5000);
+
+// Handle file input display
+document.querySelectorAll('input[type="file"]').forEach(input => {
+    input.addEventListener('change', function(e) {
+        const fileName = this.files[0]?.name;
+        if (fileName) {
+            // You can show file name somewhere
+            console.log('Selected file:', fileName);
+        }
+    });
+});
+</script>
+{% endblock %}

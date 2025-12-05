@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - MediSched</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 600;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
+        }
+        .payment-method {
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .payment-method:hover {
+            border-color: #667eea;
+            background-color: #f8f9fa;
+        }
+        .payment-method.selected {
+            border-color: #667eea;
+            background-color: #eef2ff;
+        }
+        .payment-icon {
+            font-size: 2rem;
+            color: #667eea;
+        }
+        .form-check-input {
+            width: 1.2em;
+            height: 1.2em;
+        }
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="fas fa-credit-card"></i> Payment Details</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                        <div class="mb-3">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <!-- Appointment Summary -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Appointment Summary</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            {% if appointment.doctor.profile_image %}
+                                                <img src="{{ appointment.doctor.profile_image.url }}" 
+                                                     class="rounded-circle me-3" width="60" height="60">
+                                            {% else %}
+                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" 
+                                                     style="width: 60px; height: 60px;">
+                                                    <i class="fas fa-user-md text-white"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">Dr. {{ appointment.doctor.user.get_full_name }}</h6>
+                                                <small class="text-muted">
+                                                    {{ appointment.consultation_type|title }} Consultation
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-2">
+                                            <small class="text-muted">Patient:</small>
+                                            <p class="mb-0 fw-bold">{{ appointment.patient_name }}</p>
+                                        </div>
+                                        <div class="mb-2">
+                                            <small class="text-muted">Phone:</small>
+                                            <p class="mb-0">{{ appointment.patient_phone }}</p>
+                                        </div>
+                                        <div class="mb-2">
+                                            <small class="text-muted">Appointment Type:</small>
+                                            <p class="mb-0">{{ appointment.get_appointment_type_display }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Payment Summary -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Payment Summary</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Consultation Fee:</span>
+                                            <span>${{ appointment.consultation_fee|floatformat:2 }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>VAT (5%):</span>
+                                            <span>${{ appointment.vat_amount|floatformat:2 }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Platform Fee:</span>
+                                            <span>${{ appointment.platform_fee|floatformat:2 }}</span>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between fw-bold fs-5">
+                                            <span>Net Payable:</span>
+                                            <span>${{ appointment.total_amount|floatformat:2 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Methods -->
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Payment Methods</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" id="payment-form">
+                                    {% csrf_token %}
+                                    
+                                    <div class="row">
+                                        <!-- bKash -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="payment-method" onclick="selectPayment('bkash')">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="payment_method" 
+                                                           id="bkash" value="bkash" checked>
+                                                    <label class="form-check-label w-100" for="bkash">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="me-3">
+                                                                <i class="fab fa-bootstrap payment-icon"></i>
+                                                            </div>
+                                                            <div>
+                                                                <strong>bKash</strong>
+                                                                <p class="text-muted mb-0 small">Pay from your bKash account</p>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Nagad -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="payment-method" onclick="selectPayment('nagad')">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="payment_method" 
+                                                           id="nagad" value="nagad">
+                                                    <label class="form-check-label w-100" for="nagad">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="me-3">
+                                                                <i class="fas fa-mobile-alt payment-icon"></i>
+                                                            </div>
+                                                            <div>
+                                                                <strong>Nagad</strong>
+                                                                <p class="text-muted mb-0 small">Pay from your Nagad account</p>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Card -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="payment-method" onclick="selectPayment('card')">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="payment_method" 
+                                                           id="card" value="card">
+                                                    <label class="form-check-label w-100" for="card">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="me-3">
+                                                                <i class="fas fa-credit-card payment-icon"></i>
+                                                            </div>
+                                                            <div>
+                                                                <strong>Cards</strong>
+                                                                <p class="text-muted mb-0 small">Visa, MasterCard, etc.</p>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Mobile Banking -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="payment-method" onclick="selectPayment('mobile_banking')">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="payment_method" 
+                                                           id="mobile_banking" value="mobile_banking">
+                                                    <label class="form-check-label w-100" for="mobile_banking">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="me-3">
+                                                                <i class="fas fa-university payment-icon"></i>
+                                                            </div>
+                                                            <div>
+                                                                <strong>Mobile Banking</strong>
+                                                                <p class="text-muted mb-0 small">Rocket, Upay, etc.</p>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="alert alert-warning">
+                                        <small>
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            For demo purposes, payment will be simulated. In production, you'll be redirected to the actual payment gateway.
+                                        </small>
+                                    </div>
+
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-success btn-lg">
+                                            <i class="fas fa-lock"></i> Pay Now ${{ appointment.total_amount|floatformat:2 }}
+                                        </button>
+                                        <a href="{% url 'appointment:book' appointment.doctor.id %}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-arrow-left"></i> Back to Appointment
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    function selectPayment(method) {
+        // Remove selected class from all
+        document.querySelectorAll('.payment-method').forEach(el => {
+            el.classList.remove('selected');
+        });
+        
+        // Add selected class to clicked
+        event.currentTarget.classList.add('selected');
+        
+        // Check the radio button
+        document.getElementById(method).checked = true;
+    }
+    
+    // Initialize: select first payment method
+    document.addEventListener('DOMContentLoaded', function() {
+        selectPayment('bkash');
+    });
+    </script>
+</body>
+</html>

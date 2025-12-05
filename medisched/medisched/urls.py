@@ -23,6 +23,10 @@ urlpatterns = [
     path('users/', include('users.urls', namespace='users')),  # ajax endpoints + dashboards
     path('users/doctor/', include('doctor.urls', namespace='doctor')),
     path('adminapp/', include('adminapp.urls')),
+    path('appointment/', include('appointment.urls', namespace='appointment')),  # ✅ namespace needed
+    path('communication/', include('communication.urls',namespace='communication')),
+
+
 
 
 ]

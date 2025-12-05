@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Call - MediSched</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .video-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .video-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 10px;
+            padding: 20px;
+        }
+        .video-box {
+            background: #2a2a2a;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .video-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        .user-name {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .controls {
+            padding: 20px;
+            background: #333;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+        .btn-mute {
+            background: #ff4757;
+            color: white;
+        }
+        .btn-video {
+            background: #2ed573;
+            color: white;
+        }
+        .btn-end {
+            background: #ff3838;
+            color: white;
+        }
+        .call-info {
+            padding: 10px;
+            background: #2a2a2a;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <div class="call-info">
+            <h3>{% if video_call.call_type == 'video' %}Video{% else %}Audio{% endif %} Call</h3>
+            <p>Appointment #{{ video_call.appointment.id }} • {{ video_call.scheduled_time|date:"M d, Y H:i" }}</p>
+        </div>
+        
+        <div class="video-grid">
+            <!-- Doctor Video -->
+            <div class="video-box">
+                <div class="video-placeholder" style="background: #3498db;">
+                    <i class="fas fa-user-md"></i>
+                    <p>Dr. {{ video_call.doctor.user.get_full_name }}</p>
+                </div>
+                <div class="user-name">Doctor</div>
+            </div>
+            
+            <!-- Patient Video -->
+            <div class="video-box">
+                <div class="video-placeholder" style="background: #e74c3c;">
+                    <i class="fas fa-user"></i>
+                    <p>{{ video_call.patient.get_full_name }}</p>
+                </div>
+                <div class="user-name">Patient</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn btn-mute" onclick="toggleMute()">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="control-btn btn-video" onclick="toggleVideo()">
+                <i class="fas fa-video"></i>
+            </button>
+            <button class="control-btn btn-end" onclick="endCall()">
+                <i class="fas fa-phone-slash"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+    let isMuted = false;
+    let isVideoOn = true;
+    
+    function toggleMute() {
+        isMuted = !isMuted;
+        const btn = document.querySelector('.btn-mute i');
+        const btnElement = document.querySelector('.btn-mute');
+        
+        if (isMuted) {
+            btn.className = 'fas fa-microphone-slash';
+            btnElement.style.background = '#ff6b81';
+            console.log('Microphone muted');
+        } else {
+            btn.className = 'fas fa-microphone';
+            btnElement.style.background = '#ff4757';
+            console.log('Microphone unmuted');
+        }
+    }
+    
+    function toggleVideo() {
+        isVideoOn = !isVideoOn;
+        const btn = document.querySelector('.btn-video i');
+        const btnElement = document.querySelector('.btn-video');
+        
+        if (isVideoOn) {
+            btn.className = 'fas fa-video';
+            btnElement.style.background = '#2ed573';
+            console.log('Video on');
+        } else {
+            btn.className = 'fas fa-video-slash';
+            btnElement.style.background = '#7bed9f';
+            console.log('Video off');
+        }
+    }
+    
+    function endCall() {
+        if (confirm('End the call?')) {
+            fetch(`/communication/video-call/{{ video_call.call_id }}/end/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = "{% url 'communication:chat_detail' video_call.appointment.id %}";
+                    }
+                });
+        }
+    }
+    
+    // Simulate call duration timer
+    let callDuration = 0;
+    setInterval(() => {
+        callDuration++;
+        const minutes = Math.floor(callDuration / 60);
+        const seconds = callDuration % 60;
+        document.querySelector('.call-info p').textContent = 
+            `Appointment #{{ video_call.appointment.id }} • ${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+    </script>
+</body>
+</html>

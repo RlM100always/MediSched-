@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Prescription - MediSched</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .prescription-container {
+            max-width: 800px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .prescription-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 25px;
+        }
+        .form-section {
+            padding: 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        .medicine-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #28a745;
+        }
+        .test-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #17a2b8;
+        }
+        .btn-add {
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+        .btn-add:hover {
+            background: #5a6268;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+        }
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
+        }
+        .patient-info {
+            background: #e9f7ef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="prescription-container">
+        <!-- Header -->
+        <div class="prescription-header text-center">
+            <h3><i class="fas fa-prescription-bottle-alt"></i> Create New Prescription</h3>
+            <p class="mb-0">Appointment #{{ appointment.id }} • Dr. {{ appointment.doctor.user.get_full_name }}</p>
+        </div>
+
+        <!-- Patient Information -->
+        <div class="form-section">
+            <div class="patient-info">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Patient Information</h6>
+                        <p class="mb-1"><strong>Name:</strong> {{ appointment.patient.get_full_name|default:appointment.patient.username }}</p>
+                        <p class="mb-1"><strong>Age:</strong> {% if appointment.patient_age %}{{ appointment.patient_age }} years{% else %}Not specified{% endif %}</p>
+                        <p class="mb-0"><strong>Gender:</strong> {{ appointment.patient_gender|default:"Not specified"|title }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Appointment Details</h6>
+                        <p class="mb-1"><strong>Consultation Type:</strong> {{ appointment.get_consultation_type_display }}</p>
+                        <p class="mb-1"><strong>Date:</strong> {{ appointment.created_at|date:"M d, Y" }}</p>
+                        <p class="mb-0"><strong>Symptoms:</strong> {{ appointment.symptoms|default:"Not specified"|truncatewords:20 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prescription Form -->
+        <form method="POST" id="prescription-form">
+            {% csrf_token %}
+            
+            {% if messages %}
+            <div class="form-section">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Diagnosis Section -->
+            <div class="form-section">
+                <h5 class="mb-3"><i class="fas fa-stethoscope text-success"></i> Diagnosis</h5>
+                <div class="mb-3">
+                    {{ form.diagnosis.label_tag }}
+                    {{ form.diagnosis }}
+                    {% if form.diagnosis.errors %}
+                    <div class="text-danger small">{{ form.diagnosis.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Medicines Section -->
+            <div class="form-section">
+                <h5 class="mb-3"><i class="fas fa-pills text-success"></i> Medicines</h5>
+                
+                <!-- Medicine Form (for adding manually) -->
+                <div id="medicines-container">
+                    <div class="medicine-item" id="medicine-template">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control medicine-name" placeholder="Medicine name" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control medicine-dosage" placeholder="Dosage (e.g., 1-0-1)" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control medicine-duration" placeholder="Duration (e.g., 7 days)" required>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-danger btn-sm w-100 remove-medicine">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <textarea class="form-control medicine-instructions" rows="2" placeholder="Instructions (optional)"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" class="btn btn-add mt-2" id="add-medicine">
+                    <i class="fas fa-plus"></i> Add Another Medicine
+                </button>
+                
+                <!-- Hidden field for medicines JSON -->
+                {{ form.medicines }}
+            </div>
+
+            <!-- Suggested Tests Section -->
+            <div class="form-section">
+                <h5 class="mb-3"><i class="fas fa-vial text-info"></i> Suggested Tests</h5>
+                
+                <div id="tests-container">
+                    <div class="test-item" id="test-template">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <input type="text" class="form-control test-name" placeholder="Test name (e.g., CBC, X-Ray)" required>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-danger btn-sm w-100 remove-test">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <textarea class="form-control test-instructions" rows="2" placeholder="Instructions for the test (optional)"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" class="btn btn-add mt-2" id="add-test">
+                    <i class="fas fa-plus"></i> Add Another Test
+                </button>
+                
+                <!-- Hidden field for tests JSON -->
+                {{ form.suggested_tests }}
+            </div>
+
+            <!-- Medical Advice -->
+            <div class="form-section">
+                <h5 class="mb-3"><i class="fas fa-comment-medical text-warning"></i> Medical Advice</h5>
+                <div class="mb-3">
+                    {{ form.advice.label_tag }}
+                    {{ form.advice }}
+                </div>
+            </div>
+
+            <!-- Follow-up -->
+            <div class="form-section">
+                <h5 class="mb-3"><i class="fas fa-calendar-check text-primary"></i> Follow-up</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.follow_up_date.label_tag }}
+                            {{ form.follow_up_date }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="form-section text-center">
+                <button type="submit" class="btn btn-submit me-3">
+                    <i class="fas fa-save"></i> Save Prescription
+                </button>
+                <a href="{% url 'communication:chat_detail' appointment.id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let medicineCount = 0;
+        let testCount = 0;
+        
+        // Add Medicine
+        document.getElementById('add-medicine').addEventListener('click', function() {
+            const template = document.getElementById('medicine-template');
+            const newMedicine = template.cloneNode(true);
+            newMedicine.id = 'medicine-' + medicineCount;
+            newMedicine.style.display = 'block';
+            
+            // Make remove button work
+            newMedicine.querySelector('.remove-medicine').addEventListener('click', function() {
+                newMedicine.remove();
+                updateMedicinesJSON();
+            });
+            
+            // Add input listeners
+            newMedicine.querySelectorAll('input, textarea').forEach(input => {
+                input.addEventListener('input', updateMedicinesJSON);
+            });
+            
+            document.getElementById('medicines-container').appendChild(newMedicine);
+            medicineCount++;
+        });
+        
+        // Add Test
+        document.getElementById('add-test').addEventListener('click', function() {
+            const template = document.getElementById('test-template');
+            const newTest = template.cloneNode(true);
+            newTest.id = 'test-' + testCount;
+            newTest.style.display = 'block';
+            
+            // Make remove button work
+            newTest.querySelector('.remove-test').addEventListener('click', function() {
+                newTest.remove();
+                updateTestsJSON();
+            });
+            
+            // Add input listeners
+            newTest.querySelectorAll('input, textarea').forEach(input => {
+                input.addEventListener('input', updateTestsJSON);
+            });
+            
+            document.getElementById('tests-container').appendChild(newTest);
+            testCount++;
+        });
+        
+        // Update Medicines JSON
+        function updateMedicinesJSON() {
+            const medicines = [];
+            document.querySelectorAll('.medicine-item[id^="medicine-"]').forEach(item => {
+                const name = item.querySelector('.medicine-name').value;
+                const dosage = item.querySelector('.medicine-dosage').value;
+                const duration = item.querySelector('.medicine-duration').value;
+                const instructions = item.querySelector('.medicine-instructions').value;
+                
+                if (name && dosage && duration) {
+                    medicines.push({
+                        name: name,
+                        dosage: dosage,
+                        duration: duration,
+                        instructions: instructions
+                    });
+                }
+            });
+            
+            document.getElementById('id_medicines').value = JSON.stringify(medicines);
+        }
+        
+        // Update Tests JSON
+        function updateTestsJSON() {
+            const tests = [];
+            document.querySelectorAll('.test-item[id^="test-"]').forEach(item => {
+                const name = item.querySelector('.test-name').value;
+                const instructions = item.querySelector('.test-instructions').value;
+                
+                if (name) {
+                    tests.push({
+                        test_name: name,
+                        instructions: instructions
+                    });
+                }
+            });
+            
+            document.getElementById('id_suggested_tests').value = JSON.stringify(tests);
+        }
+        
+        // Form submission
+        document.getElementById('prescription-form').addEventListener('submit', function(e) {
+            updateMedicinesJSON();
+            updateTestsJSON();
+            
+            // Basic validation
+            const diagnosis = document.getElementById('id_diagnosis').value;
+            if (!diagnosis.trim()) {
+                e.preventDefault();
+                alert('Please enter a diagnosis.');
+                return;
+            }
+            
+            // Check if at least one medicine is added
+            const medicines = JSON.parse(document.getElementById('id_medicines').value || '[]');
+            if (medicines.length === 0) {
+                if (!confirm('No medicines added. Continue without medicines?')) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+        });
+        
+        // Initialize with one medicine and one test
+        document.getElementById('add-medicine').click();
+        document.getElementById('add-test').click();
+    });
+    </script>
+</body>
+</html>
