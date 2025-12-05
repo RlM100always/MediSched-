@@ -857,7 +857,7 @@
             <i class="fas fa-arrow-left"></i>
             Back to Departments
         </a>
-        <a href="#" class="btn-action btn-book">
+        <a href="{% url 'appointment:book' doctor.id %}" class="btn-action btn-book">
             <i class="fas fa-calendar-check"></i>
             Book Appointment Now
         </a>
