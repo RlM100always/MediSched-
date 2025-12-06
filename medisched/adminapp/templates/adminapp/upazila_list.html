@@ -3,75 +3,1181 @@
 
 {% block title %}Manage Upazilas | MediSched Admin{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2D9CDB;
+        --primary-dark: #1e7cb3;
+        --primary-light: #e1f1fa;
+        --primary-gradient: linear-gradient(135deg, #2D9CDB 0%, #1e7cb3 100%);
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --light-bg: #f8fafc;
+        --card-shadow: 0 10px 30px rgba(45, 156, 219, 0.1);
+        --hover-shadow: 0 15px 40px rgba(45, 156, 219, 0.2);
+    }
+    
+    .page-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 20px;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 10px 30px rgba(45, 156, 219, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+        animation: shimmer 3s infinite linear;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .header-title {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        font-weight: 800;
+        font-size: 2rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .header-title i {
+        font-size: 2.5rem;
+        margin-right: 1.2rem;
+        background: rgba(255, 255, 255, 0.25);
+        padding: 1.2rem;
+        border-radius: 18px;
+        backdrop-filter: blur(10px);
+        animation: pulse 2s infinite ease-in-out;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    .stats-container {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: 1rem 1.8rem;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .stat-icon {
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .stat-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .stat-value {
+        font-weight: 800;
+        font-size: 1.4rem;
+        line-height: 1;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+    
+    .add-upazila-card {
+        border: none;
+        border-radius: 20px;
+        background: white;
+        box-shadow: var(--card-shadow);
+        padding: 2.5rem;
+        margin-bottom: 2.5rem;
+        transition: all 0.3s ease;
+        border-top: 5px solid var(--success-color);
+    }
+    
+    .add-upazila-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .form-section-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: #2d3748;
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid var(--primary-light);
+    }
+    
+    .form-section-title i {
+        color: var(--success-color);
+        background: rgba(39, 174, 96, 0.1);
+        padding: 0.8rem;
+        border-radius: 12px;
+        font-size: 1.2rem;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 1.5rem;
+        align-items: end;
+    }
+    
+    @media (max-width: 992px) {
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 1.2rem;
+        }
+    }
+    
+    .form-group {
+        margin-bottom: 0;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.8rem;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-label i {
+        color: var(--primary-color);
+        font-size: 1rem;
+    }
+    
+    .form-control-custom {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+        font-weight: 500;
+    }
+    
+    .form-control-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .form-control-custom:hover {
+        border-color: #cbd5e0;
+    }
+    
+    .select-wrapper {
+        position: relative;
+    }
+    
+    .select-wrapper::after {
+        content: "▾";
+        font-size: 1.2rem;
+        color: var(--primary-color);
+        position: absolute;
+        right: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+    
+    .form-select-custom {
+        appearance: none;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-weight: 500;
+    }
+    
+    .form-select-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.15);
+        outline: none;
+    }
+    
+    .btn-add {
+        background: var(--success-color);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 12px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        height: 50px;
+        white-space: nowrap;
+    }
+    
+    .btn-add:hover {
+        background: #219653;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
+    }
+    
+    .btn-add:active {
+        transform: translateY(-1px);
+    }
+    
+    .btn-add-loading {
+        position: relative;
+        color: transparent !important;
+    }
+    
+    .btn-add-loading::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 50%;
+        left: 50%;
+        margin: -10px 0 0 -10px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .upazilas-table-card {
+        border: none;
+        border-radius: 20px;
+        background: white;
+        box-shadow: var(--card-shadow);
+        padding: 0;
+        overflow: hidden;
+    }
+    
+    .table-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.8rem 2rem;
+        border-bottom: none;
+    }
+    
+    .table-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.4rem;
+    }
+    
+    .table-title i {
+        font-size: 1.6rem;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .custom-table {
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+    }
+    
+    .custom-table thead {
+        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    }
+    
+    .custom-table th {
+        border: none;
+        padding: 1.2rem 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+    
+    .custom-table td {
+        border: none;
+        padding: 1.2rem 1.5rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #edf2f7;
+    }
+    
+    .custom-table tbody tr {
+        transition: all 0.3s ease;
+    }
+    
+    .custom-table tbody tr:hover {
+        background: linear-gradient(135deg, rgba(45, 156, 219, 0.05) 0%, rgba(30, 124, 179, 0.05) 100%);
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .id-badge {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 60px;
+    }
+    
+    .location-hierarchy {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .upazila-name {
+        font-weight: 700;
+        color: #2d3748;
+        font-size: 1.1rem;
+        transition: color 0.3s ease;
+    }
+    
+    .custom-table tbody tr:hover .upazila-name {
+        color: var(--primary-color);
+    }
+    
+    .location-separator {
+        color: #cbd5e0;
+        font-weight: bold;
+        margin: 0 0.3rem;
+    }
+    
+    .location-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.8rem;
+        background: #f1f5f9;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+    
+    .location-item.district {
+        background: #e1f1fa;
+        color: var(--primary-dark);
+        font-weight: 600;
+    }
+    
+    .location-item.division {
+        background: #f0f9ff;
+        color: var(--primary-color);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-edit {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+    
+    .btn-edit:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(45, 156, 219, 0.3);
+        color: white;
+    }
+    
+    .btn-delete {
+        background: var(--danger-color);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+    
+    .btn-delete:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        color: white;
+    }
+    
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #cbd5e0;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+    
+    .empty-state-title {
+        color: #718096;
+        font-weight: 600;
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state-subtitle {
+        color: #a0aec0;
+        font-size: 0.95rem;
+    }
+    
+    /* Search and Filter Bar */
+    .filter-bar {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .search-box {
+        position: relative;
+        flex: 1;
+        min-width: 250px;
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a0aec0;
+    }
+    
+    .search-input {
+        padding-left: 3rem !important;
+        border-radius: 12px !important;
+    }
+    
+    .filter-select {
+        border-radius: 12px;
+        min-width: 180px;
+    }
+    
+    /* Pagination */
+    .pagination-container {
+        padding: 1.5rem;
+        border-top: 2px solid #edf2f7;
+        background: white;
+        border-radius: 0 0 20px 20px;
+    }
+    
+    .page-info {
+        color: #718096;
+        font-weight: 500;
+    }
+    
+    /* Alert Messages */
+    .alert-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease-out;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem;
+        }
+        
+        .header-title {
+            font-size: 1.6rem;
+        }
+        
+        .header-title i {
+            font-size: 2rem;
+            padding: 1rem;
+        }
+        
+        .stat-card {
+            padding: 0.8rem 1.2rem;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+        }
+        
+        .add-upazila-card {
+            padding: 2rem;
+        }
+        
+        .form-section-title {
+            font-size: 1.2rem;
+        }
+        
+        .custom-table th,
+        .custom-table td {
+            padding: 1rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .btn-edit,
+        .btn-delete {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .location-hierarchy {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.3rem;
+        }
+        
+        .location-separator {
+            display: none;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+        
+        .header-content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .stats-container {
+            width: 100%;
+            justify-content: space-between;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+        }
+        
+        .add-upazila-card {
+            padding: 1.5rem;
+        }
+        
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .search-box {
+            min-width: 100%;
+        }
+        
+        .filter-select {
+            min-width: 100%;
+        }
+    }
+    
+    /* Delete Confirmation Modal */
+    .delete-modal .modal-content {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+    
+    .delete-modal .modal-header {
+        background: var(--danger-color);
+        color: white;
+        border-bottom: none;
+    }
+    
+    .delete-modal .modal-body {
+        padding: 2.5rem;
+        text-align: center;
+    }
+    
+    .delete-icon {
+        font-size: 4rem;
+        color: var(--danger-color);
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-  <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3><i class="fa-solid fa-map-location-dot me-2"></i> Manage Upazilas</h3>
-  </div>
-
-  <!-- Add Upazila Form -->
-  <div class="card p-4 mb-4">
-    <form method="POST" action="{% url 'add_upazila' %}" class="row g-3">
-      {% csrf_token %}
-      <div class="col-5">
-        <input type="text" name="upazila_name" class="form-control" placeholder="New Upazila Name" required>
-      </div>
-      <div class="col-5">
-        <select name="district_id" class="form-select" required>
-          <option value="">Select District</option>
-          {% for dist in districts %}
-            <option value="{{ dist.id }}">{{ dist.district_name }} ({{ dist.division.division_name }})</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-2 d-grid">
-        <button class="btn btn-success"><i class="fa-solid fa-plus me-2"></i>Add</button>
-      </div>
-    </form>
-  </div>
-
-  <!-- Upazila Table -->
-  <div class="card p-4">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead class="table-dark">
-          <tr>
-            <th>#ID</th>
-            <th>Upazila Name</th>
-            <th>District</th>
-            <th>Division</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for up in upazilas %}
-          <tr>
-            <td>{{ up.id }}</td>
-            <td>{{ up.upazila_name }}</td>
-            <td>{{ up.district.district_name }}</td>
-            <td>{{ up.district.division.division_name }}</td>
-            <td>
-              <div class="d-flex gap-2">
-                <a href="{% url 'edit_upazila' up.id %}" class="btn btn-primary btn-sm">
-                  <i class="fa-solid fa-pen-to-square"></i> Edit
-                </a>
-                <a href="{% url 'delete_upazila' up.id %}" class="btn btn-danger btn-sm">
-                  <i class="fa-solid fa-trash"></i> Delete
-                </a>
-              </div>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="5" class="text-center text-muted">
-              No upazilas found. Add a new upazila above.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="header-title">
+                <i class="fa-solid fa-map-location-dot"></i>
+                Manage Upazilas
+            </h1>
+            <div class="stats-container">
+                <div class="stat-card">
+                    <i class="fa-solid fa-layer-group stat-icon"></i>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ upazilas|length }}</div>
+                        <div class="stat-label">Total Upazilas</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-map-marked-alt stat-icon"></i>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ districts|length }}</div>
+                        <div class="stat-label">Districts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+    
+    <!-- Add Upazila Form -->
+    <div class="add-upazila-card">
+        <div class="form-section-title">
+            <i class="fa-solid fa-plus-circle"></i>
+            Add New Upazila
+        </div>
+        <form method="POST" action="{% url 'add_upazila' %}" id="addUpazilaForm">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fa-solid fa-map-pin"></i>
+                        Upazila Name
+                    </label>
+                    <input type="text" 
+                           name="upazila_name" 
+                           class="form-control-custom" 
+                           placeholder="Enter upazila name"
+                           required
+                           maxlength="100"
+                           id="upazilaName">
+                    <div class="form-text">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Enter the official name of the upazila
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fa-solid fa-map-marked-alt"></i>
+                        Select District
+                    </label>
+                    <div class="select-wrapper">
+                        <select name="district_id" 
+                                class="form-select-custom" 
+                                required
+                                id="districtSelect">
+                            <option value="">Select District</option>
+                            {% for dist in districts %}
+                                <option value="{{ dist.id }}" 
+                                        data-division="{{ dist.division.division_name }}">
+                                    {{ dist.district_name }} ({{ dist.division.division_name }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-text">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Choose the district for this upazila
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-add w-100" id="addBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        Add Upazila
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Search and Filter Bar -->
+    <div class="filter-bar">
+        <div class="search-box">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" 
+                   id="searchUpazilas" 
+                   class="form-control-custom search-input" 
+                   placeholder="Search upazilas...">
+        </div>
+        <div class="filter-group">
+            <select id="divisionFilter" class="form-control-custom filter-select">
+                <option value="">All Divisions</option>
+                {% for division in divisions %}
+                    <option value="{{ division.division_name }}">{{ division.division_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <select id="districtFilter" class="form-control-custom filter-select">
+                <option value="">All Districts</option>
+                {% for dist in districts %}
+                    <option value="{{ dist.district_name }}">{{ dist.district_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button id="clearFilters" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-filter-circle-xmark"></i>
+            Clear Filters
+        </button>
+    </div>
+    
+    <!-- Upazilas Table -->
+    <div class="upazilas-table-card">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fa-solid fa-table-list"></i>
+                Upazilas List
+            </h3>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="custom-table" id="upazilasTable">
+                <thead>
+                    <tr>
+                        <th>#ID</th>
+                        <th>Location Hierarchy</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for up in upazilas %}
+                    <tr class="upazila-row" 
+                        data-name="{{ up.upazila_name|lower }}"
+                        data-district="{{ up.district.district_name }}"
+                        data-division="{{ up.district.division.division_name }}">
+                        <td>
+                            <div class="id-badge">#{{ up.id }}</div>
+                        </td>
+                        <td>
+                            <div class="location-hierarchy">
+                                <div class="upazila-name">{{ up.upazila_name }}</div>
+                                <span class="location-separator">→</span>
+                                <div class="location-item district">
+                                    <i class="fa-solid fa-map-marker-alt"></i>
+                                    {{ up.district.district_name }}
+                                </div>
+                                <span class="location-separator">→</span>
+                                <div class="location-item division">
+                                    <i class="fa-solid fa-map"></i>
+                                    {{ up.district.division.division_name }}
+                                </div>
+                            </div>
+                            <div class="text-muted small mt-1">
+                                <i class="fa-solid fa-calendar me-1"></i>
+                                Created: {{ up.created_at|date:"M d, Y" }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'edit_upazila' up.id %}" class="btn-edit">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    Edit
+                                </a>
+                                <a href="{% url 'delete_upazila' up.id %}" 
+                                   class="btn-delete delete-btn"
+                                   data-id="{{ up.id }}"
+                                   data-name="{{ up.upazila_name }}">
+                                    <i class="fa-solid fa-trash"></i>
+                                    Delete
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="fa-solid fa-map-location-dot"></i>
+                                </div>
+                                <h4 class="empty-state-title">No Upazilas Found</h4>
+                                <p class="empty-state-subtitle">
+                                    Start by adding your first upazila using the form above.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if upazilas %}
+        <div class="pagination-container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="page-info">
+                    Showing {{ upazilas|length }} of {{ upazilas|length }} upazilas
+                </div>
+                <!-- Add pagination here if needed -->
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade delete-modal" id="deleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="delete-icon">
+                    <i class="fa-solid fa-trash"></i>
+                </div>
+                <h4 class="mb-3" id="deleteModalTitle">Delete Upazila?</h4>
+                <p class="text-muted mb-4" id="deleteModalMessage">
+                    This action cannot be undone. All associated data will be permanently removed.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark me-2"></i>Cancel
+                    </button>
+                    <a href="#" id="confirmDeleteBtn" class="btn btn-danger">
+                        <i class="fa-solid fa-trash me-2"></i>Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form submission with loading state
+        const addUpazilaForm = document.getElementById('addUpazilaForm');
+        const upazilaNameInput = document.getElementById('upazilaName');
+        const districtSelect = document.getElementById('districtSelect');
+        const addBtn = document.getElementById('addBtn');
+        
+        if (addUpazilaForm) {
+            addUpazilaForm.addEventListener('submit', function(e) {
+                const upazilaName = upazilaNameInput.value.trim();
+                const districtId = districtSelect.value;
+                
+                if (!upazilaName) {
+                    e.preventDefault();
+                    showAlert('Please enter an upazila name.', 'danger');
+                    upazilaNameInput.focus();
+                    return;
+                }
+                
+                if (upazilaName.length < 3) {
+                    e.preventDefault();
+                    showAlert('Upazila name must be at least 3 characters long.', 'danger');
+                    upazilaNameInput.focus();
+                    return;
+                }
+                
+                if (!districtId) {
+                    e.preventDefault();
+                    showAlert('Please select a district.', 'danger');
+                    districtSelect.focus();
+                    return;
+                }
+                
+                // Check for duplicate upazila name in the same district
+                const selectedDistrict = districtSelect.options[districtSelect.selectedIndex];
+                const divisionName = selectedDistrict.getAttribute('data-division');
+                
+                // Show loading state
+                addBtn.classList.add('btn-add-loading');
+                addBtn.disabled = true;
+                addBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Adding...';
+            });
+        }
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchUpazilas');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                filterTable();
+            });
+        }
+        
+        // Filter by division
+        const divisionFilter = document.getElementById('divisionFilter');
+        if (divisionFilter) {
+            divisionFilter.addEventListener('change', filterTable);
+        }
+        
+        // Filter by district
+        const districtFilter = document.getElementById('districtFilter');
+        if (districtFilter) {
+            districtFilter.addEventListener('change', filterTable);
+        }
+        
+        // Filter table function
+        function filterTable() {
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const divisionValue = divisionFilter ? divisionFilter.value : '';
+            const districtValue = districtFilter ? districtFilter.value : '';
+            
+            const rows = document.querySelectorAll('.upazila-row');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const upazilaName = row.getAttribute('data-name');
+                const district = row.getAttribute('data-district');
+                const division = row.getAttribute('data-division');
+                
+                const matchesSearch = searchTerm === '' || 
+                    upazilaName.includes(searchTerm) || 
+                    district.toLowerCase().includes(searchTerm) || 
+                    division.toLowerCase().includes(searchTerm);
+                
+                const matchesDivision = divisionValue === '' || division === divisionValue;
+                const matchesDistrict = districtValue === '' || district === districtValue;
+                
+                if (matchesSearch && matchesDivision && matchesDistrict) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Update results count
+            updateResultsCount(visibleCount, rows.length);
+        }
+        
+        // Update results count
+        function updateResultsCount(visible, total) {
+            const resultsElement = document.querySelector('.page-info');
+            if (resultsElement) {
+                resultsElement.textContent = `Showing ${visible} of ${total} upazilas`;
+            }
+        }
+        
+        // Clear filters
+        const clearFiltersBtn = document.getElementById('clearFilters');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', function() {
+                if (searchInput) searchInput.value = '';
+                if (divisionFilter) divisionFilter.value = '';
+                if (districtFilter) districtFilter.value = '';
+                
+                filterTable();
+                showAlert('Filters cleared successfully', 'success');
+            });
+        }
+        
+        // Enhanced delete confirmation
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const upazilaId = this.getAttribute('data-id');
+                const upazilaName = this.getAttribute('data-name');
+                const deleteUrl = this.href;
+                
+                // Update modal content
+                const deleteModalTitle = document.getElementById('deleteModalTitle');
+                const deleteModalMessage = document.getElementById('deleteModalMessage');
+                const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+                
+                deleteModalTitle.textContent = `Delete "${upazilaName}"?`;
+                deleteModalMessage.innerHTML = `
+                    Are you sure you want to delete <strong>${upazilaName}</strong>?<br>
+                    This action cannot be undone and all associated data will be permanently removed.
+                `;
+                confirmDeleteBtn.href = deleteUrl;
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+                modal.show();
+            });
+        });
+        
+        // Auto-focus on form inputs when modal opens
+        const addModalTrigger = document.querySelector('[data-bs-target="#addUpazilaModal"]');
+        if (addModalTrigger) {
+            addModalTrigger.addEventListener('click', function() {
+                setTimeout(() => {
+                    document.getElementById('upazilaName')?.focus();
+                }, 500);
+            });
+        }
+        
+        // Real-time character counter for upazila name
+        if (upazilaNameInput) {
+            const charCounter = document.createElement('div');
+            charCounter.className = 'form-text text-end mt-1';
+            charCounter.id = 'charCounter';
+            upazilaNameInput.parentNode.appendChild(charCounter);
+            
+            function updateCharCounter() {
+                const charCount = upazilaNameInput.value.length;
+                const maxLength = 100;
+                charCounter.textContent = `${charCount}/${maxLength} characters`;
+                
+                // Update color based on usage
+                const percentage = (charCount / maxLength) * 100;
+                if (percentage > 90) {
+                    charCounter.style.color = 'var(--danger-color)';
+                    charCounter.style.fontWeight = 'bold';
+                } else if (percentage > 75) {
+                    charCounter.style.color = 'var(--warning-color)';
+                    charCounter.style.fontWeight = '600';
+                } else {
+                    charCounter.style.color = '';
+                    charCounter.style.fontWeight = '';
+                }
+            }
+            
+            upazilaNameInput.addEventListener('input', updateCharCounter);
+            updateCharCounter(); // Initial count
+        }
+        
+        // Show alert function
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-message`;
+            alertDiv.innerHTML = `
+                <i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-exclamation'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // Auto-hide success messages from Django messages framework
+        const djangoMessages = document.querySelectorAll('.alert');
+        djangoMessages.forEach(msg => {
+            if (msg.classList.contains('alert-success')) {
+                setTimeout(() => {
+                    msg.remove();
+                }, 5000);
+            }
+        });
+        
+        // Initialize tooltips
+        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltips.forEach(tooltip => {
+            new bootstrap.Tooltip(tooltip);
+        });
+        
+        // Export functionality (placeholder)
+        const exportBtn = document.getElementById('exportBtn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function() {
+                showAlert('Export feature coming soon!', 'info');
+            });
+        }
+    });
+</script>
 {% endblock %}
