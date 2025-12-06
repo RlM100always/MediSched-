@@ -18,39 +18,34 @@
         --hover-shadow: 0 15px 40px rgba(45, 156, 219, 0.2);
     }
     
+    /* Mobile First Base Styles */
+    .container-fluid {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+    
+    .py-4 {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+    
+    /* Page Header */
     .page-header {
         background: var(--primary-gradient);
         color: white;
-        padding: 2.5rem;
-        border-radius: 20px;
-        margin-bottom: 2.5rem;
-        box-shadow: 0 10px 30px rgba(45, 156, 219, 0.2);
+        padding: 1.5rem 1.25rem;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(45, 156, 219, 0.2);
         position: relative;
         overflow: hidden;
-    }
-    
-    .page-header::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-        animation: shimmer 3s infinite linear;
-    }
-    
-    @keyframes shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
+        width: 100%;
     }
     
     .header-content {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 1.5rem;
+        flex-direction: column;
+        gap: 1rem;
         position: relative;
         z-index: 2;
     }
@@ -59,98 +54,81 @@
         display: flex;
         align-items: center;
         margin: 0;
-        font-weight: 800;
-        font-size: 2rem;
-        letter-spacing: 0.5px;
+        font-weight: 700;
+        font-size: 1.5rem;
+        letter-spacing: 0.3px;
     }
     
     .header-title i {
-        font-size: 2.5rem;
-        margin-right: 1.2rem;
-        background: rgba(255, 255, 255, 0.25);
-        padding: 1.2rem;
-        border-radius: 18px;
-        backdrop-filter: blur(10px);
-        animation: pulse 2s infinite ease-in-out;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
+        font-size: 1.75rem;
+        margin-right: 0.75rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.75rem;
+        border-radius: 12px;
+        backdrop-filter: blur(5px);
+        flex-shrink: 0;
     }
     
     .stats-badge {
         background: rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(20px);
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        padding: 0.9rem 1.8rem;
-        border-radius: 50px;
-        font-weight: 700;
-        font-size: 1.1rem;
-        display: flex;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        display: inline-flex;
         align-items: center;
-        gap: 1rem;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        gap: 0.5rem;
+        align-self: flex-start;
     }
     
+    /* Add Symptom Form */
     .add-symptom-card {
-        border: none;
-        border-radius: 20px;
         background: white;
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
         box-shadow: var(--card-shadow);
-        padding: 2.5rem;
-        margin-bottom: 2.5rem;
-        transition: all 0.3s ease;
-        border-top: 5px solid var(--success-color);
-    }
-    
-    .add-symptom-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--hover-shadow);
+        border-top: 4px solid var(--success-color);
+        width: 100%;
     }
     
     .form-section-title {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.75rem;
         color: #2d3748;
-        font-weight: 700;
-        font-size: 1.3rem;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 3px solid var(--primary-light);
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--primary-light);
     }
     
     .form-section-title i {
         color: var(--success-color);
         background: rgba(39, 174, 96, 0.1);
-        padding: 0.8rem;
-        border-radius: 12px;
-        font-size: 1.2rem;
+        padding: 0.6rem;
+        border-radius: 10px;
+        font-size: 1rem;
     }
     
     .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr auto;
-        gap: 1.5rem;
-        align-items: end;
-    }
-    
-    @media (max-width: 992px) {
-        .form-row {
-            grid-template-columns: 1fr;
-            gap: 1.2rem;
-        }
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
     }
     
     .form-group {
         margin-bottom: 0;
+        width: 100%;
     }
     
     .form-label {
         font-weight: 600;
         color: #2d3748;
-        margin-bottom: 0.8rem;
+        margin-bottom: 0.5rem;
         font-size: 0.95rem;
         display: flex;
         align-items: center;
@@ -159,247 +137,392 @@
     
     .form-label i {
         color: var(--primary-color);
-        font-size: 1rem;
+        font-size: 0.9rem;
     }
     
     .form-control-custom {
         border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 1rem 1.2rem;
+        border-radius: 10px;
+        padding: 0.875rem 1rem;
         font-size: 1rem;
         transition: all 0.3s ease;
         background: white;
         font-weight: 500;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     .form-control-custom:focus {
         border-color: var(--primary-color);
         box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.15);
-        transform: translateY(-2px);
+        outline: none;
     }
     
-    .form-control-custom:hover {
-        border-color: #cbd5e0;
+    /* File Input */
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        width: 100%;
     }
     
+    .file-input-wrapper input[type="file"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .file-label {
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 0.875rem 1rem;
+        background: white;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+        width: 100%;
+        min-height: 50px;
+    }
+    
+    .file-label:hover {
+        border-color: #2D9CDB;
+        color: #2D9CDB;
+    }
+    
+    .file-preview {
+        margin-top: 0.75rem;
+        display: none;
+    }
+    
+    .preview-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 2px solid var(--primary-color);
+    }
+    
+    .preview-info {
+        flex: 1;
+    }
+    
+    .preview-remove {
+        background: none;
+        border: none;
+        color: var(--danger-color);
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+    
+    .preview-remove:hover {
+        background: rgba(231, 76, 60, 0.1);
+    }
+    
+    /* Add Button */
     .btn-add {
         background: var(--success-color);
         color: white;
         border: none;
-        padding: 1rem 2.5rem;
-        border-radius: 12px;
-        font-weight: 700;
+        padding: 0.875rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 1rem;
+        gap: 0.75rem;
         transition: all 0.3s ease;
         height: 50px;
-        white-space: nowrap;
+        width: 100%;
+        font-size: 0.95rem;
     }
     
     .btn-add:hover {
         background: #219653;
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
     }
     
-    .btn-add:active {
-        transform: translateY(-1px);
-    }
-    
-    .symptoms-table-card {
-        border: none;
-        border-radius: 20px;
+    /* Filter Bar */
+    .filter-bar {
         background: white;
-        box-shadow: var(--card-shadow);
-        padding: 0;
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+    }
+    
+    .search-box {
+        position: relative;
+        width: 100%;
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a0aec0;
+        z-index: 2;
+    }
+    
+    .search-input {
+        padding-left: 2.5rem !important;
+        border-radius: 10px !important;
+        width: 100%;
+    }
+    
+    .filter-actions {
+        display: flex;
+        gap: 0.75rem;
+        width: 100%;
+    }
+    
+    .status-filter {
+        flex: 1;
+    }
+    
+    .btn-clear {
+        background: white;
+        color: #666;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        min-width: 120px;
+    }
+    
+    .btn-clear:hover {
+        background: #f8fafc;
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    /* Table Card */
+    .symptoms-table-card {
+        background: white;
+        border-radius: 16px;
         overflow: hidden;
+        box-shadow: var(--card-shadow);
+        width: 100%;
     }
     
     .table-header {
         background: var(--primary-gradient);
         color: white;
-        padding: 1.8rem 2rem;
+        padding: 1.25rem 1rem;
         border-bottom: none;
     }
     
     .table-title {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.75rem;
         margin: 0;
-        font-weight: 700;
-        font-size: 1.4rem;
+        font-weight: 600;
+        font-size: 1.1rem;
     }
     
     .table-title i {
-        font-size: 1.6rem;
+        font-size: 1.25rem;
     }
     
     .table-responsive {
         overflow-x: auto;
-    }
-    
-    .custom-table {
-        margin: 0;
-        border-collapse: separate;
-        border-spacing: 0;
+        -webkit-overflow-scrolling: touch;
         width: 100%;
     }
     
+    /* Table Styles */
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+    
     .custom-table thead {
-        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+        display: none;
     }
     
-    .custom-table th {
-        border: none;
-        padding: 1.2rem 1.5rem;
-        font-weight: 700;
-        color: #2d3748;
-        font-size: 0.95rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        white-space: nowrap;
-    }
-    
-    .custom-table td {
-        border: none;
-        padding: 1.2rem 1.5rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #edf2f7;
+    .custom-table tbody {
+        display: block;
+        width: 100%;
     }
     
     .custom-table tbody tr {
-        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        border-bottom: 1px solid #edf2f7;
+        padding: 1rem;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     .custom-table tbody tr:hover {
-        background: linear-gradient(135deg, rgba(45, 156, 219, 0.05) 0%, rgba(30, 124, 179, 0.05) 100%);
-        transform: translateX(5px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        background: rgba(45, 156, 219, 0.05);
     }
     
+    .custom-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f5f9;
+        width: 100%;
+        border: none;
+    }
+    
+    .custom-table tbody td:before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #64748b;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .custom-table tbody td:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .custom-table tbody td:first-child {
+        padding-top: 0;
+    }
+    
+    /* ID Badge */
+    .badge {
+        padding: 0.4rem 0.75rem !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        border-radius: 20px !important;
+    }
+    
+    /* Symptom Image */
     .symptom-image {
-        width: 70px;
-        height: 70px;
+        width: 60px;
+        height: 60px;
         object-fit: cover;
-        border-radius: 12px;
-        border: 3px solid white;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-    }
-    
-    .symptom-image:hover {
-        transform: scale(1.1) rotate(2deg);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        border: 2px solid white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
     
     .no-image {
-        width: 70px;
-        height: 70px;
+        width: 60px;
+        height: 60px;
         background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
-        border-radius: 12px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: #718096;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         font-weight: 600;
     }
     
-    .symptom-name {
-        font-weight: 600;
-        color: #2d3748;
-        font-size: 1.1rem;
-        transition: color 0.3s ease;
-    }
-    
-    .custom-table tbody tr:hover .symptom-name {
-        color: var(--primary-color);
-    }
-    
+    /* Action Buttons */
     .action-buttons {
         display: flex;
-        gap: 0.8rem;
+        gap: 0.5rem;
         flex-wrap: wrap;
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .btn-edit, .btn-delete {
+        padding: 0.5rem 0.875rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        transition: all 0.3s ease;
+        min-width: 70px;
+        justify-content: center;
+        text-decoration: none;
+        white-space: nowrap;
     }
     
     .btn-edit {
         background: var(--primary-color);
         color: white;
         border: none;
-        padding: 0.6rem 1.2rem;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        white-space: nowrap;
     }
     
     .btn-edit:hover {
         background: var(--primary-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(45, 156, 219, 0.3);
-        color: white;
+        transform: translateY(-1px);
     }
     
     .btn-delete {
         background: var(--danger-color);
         color: white;
         border: none;
-        padding: 0.6rem 1.2rem;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        white-space: nowrap;
     }
     
     .btn-delete:hover {
         background: #c0392b;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
-        color: white;
+        transform: translateY(-1px);
     }
     
+    /* Empty State */
     .empty-state {
-        padding: 4rem 2rem;
+        padding: 2rem 1rem;
         text-align: center;
-        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
     }
     
     .empty-state-icon {
-        font-size: 4rem;
+        font-size: 2.5rem;
         color: #cbd5e0;
-        margin-bottom: 1.5rem;
-        opacity: 0.5;
+        margin-bottom: 1rem;
     }
     
     .empty-state-title {
         color: #718096;
         font-weight: 600;
-        font-size: 1.2rem;
+        font-size: 1rem;
         margin-bottom: 0.5rem;
     }
     
     .empty-state-subtitle {
         color: #a0aec0;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
     }
     
+    /* Pagination */
+    .pagination-container {
+        padding: 1rem;
+        border-top: 2px solid #edf2f7;
+        background: white;
+        font-size: 0.9rem;
+        color: #718096;
+    }
+    
+    /* Image Preview Overlay */
     .image-preview-container {
         position: relative;
-        width: 70px;
-        height: 70px;
+        width: 60px;
+        height: 60px;
     }
     
     .image-preview-overlay {
@@ -409,7 +532,7 @@
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.7);
-        border-radius: 12px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -422,75 +545,232 @@
         opacity: 1;
     }
     
-    .preview-icon {
-        color: white;
-        font-size: 1.2rem;
-    }
-    
-    /* Search and Filter Bar */
-    .filter-bar {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 15px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-        margin-bottom: 1.5rem;
+    /* Form Text */
+    .form-text {
         display: flex;
-        gap: 1rem;
         align-items: center;
-        flex-wrap: wrap;
-    }
-    
-    .search-box {
-        position: relative;
-        flex: 1;
-        min-width: 250px;
-    }
-    
-    .search-box i {
-        position: absolute;
-        left: 1.2rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #a0aec0;
-    }
-    
-    .search-input {
-        padding-left: 3rem !important;
-        border-radius: 12px !important;
-    }
-    
-    .status-filter select {
-        border-radius: 12px;
-        min-width: 150px;
-    }
-    
-    /* Pagination */
-    .pagination-container {
-        padding: 1.5rem;
-        border-top: 2px solid #edf2f7;
-        background: white;
-        border-radius: 0 0 20px 20px;
-    }
-    
-    .page-info {
+        gap: 0.375rem;
         color: #718096;
+        font-size: 0.8rem;
+        margin-top: 0.375rem;
         font-weight: 500;
     }
     
-    /* Modal for Image Preview */
-    .modal-preview-img {
-        width: 100%;
-        border-radius: 10px;
+    .form-text i {
+        color: var(--primary-color);
+        font-size: 0.75rem;
     }
     
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
+    /* Alert Messages */
+    .alert-message {
+        position: fixed;
+        bottom: 20px;
+        left: 1rem;
+        right: 1rem;
+        z-index: 9999;
+        animation: slideInUp 0.3s ease-out;
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    @keyframes slideInUp {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    /* ==================== RESPONSIVE BREAKPOINTS ==================== */
+    
+    /* Small Mobile (≤ 360px) */
+    @media (max-width: 360px) {
+        .container-fluid {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+        
+        .page-header {
+            padding: 1.25rem 1rem;
+        }
+        
+        .header-title {
+            font-size: 1.3rem;
+        }
+        
+        .header-title i {
+            font-size: 1.5rem;
+            padding: 0.625rem;
+            margin-right: 0.625rem;
+        }
+        
+        .stats-badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.875rem;
+        }
+        
+        .add-symptom-card {
+            padding: 1rem;
+        }
+        
+        .form-section-title {
+            font-size: 1rem;
+        }
+        
+        .form-control-custom {
+            padding: 0.75rem;
+            font-size: 0.95rem;
+        }
+        
+        .btn-add {
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .filter-bar {
+            padding: 0.875rem;
+        }
+        
+        .custom-table tbody tr {
+            padding: 0.875rem;
+        }
+        
+        .symptom-image, .no-image {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+        
+        .btn-edit, .btn-delete {
+            width: 100%;
+        }
+    }
+    
+    /* Medium Mobile (361px - 480px) */
+    @media (min-width: 361px) and (max-width: 480px) {
+        .container-fluid {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+        
+        .header-title {
+            font-size: 1.4rem;
+        }
+        
+        .add-symptom-card {
+            padding: 1.25rem;
+        }
+        
+        .action-buttons {
+            flex-direction: row;
+            gap: 0.5rem;
+        }
+        
+        .btn-edit, .btn-delete {
+            min-width: 80px;
+        }
+    }
+    
+    /* Large Mobile/Tablet (481px - 768px) */
+    @media (min-width: 481px) and (max-width: 768px) {
+        .form-row {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        
+        .form-group {
+            flex: 1 1 calc(50% - 0.5rem);
+            min-width: 200px;
+        }
+        
+        .form-group:last-child {
+            flex: 0 0 100%;
+        }
+        
+        .filter-bar {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 1 1 100%;
+        }
+        
+        .filter-actions {
+            flex: 1 1 100%;
+        }
+        
+        .custom-table thead {
+            display: table-header-group;
+        }
+        
+        .custom-table tbody tr {
+            display: table-row;
+            padding: 0;
+        }
+        
+        .custom-table tbody td {
+            display: table-cell;
+            padding: 1rem;
+            border-bottom: 1px solid #edf2f7;
+        }
+        
+        .custom-table tbody td:before {
+            display: none;
+        }
+        
+        .symptom-image, .no-image {
+            width: 70px;
+            height: 70px;
+        }
+    }
+    
+    /* Tablet (577px - 768px) */
+    @media (min-width: 577px) and (max-width: 768px) {
+        .page-header {
+            padding: 1.75rem 1.5rem;
+        }
+        
+        .header-content {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .stats-badge {
+            align-self: center;
+        }
+        
+        .add-symptom-card {
+            padding: 1.75rem;
+        }
+        
+        .form-section-title {
+            font-size: 1.2rem;
+        }
+    }
+    
+    /* Desktop (769px - 992px) */
+    @media (min-width: 769px) {
+        .container-fluid {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+        }
+        
         .page-header {
             padding: 2rem;
         }
         
         .header-title {
-            font-size: 1.6rem;
+            font-size: 1.75rem;
         }
         
         .header-title i {
@@ -502,91 +782,118 @@
             padding: 2rem;
         }
         
-        .form-section-title {
-            font-size: 1.2rem;
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 1.5rem;
+            align-items: end;
         }
         
-        .custom-table th,
-        .custom-table td {
-            padding: 1rem;
-        }
-        
-        .action-buttons {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .btn-edit,
-        .btn-delete {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .page-header {
-            padding: 1.5rem;
-        }
-        
-        .header-content {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-        
-        .header-title {
-            font-size: 1.4rem;
-        }
-        
-        .stats-badge {
-            align-self: stretch;
-            justify-content: center;
-        }
-        
-        .add-symptom-card {
-            padding: 1.5rem;
+        .form-group {
+            margin-bottom: 0;
         }
         
         .filter-bar {
-            flex-direction: column;
-            align-items: stretch;
+            flex-direction: row;
+            align-items: center;
+            padding: 1.25rem;
         }
         
         .search-box {
-            min-width: 100%;
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .filter-actions {
+            flex-direction: row;
+            width: auto;
+            flex: 0 0 auto;
+        }
+        
+        .custom-table {
+            display: table;
+        }
+        
+        .custom-table thead {
+            display: table-header-group;
+        }
+        
+        .custom-table tbody tr {
+            display: table-row;
+        }
+        
+        .custom-table tbody td {
+            display: table-cell;
+            padding: 1.2rem 1.5rem;
+        }
+        
+        .custom-table tbody td:before {
+            display: none;
+        }
+        
+        .symptom-image, .no-image {
+            width: 70px;
+            height: 70px;
+        }
+        
+        .action-buttons {
+            justify-content: flex-start;
+            width: auto;
+        }
+        
+        .btn-add {
+            width: auto;
+        }
+        
+        .alert-message {
+            left: auto;
+            right: 2rem;
+            bottom: 2rem;
+            max-width: 350px;
         }
     }
     
-    /* Loading animation */
-    .loading-shimmer {
-        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-        border-radius: 8px;
-    }
-    
-    @keyframes shimmer {
-        0% { background-position: -200% 0; }
-        100% { background-position: 200% 0; }
-    }
-    
-    /* Success/Error Messages */
-    .alert-message {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        animation: slideInRight 0.3s ease-out;
-    }
-    
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
+    /* Large Desktop (≥ 993px) */
+    @media (min-width: 993px) {
+        .container-fluid {
+            max-width: 1400px;
+            margin: 0 auto;
         }
-        to {
-            transform: translateX(0);
-            opacity: 1;
+        
+        .page-header {
+            padding: 2.5rem;
+        }
+        
+        .header-title {
+            font-size: 2rem;
+        }
+        
+        .add-symptom-card {
+            padding: 2.5rem;
+        }
+        
+        .symptoms-table-card {
+            margin-top: 2rem;
+        }
+    }
+    
+    /* Landscape Mode */
+    @media (max-height: 600px) and (orientation: landscape) {
+        .page-header {
+            padding: 1rem;
+        }
+        
+        .add-symptom-card {
+            padding: 1rem;
+        }
+        
+        .form-row {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        
+        .custom-table tbody td {
+            padding: 0.5rem;
         }
     }
 </style>
@@ -603,7 +910,7 @@
             </h1>
             <div class="stats-badge">
                 <i class="fa-solid fa-list-check"></i>
-                Total Symptoms: {{ symptoms|length }}
+                Total: {{ symptoms|length }}
             </div>
         </div>
     </div>
@@ -620,12 +927,12 @@
                 <div class="form-group">
                     <label class="form-label">
                         <i class="fa-solid fa-signature"></i>
-                        Symptom Name
+                        Symptom Name *
                     </label>
                     <input type="text" 
                            name="symptom_name" 
                            class="form-control-custom" 
-                           placeholder="Enter symptom name"
+                           placeholder="e.g., Fever, Headache"
                            required
                            maxlength="100">
                     <div class="form-text">
@@ -637,22 +944,38 @@
                 <div class="form-group">
                     <label class="form-label">
                         <i class="fa-solid fa-image"></i>
-                        Symptom Image (Optional)
+                        Symptom Image
                     </label>
-                    <input type="file" 
-                           name="symptom_image" 
-                           id="symptomImage" 
-                           class="form-control-custom" 
-                           accept="image/*">
+                    <div class="file-input-wrapper">
+                        <input type="file" 
+                               name="symptom_image" 
+                               id="symptomImage" 
+                               accept="image/*">
+                        <label for="symptomImage" class="file-label">
+                            <i class="fa-solid fa-upload"></i>
+                            <span id="fileName">Choose image file</span>
+                        </label>
+                    </div>
                     <div class="form-text">
                         <i class="fa-solid fa-circle-info"></i>
-                        JPG, PNG, GIF, WEBP - Max 5MB
+                        JPG, PNG, GIF, WEBP • Max 5MB
                     </div>
-                    <div id="filePreview" class="mt-2" style="display: none;"></div>
+                    <div id="filePreview" class="file-preview">
+                        <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                            <img src="" alt="Preview" class="preview-image">
+                            <div class="preview-info">
+                                <div class="small text-success fw-semibold">Image selected</div>
+                                <div class="small text-muted" id="previewFileName"></div>
+                            </div>
+                            <button type="button" class="preview-remove" onclick="clearImagePreview()">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="form-group">
-                    <button type="submit" class="btn btn-add w-100" id="addBtn">
+                    <button type="submit" class="btn btn-add" id="addBtn">
                         <i class="fa-solid fa-plus"></i>
                         Add Symptom
                     </button>
@@ -670,17 +993,19 @@
                    class="form-control-custom search-input" 
                    placeholder="Search symptoms...">
         </div>
-        <div class="status-filter">
-            <select id="imageFilter" class="form-control-custom">
-                <option value="all">All Images</option>
-                <option value="with">With Image</option>
-                <option value="without">Without Image</option>
-            </select>
+        <div class="filter-actions">
+            <div class="status-filter">
+                <select id="imageFilter" class="form-control-custom">
+                    <option value="all">All Images</option>
+                    <option value="with">With Image</option>
+                    <option value="without">Without Image</option>
+                </select>
+            </div>
+            <button id="clearFilters" class="btn-clear">
+                <i class="fa-solid fa-filter-circle-xmark"></i>
+                Clear Filters
+            </button>
         </div>
-        <button id="clearFilters" class="btn btn-outline-secondary">
-            <i class="fa-solid fa-filter-circle-xmark"></i>
-            Clear Filters
-        </button>
     </div>
     
     <!-- Symptoms Table -->
@@ -705,13 +1030,15 @@
                 </thead>
                 <tbody>
                     {% for sym in symptoms %}
-                    <tr class="symptom-row" data-name="{{ sym.symptom_name|lower }}" data-has-image="{% if sym.symptom_image %}with{% else %}without{% endif %}">
-                        <td>
-                            <span class="badge bg-primary bg-gradient rounded-pill px-3 py-2">
+                    <tr class="symptom-row" 
+                        data-name="{{ sym.symptom_name|lower }}" 
+                        data-has-image="{% if sym.symptom_image %}with{% else %}without{% endif %}">
+                        <td data-label="#ID">
+                            <span class="badge bg-primary bg-gradient rounded-pill">
                                 #{{ sym.id }}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Image">
                             <div class="image-preview-container">
                                 {% if sym.symptom_image %}
                                     <img src="{{ sym.symptom_image.url }}" 
@@ -722,7 +1049,7 @@
                                     <div class="image-preview-overlay" 
                                          data-bs-toggle="modal" 
                                          data-bs-target="#imageModal{{ sym.id }}">
-                                        <i class="fa-solid fa-expand preview-icon"></i>
+                                        <i class="fa-solid fa-expand preview-icon text-white"></i>
                                     </div>
                                 {% else %}
                                     <div class="no-image">
@@ -731,24 +1058,24 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td>
+                        <td data-label="Symptom Name">
                             <div class="symptom-name">{{ sym.symptom_name }}</div>
                         </td>
-                        <td>
-                            <div class="text-muted small">
+                        <td data-label="Created Date">
+                            <div class="small text-muted">
                                 <i class="fa-solid fa-calendar me-1"></i>
                                 {{ sym.created_at|date:"M d, Y" }}
                             </div>
                         </td>
-                        <td>
+                        <td data-label="Actions">
                             <div class="action-buttons">
                                 <a href="{% url 'edit_symptom' sym.id %}" class="btn-edit">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                     Edit
                                 </a>
                                 <a href="{% url 'delete_symptom' sym.id %}" 
-                                   class="btn-delete"
-                                   onclick="return confirmDelete()">
+                                   class="btn-delete delete-btn"
+                                   data-name="{{ sym.symptom_name }}">
                                     <i class="fa-solid fa-trash"></i>
                                     Delete
                                 </a>
@@ -759,16 +1086,16 @@
                     <!-- Image Preview Modal -->
                     {% if sym.symptom_image %}
                     <div class="modal fade" id="imageModal{{ sym.id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-dialog modal-dialog-centered modal-sm">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title">{{ sym.symptom_name }}</h5>
+                                    <h5 class="modal-title small">{{ sym.symptom_name }}</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
-                                <div class="modal-body text-center">
+                                <div class="modal-body text-center p-3">
                                     <img src="{{ sym.symptom_image.url }}" 
                                          alt="{{ sym.symptom_name }}" 
-                                         class="modal-preview-img">
+                                         class="img-fluid rounded">
                                 </div>
                             </div>
                         </div>
@@ -795,39 +1122,39 @@
         
         {% if symptoms %}
         <div class="pagination-container">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="text-center">
                 <div class="page-info">
-                    Showing {{ symptoms|length }} of {{ symptoms|length }} symptoms
+                    Showing {{ symptoms|length }} symptom{{ symptoms|length|pluralize }}
                 </div>
-                <!-- Add pagination here if needed -->
             </div>
         </div>
         {% endif %}
     </div>
 </div>
 
-<!-- Confirmation Modal for Delete -->
+<!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0">
-                <h5 class="modal-title text-danger">
+                <h5 class="modal-title text-danger small">
                     <i class="fa-solid fa-triangle-exclamation me-2"></i>
                     Confirm Deletion
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body text-center py-4">
-                <i class="fa-solid fa-trash fa-3x text-danger mb-3"></i>
-                <h5 class="mb-2">Are you sure you want to delete this symptom?</h5>
-                <p class="text-muted">This action cannot be undone. All associated data will be permanently removed.</p>
+            <div class="modal-body text-center py-3">
+                <i class="fa-solid fa-trash fa-2x text-danger mb-2"></i>
+                <h6 class="mb-1">Delete Symptom?</h6>
+                <p class="text-muted small mb-0" id="deleteSymptomName"></p>
+                <p class="text-muted small">This action cannot be undone.</p>
             </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fa-solid fa-xmark me-2"></i>Cancel
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
+                    Cancel
                 </button>
-                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">
-                    <i class="fa-solid fa-trash me-2"></i>Delete Symptom
+                <a href="#" id="confirmDeleteBtn" class="btn btn-sm btn-danger">
+                    Delete
                 </a>
             </div>
         </div>
@@ -840,8 +1167,10 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Image preview for file input
         const symptomImageInput = document.getElementById('symptomImage');
+        const fileNameSpan = document.getElementById('fileName');
         const filePreview = document.getElementById('filePreview');
-        const addBtn = document.getElementById('addBtn');
+        const previewFileName = document.getElementById('previewFileName');
+        const previewImage = filePreview?.querySelector('img');
         
         if (symptomImageInput) {
             symptomImageInput.addEventListener('change', function(e) {
@@ -851,48 +1180,48 @@
                     // Validate file type
                     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
                     if (!validTypes.includes(file.type)) {
-                        alert('Please select a valid image file (JPG, PNG, GIF, or WEBP).');
+                        showAlert('Please select a valid image file (JPG, PNG, GIF, or WEBP).', 'danger');
                         this.value = '';
                         filePreview.style.display = 'none';
+                        fileNameSpan.textContent = 'Choose image file';
                         return;
                     }
                     
                     // Validate file size (5MB)
                     if (file.size > 5 * 1024 * 1024) {
-                        alert('File size exceeds 5MB limit. Please choose a smaller image.');
+                        showAlert('File size exceeds 5MB limit. Please choose a smaller image.', 'danger');
                         this.value = '';
                         filePreview.style.display = 'none';
+                        fileNameSpan.textContent = 'Choose image file';
                         return;
                     }
+                    
+                    // Update file name
+                    fileNameSpan.textContent = file.name;
                     
                     // Show preview
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        filePreview.innerHTML = `
-                            <div class="d-flex align-items-center gap-3">
-                                <img src="${e.target.result}" 
-                                     alt="Preview" 
-                                     style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; border: 2px solid var(--primary-color);">
-                                <div>
-                                    <div class="small text-success fw-semibold">✓ Image Selected</div>
-                                    <div class="small text-muted">${file.name}</div>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-outline-danger ms-auto" onclick="clearImagePreview()">
-                                    <i class="fa-solid fa-times"></i>
-                                </button>
-                            </div>
-                        `;
+                        if (previewImage) {
+                            previewImage.src = e.target.result;
+                        }
+                        if (previewFileName) {
+                            previewFileName.textContent = file.name;
+                        }
                         filePreview.style.display = 'block';
                     };
                     reader.readAsDataURL(file);
                 } else {
                     filePreview.style.display = 'none';
+                    fileNameSpan.textContent = 'Choose image file';
                 }
             });
         }
         
         // Form submission with loading state
         const addSymptomForm = document.getElementById('addSymptomForm');
+        const addBtn = document.getElementById('addBtn');
+        
         if (addSymptomForm) {
             addSymptomForm.addEventListener('submit', function(e) {
                 const symptomName = this.querySelector('[name="symptom_name"]').value.trim();
@@ -910,8 +1239,10 @@
                 }
                 
                 // Show loading state
-                addBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Adding...';
-                addBtn.disabled = true;
+                if (addBtn) {
+                    addBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Adding...';
+                    addBtn.disabled = true;
+                }
             });
         }
         
@@ -920,32 +1251,48 @@
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase();
-                const rows = document.querySelectorAll('.symptom-row');
-                
-                rows.forEach(row => {
-                    const symptomName = row.getAttribute('data-name');
-                    if (symptomName.includes(searchTerm)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
+                filterTable();
             });
         }
         
         // Filter by image status
         const imageFilter = document.getElementById('imageFilter');
         if (imageFilter) {
-            imageFilter.addEventListener('change', function() {
-                const filterValue = this.value;
-                const rows = document.querySelectorAll('.symptom-row');
+            imageFilter.addEventListener('change', filterTable);
+        }
+        
+        // Filter table function
+        function filterTable() {
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const filterValue = imageFilter ? imageFilter.value : 'all';
+            const rows = document.querySelectorAll('.symptom-row');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const symptomName = row.getAttribute('data-name');
+                const hasImage = row.getAttribute('data-has-image');
                 
-                rows.forEach(row => {
-                    const hasImage = row.getAttribute('data-has-image');
-                    const isVisible = filterValue === 'all' || hasImage === filterValue;
-                    row.style.display = isVisible ? '' : 'none';
-                });
+                const matchesSearch = searchTerm === '' || symptomName.includes(searchTerm);
+                const matchesFilter = filterValue === 'all' || hasImage === filterValue;
+                
+                if (matchesSearch && matchesFilter) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
             });
+            
+            // Update results count
+            updateResultsCount(visibleCount);
+        }
+        
+        // Update results count
+        function updateResultsCount(count) {
+            const resultsElement = document.querySelector('.page-info');
+            if (resultsElement) {
+                resultsElement.textContent = `Showing ${count} symptom${count !== 1 ? 's' : ''}`;
+            }
         }
         
         // Clear filters
@@ -954,30 +1301,26 @@
             clearFiltersBtn.addEventListener('click', function() {
                 if (searchInput) searchInput.value = '';
                 if (imageFilter) imageFilter.value = 'all';
-                
-                const rows = document.querySelectorAll('.symptom-row');
-                rows.forEach(row => row.style.display = '');
-                
+                filterTable();
                 showAlert('Filters cleared successfully', 'success');
             });
         }
         
         // Enhanced delete confirmation
-        const deleteLinks = document.querySelectorAll('.btn-delete');
-        deleteLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
                 e.preventDefault();
+                
+                const symptomName = this.getAttribute('data-name');
                 const deleteUrl = this.href;
-                const symptomName = this.closest('tr').querySelector('.symptom-name').textContent;
                 
                 // Update modal content
+                document.getElementById('deleteSymptomName').textContent = symptomName;
+                document.getElementById('confirmDeleteBtn').href = deleteUrl;
+                
+                // Show modal
                 const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-                const confirmBtn = document.getElementById('confirmDeleteBtn');
-                
-                document.querySelector('#deleteConfirmModal .modal-body h5').textContent = 
-                    `Are you sure you want to delete "${symptomName}"?`;
-                
-                confirmBtn.href = deleteUrl;
                 modal.show();
             });
         });
@@ -987,7 +1330,7 @@
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-message`;
             alertDiv.innerHTML = `
-                <i class="fa-solid fa-circle-${type === 'success' ? 'check' : 'exclamation'} me-2"></i>
+                <i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-exclamation'} me-2"></i>
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
@@ -998,41 +1341,36 @@
             }, 5000);
         }
         
-        // Auto-hide success messages from Django messages framework
-        const djangoMessages = document.querySelectorAll('.alert');
-        djangoMessages.forEach(msg => {
-            if (msg.classList.contains('alert-success')) {
-                setTimeout(() => {
-                    msg.remove();
-                }, 5000);
-            }
-        });
+        // Initialize table filtering
+        filterTable();
         
-        // Initialize tooltips
-        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        tooltips.forEach(tooltip => {
-            new bootstrap.Tooltip(tooltip);
-        });
+        // Handle mobile viewport
+        function handleMobileView() {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                document.body.style.minWidth = '320px';
+            }
+        }
+        
+        handleMobileView();
+        window.addEventListener('resize', handleMobileView);
     });
     
     // Global function to clear image preview
     window.clearImagePreview = function() {
         const fileInput = document.getElementById('symptomImage');
+        const fileNameSpan = document.getElementById('fileName');
         const filePreview = document.getElementById('filePreview');
         
         if (fileInput) fileInput.value = '';
+        if (fileNameSpan) fileNameSpan.textContent = 'Choose image file';
         if (filePreview) {
             filePreview.style.display = 'none';
-            filePreview.innerHTML = '';
+            const previewImage = filePreview.querySelector('img');
+            if (previewImage) previewImage.src = '';
+            const previewFileName = filePreview.querySelector('#previewFileName');
+            if (previewFileName) previewFileName.textContent = '';
         }
     };
-    
-    // Global delete confirmation function (fallback)
-    window.confirmDelete = function() {
-        return confirm('Are you sure you want to delete this symptom? This action cannot be undone.');
-    };
 </script>
-
-<!-- Include Bootstrap Icons -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 {% endblock %}
