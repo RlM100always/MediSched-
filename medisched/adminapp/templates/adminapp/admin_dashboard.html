@@ -1,90 +1,520 @@
 {% extends 'adminapp/base_admin.html' %}
 {% block title %}Admin Dashboard | MediSched{% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-  <h2 class="mb-4">Dashboard Overview</h2>
+{% block extra_css %}
+<style>
+  /* Dashboard Specific Styles */
+  .dashboard-header {
+    margin-bottom: 2rem;
+  }
 
-  <!-- Stats Cards -->
-  <div class="row g-4 mb-5">
-    <div class="col-md-3">
-      <div class="card stats-card bg-primary text-white">
-        <div class="card-body">
-          <div>
-            <h5>Doctors</h5>
-            <h3>120</h3>
-          </div>
-          <i class="fa-solid fa-user-doctor fa-2x"></i>
+  .dashboard-header h2 {
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .dashboard-header p {
+    color: #64748b;
+    font-size: 1.1rem;
+  }
+
+  /* Stats Cards */
+  .stats-card {
+    border: none;
+    border-radius: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+    min-height: 140px;
+  }
+
+  .stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  .stats-card.bg-primary::before { background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%); }
+  .stats-card.bg-success::before { background: linear-gradient(90deg, #047857 0%, #10b981 100%); }
+  .stats-card.bg-warning::before { background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%); }
+  .stats-card.bg-danger::before { background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%); }
+
+  .stats-card .card-body {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .stats-card h5 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+  }
+
+  .stats-card h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .stats-card i {
+    opacity: 0.9;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+
+  /* Action Buttons */
+  .action-btn {
+    border: 2px solid;
+    border-radius: 0.75rem;
+    padding: 1.25rem 1rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 140px;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .action-btn i {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s;
+  }
+
+  .action-btn span {
+    font-size: 0.95rem;
+  }
+
+  .action-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .action-btn.btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(45, 156, 219, 0.05);
+  }
+
+  .action-btn.btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  .action-btn.btn-outline-success {
+    border-color: var(--success-color);
+    color: var(--success-color);
+    background: rgba(16, 185, 129, 0.05);
+  }
+
+  .action-btn.btn-outline-success:hover {
+    background: var(--success-color);
+    color: white;
+  }
+
+  .action-btn.btn-outline-warning {
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+    background: rgba(245, 158, 11, 0.05);
+  }
+
+  .action-btn.btn-outline-warning:hover {
+    background: var(--warning-color);
+    color: white;
+  }
+
+  /* Section Headers */
+  .section-header {
+    margin: 2.5rem 0 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .section-header h3 {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  .section-header .badge {
+    background: var(--primary-color);
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Quick Stats */
+  .quick-stats {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .quick-stats h4 {
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .stat-item:hover {
+    background: rgba(255, 255, 255, 0.8);
+  }
+
+  .stat-item i {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 1rem;
+    color: white;
+  }
+
+  .stat-item .stat-text {
+    flex: 1;
+  }
+
+  .stat-item .stat-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--dark-color);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .dashboard-header h2 {
+      font-size: 1.75rem;
+    }
+
+    .stats-card .card-body {
+      padding: 1.25rem;
+    }
+
+    .stats-card h3 {
+      font-size: 1.75rem;
+    }
+
+    .stats-card i {
+      font-size: 1.75rem;
+    }
+
+    .action-btn {
+      padding: 1rem;
+      min-height: 120px;
+    }
+
+    .action-btn i {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .action-btn span {
+      font-size: 0.9rem;
+    }
+
+    .section-header h3 {
+      font-size: 1.35rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .stats-card {
+      margin-bottom: 1rem;
+    }
+
+    .action-btn {
+      margin-bottom: 1rem;
+      min-height: 110px;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .quick-stats {
+      padding: 1rem;
+    }
+
+    .stat-item {
+      flex-wrap: wrap;
+    }
+
+    .stat-item .stat-text {
+      width: 100%;
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  /* Animation for stats */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .stats-card, .action-btn {
+    animation: fadeInUp 0.5s ease-out forwards;
+    animation-delay: calc(var(--animation-order) * 0.1s);
+    opacity: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <h2>Dashboard Overview</h2>
+  <p>Welcome back, Administrator! Here's what's happening today.</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-5">
+  <div class="col-lg-3 col-md-6" style="--animation-order: 1;">
+    <div class="card stats-card bg-primary text-white">
+      <div class="card-body">
+        <div>
+          <h5>Doctors</h5>
+          <h3>156</h3>
         </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card stats-card bg-success text-white">
-        <div class="card-body">
-          <div>
-            <h5>Patients</h5>
-            <h3>450</h3>
-          </div>
-          <i class="fa-solid fa-user-injured fa-2x"></i>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card stats-card bg-warning text-dark">
-        <div class="card-body">
-          <div>
-            <h5>Appointments</h5>
-            <h3>320</h3>
-          </div>
-          <i class="fa-solid fa-calendar-check fa-2x"></i>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card stats-card bg-danger text-white">
-        <div class="card-body">
-          <div>
-            <h5>Revenue</h5>
-            <h3>$12.5k</h3>
-          </div>
-          <i class="fa-solid fa-dollar-sign fa-2x"></i>
-        </div>
+        <i class="fa-solid fa-user-doctor fa-2x"></i>
       </div>
     </div>
   </div>
-
-  <!-- Action Buttons -->
-  <div class="row g-4">
-    <div class="col-md-4">
-      <a href="{% url 'division_list' %}" class="btn btn-outline-primary action-btn w-100">
-        <i class="fa-solid fa-map"></i> Manage Divisions
-      </a>
+  <div class="col-lg-3 col-md-6" style="--animation-order: 2;">
+    <div class="card stats-card bg-success text-white">
+      <div class="card-body">
+        <div>
+          <h5>Patients</h5>
+          <h3>892</h3>
+        </div>
+        <i class="fa-solid fa-user-injured fa-2x"></i>
+      </div>
     </div>
-    <div class="col-md-4">
-      <a href="{% url 'district_list' %}" class="btn btn-outline-primary action-btn w-100">
-        <i class="fa-solid fa-city"></i> Manage Districts
-      </a>
+  </div>
+  <div class="col-lg-3 col-md-6" style="--animation-order: 3;">
+    <div class="card stats-card bg-warning text-dark">
+      <div class="card-body">
+        <div>
+          <h5>Appointments</h5>
+          <h3>324</h3>
+        </div>
+        <i class="fa-solid fa-calendar-check fa-2x"></i>
+      </div>
     </div>
-    <div class="col-md-4">
-      <a href="{% url 'upazila_list' %}" class="btn btn-outline-primary action-btn w-100">
-        <i class="fa-solid fa-map-pin"></i> Manage Upazilas
-      </a>
-    </div>
-    <div class="col-md-4 mt-3">
-      <a href="{% url 'department_list' %}" class="btn btn-outline-success action-btn w-100">
-        <i class="fa-solid fa-building"></i> Manage Departments
-      </a>
-    </div>
-    <div class="col-md-4 mt-3">
-      <a href="{% url 'symptom_list' %}" class="btn btn-outline-success action-btn w-100">
-        <i class="fa-solid fa-stethoscope"></i> Manage Symptoms
-      </a>
-    </div>
-    <div class="col-md-4 mt-3">
-      <a href="{% url 'appointment_list' %}" class="btn btn-outline-warning action-btn w-100">
-        <i class="fa-solid fa-calendar-check"></i> Manage Appointments
-      </a>
+  </div>
+  <div class="col-lg-3 col-md-6" style="--animation-order: 4;">
+    <div class="card stats-card bg-danger text-white">
+      <div class="card-body">
+        <div>
+          <h5>Revenue</h5>
+          <h3>$15.8k</h3>
+        </div>
+        <i class="fa-solid fa-dollar-sign fa-2x"></i>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Quick Stats Section -->
+<div class="quick-stats">
+  <h4>Today's Quick Stats</h4>
+  <div class="row">
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-item">
+        <i class="fas fa-clock" style="background: #f59e0b;"></i>
+        <div class="stat-text">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value">24</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-item">
+        <i class="fas fa-check-circle" style="background: #10b981;"></i>
+        <div class="stat-text">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value">48</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-item">
+        <i class="fas fa-times-circle" style="background: #ef4444;"></i>
+        <div class="stat-text">
+          <div class="stat-label">Cancelled</div>
+          <div class="stat-value">12</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-item">
+        <i class="fas fa-user-clock" style="background: #8b5cf6;"></i>
+        <div class="stat-text">
+          <div class="stat-label">New Patients</div>
+          <div class="stat-value">18</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Management Actions -->
+<div class="section-header">
+  <h3>Quick Management</h3>
+  <span class="badge">6 Modules</span>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4 col-md-6" style="--animation-order: 5;">
+    <a href="{% url 'division_list' %}" class="btn btn-outline-primary action-btn">
+      <i class="fa-solid fa-map"></i>
+      <span>Manage Divisions</span>
+    </a>
+  </div>
+  <div class="col-lg-4 col-md-6" style="--animation-order: 6;">
+    <a href="{% url 'district_list' %}" class="btn btn-outline-primary action-btn">
+      <i class="fa-solid fa-city"></i>
+      <span>Manage Districts</span>
+    </a>
+  </div>
+  <div class="col-lg-4 col-md-6" style="--animation-order: 7;">
+    <a href="{% url 'upazila_list' %}" class="btn btn-outline-primary action-btn">
+      <i class="fa-solid fa-map-pin"></i>
+      <span>Manage Upazilas</span>
+    </a>
+  </div>
+  <div class="col-lg-4 col-md-6" style="--animation-order: 8;">
+    <a href="{% url 'department_list' %}" class="btn btn-outline-success action-btn">
+      <i class="fa-solid fa-building"></i>
+      <span>Manage Departments</span>
+    </a>
+  </div>
+  <div class="col-lg-4 col-md-6" style="--animation-order: 9;">
+    <a href="{% url 'symptom_list' %}" class="btn btn-outline-success action-btn">
+      <i class="fa-solid fa-stethoscope"></i>
+      <span>Manage Symptoms</span>
+    </a>
+  </div>
+  <div class="col-lg-4 col-md-6" style="--animation-order: 10;">
+    <a href="{% url 'appointment_list' %}" class="btn btn-outline-warning action-btn">
+      <i class="fa-solid fa-calendar-check"></i>
+      <span>Manage Appointments</span>
+    </a>
+  </div>
+</div>
+
+<!-- Recent Activity Section -->
+<div class="section-header mt-5">
+  <h3>Recent Activity</h3>
+  <span class="badge bg-success">Live</span>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Activity</th>
+                <th>User</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>10:30 AM</td>
+                <td>New appointment booked</td>
+                <td>Dr. Smith</td>
+                <td><span class="badge bg-success">Completed</span></td>
+              </tr>
+              <tr>
+                <td>09:45 AM</td>
+                <td>Payment processed</td>
+                <td>John Doe</td>
+                <td><span class="badge bg-primary">Pending</span></td>
+              </tr>
+              <tr>
+                <td>09:15 AM</td>
+                <td>New patient registered</td>
+                <td>Sarah Wilson</td>
+                <td><span class="badge bg-success">Active</span></td>
+              </tr>
+              <tr>
+                <td>Yesterday</td>
+                <td>Department updated</td>
+                <td>Admin</td>
+                <td><span class="badge bg-info">Updated</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Initialize animations
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add staggered animation to cards
+    const cards = document.querySelectorAll('.stats-card, .action-btn');
+    cards.forEach((card, index) => {
+      card.style.setProperty('--animation-order', index);
+    });
+    
+    // Auto-refresh stats (optional)
+    setInterval(() => {
+      // Add any auto-refresh logic here
+    }, 30000);
+  });
+</script>
 {% endblock %}
