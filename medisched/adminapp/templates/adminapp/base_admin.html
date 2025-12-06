@@ -304,6 +304,21 @@
         <a href="{% url 'symptom_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'symptom_list' %}active{% endif %}">
           <i class="fa-solid fa-stethoscope"></i> Symptoms
         </a>
+        
+         <a href="#" class="sidebar-link {% if request.resolver_match.url_name == 'symptom_list' %}active{% endif %}">
+          <i class="fa-solid fa-credit-card"></i> Doctor
+        </a>
+        
+        <a href="#" class="sidebar-link {% if request.resolver_match.url_name == 'symptom_list' %}active{% endif %}">
+          <i class="fa-solid fa-credit-card"></i> Patient
+        </a>
+
+
+
+
+
+
+
         <a href="{% url 'appointment_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'appointment_list' %}active{% endif %}">
           <i class="fa-solid fa-calendar-check"></i> Appointments
         </a>
