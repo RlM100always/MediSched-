@@ -14,6 +14,30 @@
     <link rel="stylesheet" href="{% static 'home/css/style.css' %}">
     
     <style>
+        /* Reset body margin/padding */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Fixed Navbar */
+        .navbar {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            z-index: 1000 !important;
+            background: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Add padding to body to prevent content hiding under fixed navbar */
+        body {
+            padding-top: 80px; /* Adjust based on your navbar height */
+        }
+
         /* Profile Dropdown Styles */
         .profile-dropdown {
             position: relative;
@@ -29,6 +53,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             border: 2px solid transparent;
+            -webkit-tap-highlight-color: transparent; /* Remove mobile tap highlight */
         }
 
         .profile-trigger:hover {
@@ -40,7 +65,7 @@
         .profile-avatar {
             width: 38px;
             height: 38px;
-            min-width: 38px; /* Added for mobile */
+            min-width: 38px;
             border-radius: 50%;
             background: white;
             color: #2D9CDB;
@@ -62,14 +87,14 @@
             font-weight: 700;
             font-size: 14px;
             line-height: 1.2;
-            white-space: nowrap; /* Prevent text wrapping */
+            white-space: nowrap;
         }
 
         .profile-role {
             font-size: 11px;
             opacity: 0.9;
             text-transform: capitalize;
-            white-space: nowrap; /* Prevent text wrapping */
+            white-space: nowrap;
         }
 
         .profile-arrow {
@@ -83,10 +108,11 @@
             transform: rotate(180deg);
         }
 
+        /* Dropdown Menu - Fixed positioning for all screens */
         .dropdown-menu {
-            position: absolute;
-            top: calc(100% + 15px);
-            right: 0;
+            position: fixed !important; /* Changed from absolute to fixed */
+            top: 80px !important; /* Position below navbar */
+            right: 20px !important;
             background: white;
             border-radius: 16px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
@@ -95,8 +121,10 @@
             visibility: hidden;
             transform: translateY(-10px);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
+            z-index: 1100 !important;
             overflow: hidden;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
         }
 
         .profile-dropdown.active .dropdown-menu {
@@ -132,7 +160,7 @@
         .dropdown-avatar {
             width: 50px;
             height: 50px;
-            min-width: 50px; /* Added for mobile */
+            min-width: 50px;
             border-radius: 50%;
             background: linear-gradient(135deg, #2D9CDB 0%, #1a7db8 100%);
             color: white;
@@ -150,7 +178,7 @@
             font-weight: 700;
             color: #2d3748;
             margin-bottom: 3px;
-            word-break: break-word; /* Handle long names */
+            word-break: break-word;
         }
 
         .dropdown-user-details p {
@@ -159,7 +187,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            word-break: break-all; /* Handle long emails */
+            word-break: break-word;
         }
 
         .role-badge {
@@ -224,15 +252,35 @@
             color: #c53030;
         }
 
-        /* Mobile Responsive - Enhanced */
+        /* Mobile Responsive */
         @media (max-width: 768px) {
+            body {
+                padding-top: 70px; /* Adjust for mobile navbar */
+            }
+            
+            .navbar {
+                height: 70px; /* Fixed height for mobile */
+            }
+            
+            .dropdown-menu {
+                top: 70px !important; /* Adjust for mobile navbar height */
+                left: 10px !important;
+                right: 10px !important;
+                width: calc(100% - 20px) !important;
+                max-width: none !important;
+                min-width: auto !important;
+            }
+            
+            .dropdown-menu::before {
+                right: 20px !important;
+            }
+
             .profile-info {
-                display: none; /* Hide text on mobile */
+                display: none;
             }
 
             .profile-trigger {
                 padding: 8px;
-                min-width: auto;
             }
 
             .profile-avatar {
@@ -240,27 +288,6 @@
                 height: 40px;
                 min-width: 40px;
                 font-size: 18px;
-            }
-
-            .dropdown-menu {
-                position: fixed;
-                top: auto !important;
-                left: 50% !important;
-                transform: translateX(-50%) translateY(-10px);
-                right: auto !important;
-                width: 90vw;
-                max-width: 320px;
-                max-height: 80vh;
-                overflow-y: auto;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            }
-
-            .profile-dropdown.active .dropdown-menu {
-                transform: translateX(-50%) translateY(0);
-            }
-
-            .dropdown-menu::before {
-                display: none; /* Hide arrow on mobile */
             }
 
             .dropdown-header {
@@ -287,22 +314,48 @@
                 justify-content: center;
                 flex-wrap: wrap;
             }
+            
+            /* Fix hamburger menu if exists */
+            .hamburger {
+                z-index: 1001;
+            }
         }
 
-        /* Small Mobile (iPhone SE, etc.) */
-        @media (max-width: 375px) {
-            .dropdown-menu {
-                width: 95vw;
-                max-width: 95vw;
+        /* Small Mobile */
+        @media (max-width: 480px) {
+            body {
+                padding-top: 65px;
             }
-
+            
+            .navbar {
+                height: 65px;
+            }
+            
+            .dropdown-menu {
+                top: 65px !important;
+                border-radius: 12px;
+            }
+            
             .dropdown-item {
                 padding: 12px 15px;
                 font-size: 13px;
             }
-
+            
             .dropdown-item i {
                 font-size: 14px;
+            }
+            
+            .nav-buttons {
+                gap: 8px;
+            }
+            
+            .btn {
+                padding: 6px 10px !important;
+                font-size: 12px !important;
+            }
+            
+            .btn i {
+                font-size: 12px !important;
             }
         }
 
@@ -311,13 +364,17 @@
             .profile-name {
                 font-size: 13px;
             }
-
+            
             .profile-role {
                 font-size: 10px;
             }
-
+            
             .profile-trigger {
                 padding: 8px 12px;
+            }
+            
+            .dropdown-menu {
+                right: 15px !important;
             }
         }
 
@@ -330,31 +387,28 @@
             min-width: fit-content;
         }
 
-        /* Handle very small screens */
-        @media (max-width: 480px) {
-            .nav-buttons {
-                gap: 10px;
-            }
-
-            .btn {
-                padding: 8px 12px !important;
-                font-size: 12px !important;
-            }
-
-            .btn i {
-                font-size: 12px !important;
+        /* Fix for iOS Safari */
+        @supports (-webkit-touch-callout: none) {
+            .dropdown-menu {
+                position: fixed !important;
             }
         }
 
-        /* Fix for dropdown positioning on scroll */
-        .navbar {
-            position: relative;
-            z-index: 100;
-        }
-
-        /* Ensure dropdown stays above content */
-        .dropdown-menu {
-            z-index: 1100 !important;
+        /* Touch device improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .profile-trigger:hover {
+                transform: none;
+            }
+            
+            .dropdown-item:hover {
+                background: rgba(45, 156, 219, 0.05);
+                padding-left: 20px;
+            }
+            
+            .dropdown-item:active {
+                background: rgba(45, 156, 219, 0.1);
+                padding-left: 25px;
+            }
         }
     </style>
     
@@ -449,14 +503,15 @@
                                 <i class="fas fa-bell"></i>
                                 <span>Notifications</span>
                             </a>
-                            <a href="#" class="dropdown-item">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span>Logout</span>
-                            </a>
+                            <form method="POST" action="#" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item logout" style="border: none; background: none; width: 100%; text-align: left; cursor: pointer;">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Logout</span>
+                                </button>
+                            </form>
                             
                             <div class="dropdown-divider"></div>
-                            
-
                         </div>
                     </div>
                 </div>
@@ -478,8 +533,10 @@
     </nav>
 
     <!-- Page Content -->
-    {% block content %}
-    {% endblock %}
+    <main style="min-height: calc(100vh - 80px);">
+        {% block content %}
+        {% endblock %}
+    </main>
 
     <!-- Optional Footer -->
     {% block footer %}
@@ -491,34 +548,38 @@
     <!-- Enhanced Profile Dropdown Script -->
     <script>
         function toggleProfileDropdown(event) {
-            event.stopPropagation();
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
             const dropdown = document.getElementById('profileDropdown');
-            const isActive = dropdown.classList.contains('active');
+            const dropdownMenu = dropdown.querySelector('.dropdown-menu');
             
-            // Close all other dropdowns
-            document.querySelectorAll('.profile-dropdown.active').forEach(el => {
-                if (el !== dropdown) {
-                    el.classList.remove('active');
-                }
-            });
-            
-            // Toggle current dropdown
+            // Toggle dropdown
             dropdown.classList.toggle('active');
             
-            // On mobile, adjust dropdown position
-            if (window.innerWidth <= 768) {
-                const dropdownMenu = dropdown.querySelector('.dropdown-menu');
-                const triggerRect = dropdown.getBoundingClientRect();
-                const viewportHeight = window.innerHeight;
+            // If dropdown is now active, adjust position
+            if (dropdown.classList.contains('active')) {
+                // Force reflow to ensure transitions work
+                dropdownMenu.style.display = 'block';
                 
-                // Position dropdown above if there's not enough space below
-                if (triggerRect.bottom + dropdownMenu.offsetHeight > viewportHeight - 20) {
-                    dropdownMenu.style.top = 'auto';
-                    dropdownMenu.style.bottom = 'calc(100% + 15px)';
-                } else {
-                    dropdownMenu.style.top = 'calc(100% + 15px)';
-                    dropdownMenu.style.bottom = 'auto';
+                // For mobile, position properly
+                if (window.innerWidth <= 768) {
+                    const navbarHeight = document.querySelector('.navbar').offsetHeight;
+                    dropdownMenu.style.top = navbarHeight + 'px';
+                    dropdownMenu.style.left = '10px';
+                    dropdownMenu.style.right = '10px';
+                    dropdownMenu.style.width = 'calc(100% - 20px)';
                 }
+                
+                // Prevent body scroll when dropdown is open on mobile
+                if (window.innerWidth <= 768) {
+                    document.body.style.overflow = 'hidden';
+                }
+            } else {
+                // Re-enable body scroll
+                document.body.style.overflow = '';
             }
         }
 
@@ -527,6 +588,7 @@
             const dropdown = document.getElementById('profileDropdown');
             if (dropdown && !dropdown.contains(event.target)) {
                 dropdown.classList.remove('active');
+                document.body.style.overflow = ''; // Re-enable scroll
             }
         });
 
@@ -534,26 +596,61 @@
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 const dropdown = document.getElementById('profileDropdown');
-                if (dropdown) {
+                if (dropdown && dropdown.classList.contains('active')) {
                     dropdown.classList.remove('active');
+                    document.body.style.overflow = ''; // Re-enable scroll
                 }
             }
         });
 
         // Close dropdown on window resize
+        let resizeTimer;
         window.addEventListener('resize', function() {
             const dropdown = document.getElementById('profileDropdown');
             if (dropdown && dropdown.classList.contains('active')) {
                 dropdown.classList.remove('active');
+                document.body.style.overflow = ''; // Re-enable scroll
+            }
+            
+            // Debounce resize events
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                // Adjust body padding based on navbar height
+                const navbarHeight = document.querySelector('.navbar').offsetHeight;
+                document.body.style.paddingTop = navbarHeight + 'px';
+            }, 250);
+        });
+
+        // Handle touch events for mobile
+        document.addEventListener('touchstart', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+            
+            // Check if touch is outside dropdown
+            if (dropdown.classList.contains('active') && 
+                !dropdown.contains(event.target) && 
+                !dropdownMenu.contains(event.target)) {
+                dropdown.classList.remove('active');
+                document.body.style.overflow = ''; // Re-enable scroll
             }
         });
 
-        // Handle scroll for mobile dropdown positioning
-        window.addEventListener('scroll', function() {
-            const dropdown = document.getElementById('profileDropdown');
-            if (dropdown && dropdown.classList.contains('active') && window.innerWidth <= 768) {
-                dropdown.classList.remove('active');
+        // Initialize body padding on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbarHeight = document.querySelector('.navbar').offsetHeight;
+            document.body.style.paddingTop = navbarHeight + 'px';
+            
+            // Ensure dropdown menu starts hidden
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+            if (dropdownMenu) {
+                dropdownMenu.style.display = 'none';
             }
+        });
+
+        // Recalculate on page load complete
+        window.addEventListener('load', function() {
+            const navbarHeight = document.querySelector('.navbar').offsetHeight;
+            document.body.style.paddingTop = navbarHeight + 'px';
         });
     </script>
     
