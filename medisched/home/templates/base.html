@@ -40,6 +40,7 @@
         .profile-avatar {
             width: 38px;
             height: 38px;
+            min-width: 38px; /* Added for mobile */
             border-radius: 50%;
             background: white;
             color: #2D9CDB;
@@ -61,12 +62,14 @@
             font-weight: 700;
             font-size: 14px;
             line-height: 1.2;
+            white-space: nowrap; /* Prevent text wrapping */
         }
 
         .profile-role {
             font-size: 11px;
             opacity: 0.9;
             text-transform: capitalize;
+            white-space: nowrap; /* Prevent text wrapping */
         }
 
         .profile-arrow {
@@ -129,6 +132,7 @@
         .dropdown-avatar {
             width: 50px;
             height: 50px;
+            min-width: 50px; /* Added for mobile */
             border-radius: 50%;
             background: linear-gradient(135deg, #2D9CDB 0%, #1a7db8 100%);
             color: white;
@@ -146,6 +150,7 @@
             font-weight: 700;
             color: #2d3748;
             margin-bottom: 3px;
+            word-break: break-word; /* Handle long names */
         }
 
         .dropdown-user-details p {
@@ -154,6 +159,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            word-break: break-all; /* Handle long emails */
         }
 
         .role-badge {
@@ -182,6 +188,8 @@
             transition: all 0.2s ease;
             font-size: 14px;
             font-weight: 500;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .dropdown-item:hover {
@@ -194,6 +202,7 @@
             width: 20px;
             font-size: 16px;
             opacity: 0.7;
+            text-align: center;
         }
 
         .dropdown-item:hover i {
@@ -215,19 +224,137 @@
             color: #c53030;
         }
 
-        /* Mobile Responsive */
+        /* Mobile Responsive - Enhanced */
         @media (max-width: 768px) {
             .profile-info {
-                display: none;
+                display: none; /* Hide text on mobile */
             }
 
             .profile-trigger {
                 padding: 8px;
+                min-width: auto;
+            }
+
+            .profile-avatar {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+                font-size: 18px;
             }
 
             .dropdown-menu {
-                min-width: 220px;
+                position: fixed;
+                top: auto !important;
+                left: 50% !important;
+                transform: translateX(-50%) translateY(-10px);
+                right: auto !important;
+                width: 90vw;
+                max-width: 320px;
+                max-height: 80vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             }
+
+            .profile-dropdown.active .dropdown-menu {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            .dropdown-menu::before {
+                display: none; /* Hide arrow on mobile */
+            }
+
+            .dropdown-header {
+                padding: 15px;
+            }
+
+            .dropdown-user-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .dropdown-avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+
+            .dropdown-user-details {
+                text-align: center;
+            }
+
+            .dropdown-user-details p {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Small Mobile (iPhone SE, etc.) */
+        @media (max-width: 375px) {
+            .dropdown-menu {
+                width: 95vw;
+                max-width: 95vw;
+            }
+
+            .dropdown-item {
+                padding: 12px 15px;
+                font-size: 13px;
+            }
+
+            .dropdown-item i {
+                font-size: 14px;
+            }
+        }
+
+        /* Tablet adjustments */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .profile-name {
+                font-size: 13px;
+            }
+
+            .profile-role {
+                font-size: 10px;
+            }
+
+            .profile-trigger {
+                padding: 8px 12px;
+            }
+        }
+
+        /* Prevent navbar overflow */
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: nowrap;
+            min-width: fit-content;
+        }
+
+        /* Handle very small screens */
+        @media (max-width: 480px) {
+            .nav-buttons {
+                gap: 10px;
+            }
+
+            .btn {
+                padding: 8px 12px !important;
+                font-size: 12px !important;
+            }
+
+            .btn i {
+                font-size: 12px !important;
+            }
+        }
+
+        /* Fix for dropdown positioning on scroll */
+        .navbar {
+            position: relative;
+            z-index: 100;
+        }
+
+        /* Ensure dropdown stays above content */
+        .dropdown-menu {
+            z-index: 1100 !important;
         }
     </style>
     
@@ -255,12 +382,12 @@
             {% if user.is_authenticated %}
                 <!-- Profile Dropdown -->
                 <div class="profile-dropdown" id="profileDropdown">
-                    <div class="profile-trigger" onclick="toggleProfileDropdown()">
+                    <div class="profile-trigger" onclick="toggleProfileDropdown(event)">
                         <div class="profile-avatar">
                             {{ user.first_name.0|default:user.username.0|upper }}
                         </div>
                         <div class="profile-info">
-                            <span class="profile-name">{{ user.first_name|default:user.username }}</span>
+                            <span class="profile-name">{{ user.first_name|default:user.username|truncatechars:15 }}</span>
                             <span class="profile-role">{{ user.role }}</span>
                         </div>
                         <i class="fas fa-chevron-down profile-arrow"></i>
@@ -276,7 +403,7 @@
                                     <h4>{{ user.get_full_name|default:user.username }}</h4>
                                     <p>
                                         <i class="fas fa-envelope"></i>
-                                        {{ user.email }}
+                                        {{ user.email|truncatechars:20 }}
                                     </p>
                                     <span class="role-badge">{{ user.role }}</span>
                                 </div>
@@ -322,6 +449,10 @@
                                 <i class="fas fa-bell"></i>
                                 <span>Notifications</span>
                             </a>
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </a>
                             
                             <div class="dropdown-divider"></div>
                             
@@ -357,11 +488,38 @@
     <!-- JS File -->
     <script src="{% static 'home/js/main.js' %}"></script>
     
-    <!-- Profile Dropdown Script -->
+    <!-- Enhanced Profile Dropdown Script -->
     <script>
-        function toggleProfileDropdown() {
+        function toggleProfileDropdown(event) {
+            event.stopPropagation();
             const dropdown = document.getElementById('profileDropdown');
+            const isActive = dropdown.classList.contains('active');
+            
+            // Close all other dropdowns
+            document.querySelectorAll('.profile-dropdown.active').forEach(el => {
+                if (el !== dropdown) {
+                    el.classList.remove('active');
+                }
+            });
+            
+            // Toggle current dropdown
             dropdown.classList.toggle('active');
+            
+            // On mobile, adjust dropdown position
+            if (window.innerWidth <= 768) {
+                const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+                const triggerRect = dropdown.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                
+                // Position dropdown above if there's not enough space below
+                if (triggerRect.bottom + dropdownMenu.offsetHeight > viewportHeight - 20) {
+                    dropdownMenu.style.top = 'auto';
+                    dropdownMenu.style.bottom = 'calc(100% + 15px)';
+                } else {
+                    dropdownMenu.style.top = 'calc(100% + 15px)';
+                    dropdownMenu.style.bottom = 'auto';
+                }
+            }
         }
 
         // Close dropdown when clicking outside
@@ -379,6 +537,22 @@
                 if (dropdown) {
                     dropdown.classList.remove('active');
                 }
+            }
+        });
+
+        // Close dropdown on window resize
+        window.addEventListener('resize', function() {
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown && dropdown.classList.contains('active')) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Handle scroll for mobile dropdown positioning
+        window.addEventListener('scroll', function() {
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown && dropdown.classList.contains('active') && window.innerWidth <= 768) {
+                dropdown.classList.remove('active');
             }
         });
     </script>
