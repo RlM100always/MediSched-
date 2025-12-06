@@ -23,9 +23,22 @@ urlpatterns = [
     # Appointment Fees
     path('manage-fees/', views.manage_appointment_fees, name='manage_appointment_fees'),
     
-    # Add these new URLs for dashboard sidebar
-    path('appointments/', views.doctor_appointments, name='doctor_appointments'),
-    path('patients/', views.doctor_patients, name='doctor_patients'),
-    path('reviews/', views.doctor_reviews, name='doctor_reviews'),
-    path('analytics/', views.doctor_analytics, name='doctor_analytics'),
+    # Appointments Management
+    path('appointments/', views.doctor_appointments, name='appointments'),
+    path('appointments/<int:appointment_id>/', views.appointment_detail, name='appointment_detail'),
+    path('appointments/<int:appointment_id>/update-status/', 
+         views.update_appointment_status, name='update_appointment_status'),
+    path('appointments/<int:appointment_id>/prescription/', 
+         views.create_prescription, name='create_prescription'),
+    
+    # Analytics
+    path('appointments/analytics/', views.appointment_analytics, name='appointment_analytics'),
+    path('appointments/export/', views.export_appointments, name='export_appointments'),
+    
+    # Profile Management
+    path('profile/', views.doctor_profile, name='doctor_profile'),
+    path('profile/edit/', views.doctor_profile_edit, name='doctor_profile_edit'),
+    path('experience/manage/', views.doctor_experience_manage, name='experience_manage'),
+    path('experience/delete/<int:exp_id>/', views.doctor_experience_delete, name='experience_delete'),
+    path('fees/manage/', views.manage_appointment_fees, name='manage_appointment_fees'),
 ]

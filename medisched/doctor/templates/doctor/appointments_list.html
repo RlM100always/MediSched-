@@ -1,0 +1,387 @@
+{% extends 'doctor/doctor_sidebar.html' %}
+{% load static %}
+
+{% block title %}Appointments | MediSched{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-0">Appointments</h1>
+            <p class="text-muted mb-0">Manage your patient appointments</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="fas fa-filter"></i> Filter
+            </button>
+            <a href="{% url 'doctor:export_appointments' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-download"></i> Export
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">Total</h6>
+                            <h4 class="mb-0">{{ stats.total }}</h4>
+                        </div>
+                        <div class="icon-shape bg-primary text-white rounded-3">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">Pending</h6>
+                            <h4 class="mb-0 text-warning">{{ stats.pending }}</h4>
+                        </div>
+                        <div class="icon-shape bg-warning text-white rounded-3">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">Confirmed</h6>
+                            <h4 class="mb-0 text-info">{{ stats.confirmed }}</h4>
+                        </div>
+                        <div class="icon-shape bg-info text-white rounded-3">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">Completed</h6>
+                            <h4 class="mb-0 text-success">{{ stats.completed }}</h4>
+                        </div>
+                        <div class="icon-shape bg-success text-white rounded-3">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">Today</h6>
+                            <h4 class="mb-0">{{ stats.today }}</h4>
+                        </div>
+                        <div class="icon-shape bg-secondary text-white rounded-3">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">Monthly Earnings</h6>
+                            <h4 class="mb-0 text-success">${{ stats.monthly_earnings }}</h4>
+                        </div>
+                        <div class="icon-shape bg-success text-white rounded-3">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" placeholder="Search by patient name or phone..." 
+                               name="search" value="{{ search_query }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="status">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                        {% for key, value in status_choices.items %}
+                        <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient</th>
+                            <th>Date & Time</th>
+                            <th>Type</th>
+                            <th>Fee</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr>
+                            <td>#{{ appointment.id }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                                        {{ appointment.patient_name.0|upper }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{ appointment.patient_name }}</h6>
+                                        <small class="text-muted">{{ appointment.patient_phone }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">{{ appointment.appointment_date|date:"M d, Y" }}</div>
+                                <small class="text-muted">{{ appointment.appointment_date|time:"h:i A" }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ appointment.get_consultation_type_display }}</span>
+                            </td>
+                            <td>
+                                <strong>${{ appointment.consultation_fee }}</strong>
+                            </td>
+                            <td>
+                                {% if appointment.status == 'pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% elif appointment.status == 'confirmed' %}
+                                <span class="badge bg-info">Confirmed</span>
+                                {% elif appointment.status == 'completed' %}
+                                <span class="badge bg-success">Completed</span>
+                                {% elif appointment.status == 'cancelled' %}
+                                <span class="badge bg-danger">Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if appointment.payment_status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                                {% else %}
+                                <span class="badge bg-warning">{{ appointment.payment_status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'doctor:appointment_detail' appointment.id %}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                                    <button class="btn btn-outline-success update-status-btn" 
+                                            data-id="{{ appointment.id }}" 
+                                            data-status="completed">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger update-status-btn" 
+                                            data-id="{{ appointment.id }}" 
+                                            data-status="cancelled">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                                    <h5>No appointments found</h5>
+                                    <p>Try changing your filters or search criteria</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if date_filter != 'all' %}&date={{ date_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            First
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if date_filter != 'all' %}&date={{ date_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Previous
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if date_filter != 'all' %}&date={{ date_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if date_filter != 'all' %}&date={{ date_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Next
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if date_filter != 'all' %}&date={{ date_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            Last
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="get">
+                <div class="modal-header">
+                    <h5 class="modal-title">Filter Appointments</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Date Range</label>
+                        <select class="form-select" name="date">
+                            <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Dates</option>
+                            <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                            <option value="upcoming" {% if date_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                            <option value="past" {% if date_filter == 'past' %}selected{% endif %}>Past</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status">
+                            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                            {% for key, value in status_choices.items %}
+                            <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for AJAX updates -->
+<script>
+$(document).ready(function() {
+    // Update appointment status
+    $('.update-status-btn').click(function() {
+        var appointmentId = $(this).data('id');
+        var newStatus = $(this).data('status');
+        var button = $(this);
+        
+        if (confirm('Are you sure you want to update this appointment status?')) {
+            $.ajax({
+                url: `/doctor/appointments/${appointmentId}/update-status/`,
+                type: 'POST',
+                data: {
+                    'status': newStatus,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload(); // Reload page to reflect changes
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while updating the appointment.');
+                }
+            });
+        }
+    });
+});
+</script>
+
+<style>
+.stat-card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+.icon-shape {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    font-weight: bold;
+}
+</style>
+{% endblock %}

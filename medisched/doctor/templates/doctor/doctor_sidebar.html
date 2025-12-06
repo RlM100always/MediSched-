@@ -154,7 +154,7 @@
     <i class="fa-solid fa-clock"></i> Set Price
     </a>
 
-    <a href="#">
+    <a href="{% url 'doctor:appointments' %}" class="{% if request.resolver_match.url_name == 'doctor_appointments' %}active{% endif %}">
       <i class="fa-solid fa-calendar-check"></i>Appointments
     </a>
 

@@ -1,4 +1,3 @@
-<!-- dashboard.html -->
 {% extends 'doctor/doctor_sidebar.html' %}
 {% block title %}Dashboard | MediSched{% endblock %}
 
@@ -285,6 +284,8 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
     }
 
     .btn-view {
@@ -446,7 +447,7 @@
     <div class="stat-card">
         <div class="stat-header">
             <div>
-                <div class="stat-value">${{ earnings_today|default:"0" }}</div>
+                <div class="stat-value">৳{{ earnings_today|floatformat:2|default:"0.00" }}</div>
                 <div class="stat-label">Today's Earnings</div>
                 <div class="stat-change">
                     <i class="fa-solid fa-arrow-up"></i> 
@@ -497,35 +498,50 @@
                 {% for appointment in upcoming_appointments %}
                 <tr>
                     <td>
-                        <!-- Line ~480 in dashboard.html -->
-<div class="patient-info">
-    <div class="patient-avatar">
-        {{ appointment.patient.first_name.0|default:appointment.patient.username.0 }}{{ appointment.patient.last_name.0|default:'' }}
-    </div>
-    <div class="patient-details">
-        <span class="patient-name">
-            {{ appointment.patient.get_full_name|default:appointment.patient.username }}
-        </span>
-        <span class="patient-id">ID: #{{ appointment.patient.id }}</span>
-    </div>
-</div>
+                        <div class="patient-info">
+                            <div class="patient-avatar">
+                                {% if appointment.patient.first_name %}
+                                    {{ appointment.patient.first_name.0|upper }}{% if appointment.patient.last_name %}{{ appointment.patient.last_name.0|upper }}{% endif %}
+                                {% else %}
+                                    {{ appointment.patient.username.0|upper }}
+                                {% endif %}
+                            </div>
+                            <div class="patient-details">
+                                <span class="patient-name">
+                                    {% if appointment.patient.get_full_name %}
+                                        {{ appointment.patient.get_full_name }}
+                                    {% else %}
+                                        {{ appointment.patient.username }}
+                                    {% endif %}
+                                </span>
+                                <span class="patient-id">ID: #{{ appointment.patient.id }}</span>
+                            </div>
+                        </div>
                     </td>
                     <td>
                         <div>{{ appointment.appointment_date|date:"M d, Y" }}</div>
                         <div style="color: #9ca3af; font-size: 0.85rem;">
-                            {{ appointment.appointment_date|time:"H:i A" }}
+                            {{ appointment.appointment_date|time:"h:i A" }}
                         </div>
                     </td>
                     <td>
-                        {{ appointment.get_consultation_type_display }}
+                        {% if appointment.consultation_type == 'general' %}
+                            General Consultation
+                        {% elif appointment.consultation_type == 'special' %}
+                            Special Consultation
+                        {% else %}
+                            {{ appointment.consultation_type|title }}
+                        {% endif %}
                     </td>
                     <td>
                         {% if appointment.status == 'confirmed' %}
                             <span class="status-badge status-confirmed">Confirmed</span>
                         {% elif appointment.status == 'pending' %}
                             <span class="status-badge status-pending">Pending</span>
+                        {% elif appointment.status == 'completed' %}
+                            <span class="status-badge status-completed">Completed</span>
                         {% else %}
-                            <span class="status-badge">{{ appointment.status }}</span>
+                            <span class="status-badge">{{ appointment.status|title }}</span>
                         {% endif %}
                     </td>
                     <td>
@@ -534,9 +550,11 @@
                                class="action-btn btn-view">
                                 <i class="fa-solid fa-comment-medical"></i> Chat
                             </a>
+                            {% if appointment.status != 'completed' %}
                             <a href="#" class="action-btn btn-complete">
                                 <i class="fa-solid fa-check"></i> Complete
                             </a>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -564,15 +582,15 @@
         <div class="quick-action-icon">
             <i class="fa-solid fa-calendar-plus"></i>
         </div>
-        <p>Schedule Appointment</p>
+        <p>View Appointments</p>
     </a>
-    <a href="{% url 'doctor:manage_appointment_fees' %}" class="quick-action-card">
+    <a href="#" class="quick-action-card">
         <div class="quick-action-icon">
             <i class="fa-solid fa-dollar-sign"></i>
         </div>
         <p>Update Fees</p>
     </a>
-    <a href="{% url 'doctor:experience_manage' %}" class="quick-action-card">
+    <a href="#" class="quick-action-card">
         <div class="quick-action-icon">
             <i class="fa-solid fa-briefcase"></i>
         </div>

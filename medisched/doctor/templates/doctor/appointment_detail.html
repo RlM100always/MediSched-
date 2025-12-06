@@ -1,0 +1,416 @@
+{% extends 'doctor/doctor_sidebar.html' %}
+{% load static %}
+
+{% block title %}Appointment #{{ appointment.id }} | MediSched{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="{% url 'doctor:appointments' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Appointments
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Left Column: Appointment Details -->
+        <div class="col-lg-8">
+            <!-- Appointment Card -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Appointment Details</h5>
+                    <div>
+                        {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                        <button class="btn btn-sm btn-success update-status-btn" 
+                                data-id="{{ appointment.id }}" 
+                                data-status="completed">
+                            <i class="fas fa-check"></i> Mark as Completed
+                        </button>
+                        <button class="btn btn-sm btn-danger update-status-btn" 
+                                data-id="{{ appointment.id }}" 
+                                data-status="cancelled">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Appointment ID:</th>
+                                    <td>#{{ appointment.id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Patient Name:</th>
+                                    <td>{{ appointment.patient_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Phone:</th>
+                                    <td>{{ appointment.patient_phone }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Age/Gender:</th>
+                                    <td>
+                                        {% if appointment.patient_age %}{{ appointment.patient_age }} years{% endif %}
+                                        {% if appointment.patient_gender %} / {{ appointment.patient_gender|title }}{% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Date & Time:</th>
+                                    <td>{{ appointment.appointment_date|date:"F d, Y" }} at {{ appointment.appointment_date|time:"h:i A" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Consultation Type:</th>
+                                    <td>{{ appointment.get_consultation_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Appointment Type:</th>
+                                    <td>{{ appointment.get_appointment_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        {% if appointment.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% elif appointment.status == 'confirmed' %}
+                                        <span class="badge bg-info">Confirmed</span>
+                                        {% elif appointment.status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                        {% elif appointment.status == 'cancelled' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Symptoms -->
+                    {% if appointment.symptoms %}
+                    <div class="mt-4">
+                        <h6>Symptoms:</h6>
+                        <div class="p-3 bg-light rounded">
+                            {{ appointment.symptoms|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Created At -->
+                    <div class="mt-4 text-muted small">
+                        Created: {{ appointment.created_at|date:"M d, Y h:i A" }}
+                        {% if appointment.updated_at != appointment.created_at %}
+                        | Last Updated: {{ appointment.updated_at|date:"M d, Y h:i A" }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Payment Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="50%">Consultation Fee:</th>
+                                    <td class="text-end">${{ appointment.consultation_fee }}</td>
+                                </tr>
+                                <tr>
+                                    <th>VAT (5%):</th>
+                                    <td class="text-end">${{ appointment.vat_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Platform Fee:</th>
+                                    <td class="text-end">${{ appointment.platform_fee }}</td>
+                                </tr>
+                                <tr class="border-top">
+                                    <th><strong>Total Amount:</strong></th>
+                                    <td class="text-end"><strong>${{ appointment.total_amount }}</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="50%">Payment Method:</th>
+                                    <td>{{ appointment.payment_method|default:"Not specified"|title }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Status:</th>
+                                    <td>
+                                        {% if appointment.payment_status == 'paid' %}
+                                        <span class="badge bg-success">Paid</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">{{ appointment.payment_status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if appointment.transaction_id %}
+                                <tr>
+                                    <th>Transaction ID:</th>
+                                    <td><code>{{ appointment.transaction_id }}</code></td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Payment Transaction Details -->
+                    {% if payment_transaction %}
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6>Payment Transaction:</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Transaction ID:</th>
+                                <td>{{ payment_transaction.transaction_id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Amount:</th>
+                                <td>${{ payment_transaction.amount }}</td>
+                            </tr>
+                            <tr>
+                                <th>Method:</th>
+                                <td>{{ payment_transaction.method|title }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <span class="badge {% if payment_transaction.status == 'completed' %}bg-success{% else %}bg-warning{% endif %}">
+                                        {{ payment_transaction.status|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Created:</th>
+                                <td>{{ payment_transaction.created_at|date:"M d, Y h:i A" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Prescription (if exists) -->
+            {% if prescription %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Prescription</h5>
+                </div>
+                <div class="card-body">
+                    <div class="prescription-details">
+                        <h6>Diagnosis:</h6>
+                        <p>{{ prescription.diagnosis }}</p>
+                        
+                        {% if prescription.advice %}
+                        <h6>Advice:</h6>
+                        <p>{{ prescription.advice }}</p>
+                        {% endif %}
+                        
+                        {% if prescription.medicines %}
+                        <h6>Medicines:</h6>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Medicine</th>
+                                    <th>Dosage</th>
+                                    <th>Duration</th>
+                                    <th>Instructions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for medicine in prescription.medicines %}
+                                <tr>
+                                    <td>{{ medicine.name }}</td>
+                                    <td>{{ medicine.dosage }}</td>
+                                    <td>{{ medicine.duration }}</td>
+                                    <td>{{ medicine.instructions }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
+                        
+                        {% if prescription.follow_up_date %}
+                        <h6>Follow-up Date:</h6>
+                        <p>{{ prescription.follow_up_date|date:"F d, Y" }}</p>
+                        {% endif %}
+                        
+                        <div class="text-muted small mt-3">
+                            Prescribed on: {{ prescription.created_at|date:"M d, Y h:i A" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Actions and Patient Info -->
+        <div class="col-lg-4">
+            <!-- Patient Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Patient Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="avatar-lg bg-primary rounded-circle text-white d-inline-flex align-items-center justify-content-center">
+                            {{ appointment.patient.first_name.0|upper }}{{ appointment.patient.last_name.0|upper }}
+                        </div>
+                        <h5 class="mt-3 mb-0">{{ appointment.patient.get_full_name }}</h5>
+                        <p class="text-muted">@{{ appointment.patient.username }}</p>
+                    </div>
+                    
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ appointment.patient.email|default:"Not provided" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Phone:</th>
+                            <td>{{ appointment.patient_phone }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Appointments:</th>
+                            <td>{{ appointment.patient.appointments.count }}</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="d-grid mt-3">
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-comment-medical"></i> Start Chat
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                        <a href="{% url 'doctor:create_prescription' appointment.id %}" 
+                           class="btn btn-success">
+                            <i class="fas fa-file-medical"></i> Create Prescription
+                        </a>
+                        {% endif %}
+                        
+                        <button class="btn btn-info">
+                            <i class="fas fa-video"></i> Start Video Call
+                        </button>
+                        
+                        <button class="btn btn-warning">
+                            <i class="fas fa-calendar-alt"></i> Reschedule
+                        </button>
+                        
+                        <button class="btn btn-outline-secondary">
+                            <i class="fas fa-print"></i> Print Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attachments -->
+            {% if appointment.previous_prescriptions or appointment.patient_test_reports %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Attachments</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% if appointment.previous_prescriptions %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-file-prescription text-primary"></i>
+                                Previous Prescription
+                            </span>
+                            <a href="{{ appointment.previous_prescriptions.url }}" 
+                               target="_blank" class="btn btn-sm btn-outline-primary">
+                                View
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% if appointment.patient_test_reports %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-file-medical-alt text-success"></i>
+                                Test Reports
+                            </span>
+                            <a href="{{ appointment.patient_test_reports.url }}" 
+                               target="_blank" class="btn btn-sm btn-outline-success">
+                                View
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Status Updates -->
+<script>
+$(document).ready(function() {
+    // Update appointment status
+    $('.update-status-btn').click(function() {
+        var appointmentId = $(this).data('id');
+        var newStatus = $(this).data('status');
+        var button = $(this);
+        
+        if (confirm('Are you sure you want to update this appointment status?')) {
+            $.ajax({
+                url: `/doctor/appointments/${appointmentId}/update-status/`,
+                type: 'POST',
+                data: {
+                    'status': newStatus,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while updating the appointment.');
+                }
+            });
+        }
+    });
+});
+</script>
+
+<style>
+.avatar-lg {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+    font-weight: bold;
+}
+.prescription-details h6 {
+    color: #495057;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+.list-group-item {
+    border: none;
+    padding: 0.75rem 0;
+}
+</style>
+{% endblock %}
