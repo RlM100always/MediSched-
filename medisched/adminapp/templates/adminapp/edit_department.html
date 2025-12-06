@@ -5,66 +5,174 @@
 
 {% block extra_css %}
 <style>
-    /* Custom Styles with #2D9CDB as primary color */
+    /* Mobile First Approach */
     :root {
         --primary-color: #2D9CDB;
         --primary-dark: #1e7cb3;
         --primary-light: #e1f1fa;
         --primary-gradient: linear-gradient(135deg, #2D9CDB 0%, #1e7cb3 100%);
-        --primary-shadow: rgba(45, 156, 219, 0.25);
-        --primary-light-bg: rgba(45, 156, 219, 0.08);
+        --primary-shadow: rgba(45, 156, 219, 0.15);
+        --primary-light-bg: rgba(45, 156, 219, 0.05);
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
     }
     
+    /* Base Container */
     .form-container {
-        max-width: 800px;
-        margin: 0 auto;
-        animation: fadeIn 0.5s ease-in-out;
+        max-width: 100%;
+        margin: 0;
+        padding: 0.75rem;
+        width: 100%;
+        box-sizing: border-box;
     }
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+    /* Card */
+    .card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        background: white;
+        width: 100%;
     }
     
+    /* Card Header */
     .card-header-gradient {
         background: var(--primary-gradient);
         color: white;
-        border-radius: 10px 10px 0 0 !important;
-        padding: 1.5rem !important;
+        padding: 1.25rem 1rem !important;
+        border-bottom: none;
     }
     
+    .card-header-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .card-subtitle {
+        font-size: 0.85rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+    
+    .status-badge {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        align-self: flex-start;
+        margin-top: 0.25rem;
+    }
+    
+    /* Card Body */
+    .card-body {
+        padding: 1.25rem 1rem;
+    }
+    
+    /* Form Sections */
+    .form-section {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+        border-left: 3px solid var(--primary-color);
+        border: 1px solid #f0f0f0;
+    }
+    
+    .form-section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-section-title i {
+        color: var(--primary-color);
+        font-size: 1rem;
+    }
+    
+    /* Form Elements */
     .form-label {
         font-weight: 600;
         color: #2c3e50;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.375rem;
+        font-size: 0.9rem;
+        display: block;
+    }
+    
+    .input-group {
+        width: 100%;
+    }
+    
+    .input-group-text {
+        background: var(--primary-light);
+        border-color: #e2e8f0;
+        color: var(--primary-dark);
+        font-size: 0.9rem;
+        padding: 0.75rem 0.75rem;
+        min-width: 45px;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     .form-control:focus, .form-select:focus {
         border-color: var(--primary-color);
-        box-shadow: 0 0 0 0.25rem var(--primary-shadow);
+        box-shadow: 0 0 0 3px var(--primary-shadow);
+        outline: none;
     }
     
+    .form-control-lg {
+        padding: 0.75rem;
+        font-size: 1rem;
+    }
+    
+    /* Image Preview */
     .image-preview-container {
         border: 2px dashed #dee2e6;
-        border-radius: 10px;
-        padding: 1rem;
-        background-color: #f8f9fa;
-        transition: all 0.3s;
-    }
-    
-    .image-preview-container:hover {
-        border-color: var(--primary-color);
-        background-color: var(--primary-light);
+        border-radius: 8px;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        margin-bottom: 1rem;
+        text-align: center;
     }
     
     .current-image {
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s;
-    }
-    
-    .current-image:hover {
-        transform: scale(1.05);
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 2px solid #e2e8f0;
+        margin-bottom: 0.5rem;
     }
     
     .image-placeholder {
@@ -73,165 +181,172 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: var(--primary-light);
-        border-radius: 8px;
+        background: var(--primary-light);
+        border-radius: 6px;
         color: var(--primary-color);
+        margin: 0 auto 0.5rem auto;
     }
     
+    .image-placeholder i {
+        font-size: 1.5rem;
+    }
+    
+    /* Upload Area */
     .upload-area {
         border: 2px dashed var(--primary-color);
-        border-radius: 10px;
-        padding: 2rem;
+        border-radius: 8px;
+        padding: 1.25rem 0.75rem;
         text-align: center;
         cursor: pointer;
-        transition: all 0.3s;
-        background-color: var(--primary-light-bg);
+        background: var(--primary-light-bg);
+        transition: all 0.2s;
+        margin-bottom: 0.5rem;
     }
     
     .upload-area:hover {
-        background-color: rgba(45, 156, 219, 0.15);
+        background: rgba(45, 156, 219, 0.1);
         border-color: var(--primary-dark);
-        transform: translateY(-2px);
     }
     
     .upload-icon {
-        font-size: 2.5rem;
+        font-size: 1.75rem;
         color: var(--primary-color);
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .upload-area h5 {
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+        color: var(--primary-dark);
+    }
+    
+    .upload-area p {
+        font-size: 0.8rem;
+        color: #666;
+        margin-bottom: 0.25rem;
+    }
+    
+    .upload-area small {
+        font-size: 0.75rem;
     }
     
     .file-name {
-        font-size: 0.9rem;
-        color: #6c757d;
+        font-size: 0.8rem;
+        color: #666;
         margin-top: 0.5rem;
-        word-break: break-all;
+        word-break: break-word;
+        padding: 0.25rem;
+    }
+    
+    /* Buttons */
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        padding-top: 1.25rem;
+        border-top: 2px solid #f0f0f0;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        width: 100%;
+        box-sizing: border-box;
+        border: 2px solid transparent;
+    }
+    
+    .btn-outline-secondary {
+        background: white;
+        border-color: #e2e8f0;
+        color: #666;
+    }
+    
+    .btn-outline-secondary:hover {
+        background: #f8f9fa;
+        border-color: #cbd5e0;
+        color: #333;
+        transform: translateY(-1px);
+    }
+    
+    .btn-outline-danger {
+        background: white;
+        border-color: #fed7d7;
+        color: #e53e3e;
+    }
+    
+    .btn-outline-danger:hover {
+        background: #fed7d7;
+        border-color: #e53e3e;
+        color: #c53030;
+        transform: translateY(-1px);
     }
     
     .btn-primary-gradient {
         background: var(--primary-gradient);
+        color: white;
         border: none;
-        padding: 0.6rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s;
     }
     
     .btn-primary-gradient:hover {
         background: var(--primary-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(45, 156, 219, 0.4);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(45, 156, 219, 0.3);
     }
     
-    .btn-outline-secondary {
-        padding: 0.6rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s;
-        border-color: #6c757d;
-        color: #6c757d;
-    }
-    
-    .btn-outline-secondary:hover {
-        background-color: #6c757d;
-        border-color: #6c757d;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.2);
-    }
-    
-    .btn-outline-danger {
-        padding: 0.6rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s;
-    }
-    
-    .btn-outline-danger:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.2);
-    }
-    
-    .form-section {
-        margin-bottom: 2rem;
-        padding: 1.5rem;
-        border-radius: 10px;
-        background-color: white;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        border-left: 4px solid var(--primary-color);
-    }
-    
-    .form-section-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #f1f3f4;
+    /* Form Help Text */
+    .form-text {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 0.375rem;
         display: flex;
         align-items: center;
+        gap: 0.375rem;
     }
     
-    .form-section-title i {
-        margin-right: 0.75rem;
-        color: var(--primary-color);
+    .form-text i {
+        font-size: 0.75rem;
     }
     
-    .status-badge {
-        background-color: var(--primary-light);
-        color: var(--primary-dark);
-        font-weight: 600;
-        padding: 0.5rem 1rem;
-        border-radius: 50px;
-        border: 1px solid rgba(45, 156, 219, 0.2);
+    /* Card Footer */
+    .card-footer {
+        background: #f8f9fa;
+        padding: 1rem;
+        font-size: 0.8rem;
+        color: #666;
+        border-top: 1px solid #e2e8f0;
     }
     
-    .input-group-text {
-        background-color: var(--primary-light);
-        border-color: #ced4da;
-        color: var(--primary-dark);
+    .footer-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
     
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .card-header-gradient h3 {
-            font-size: 1.5rem;
-        }
-        
-        .form-section {
-            padding: 1rem;
-            border-left-width: 3px;
-        }
-        
-        .upload-area {
-            padding: 1.5rem;
-        }
-        
-        .btn-primary-gradient, 
-        .btn-outline-secondary,
-        .btn-outline-danger {
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-        }
+    .footer-info div {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
     }
     
-    @media (max-width: 576px) {
-        .d-flex.justify-content-between {
-            flex-direction: column;
-        }
-        
-        .d-flex.justify-content-between .btn {
-            width: 100%;
-            margin-bottom: 0.75rem;
-        }
-        
-        .d-flex.justify-content-between .me-2 {
-            margin-right: 0 !important;
-            margin-bottom: 0.75rem;
-        }
-        
-        .card-footer .row > div {
-            text-align: center !important;
-            margin-bottom: 0.5rem;
-        }
+    /* Validation */
+    .invalid-feedback {
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
     }
     
-    /* Loading animation */
+    /* Loading Animation */
     .btn-loading {
         position: relative;
         color: transparent !important;
@@ -242,9 +357,9 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 20px;
-        height: 20px;
-        margin: -10px 0 0 -10px;
+        width: 18px;
+        height: 18px;
+        margin: -9px 0 0 -9px;
         border: 2px solid rgba(255, 255, 255, 0.3);
         border-top-color: white;
         border-radius: 50%;
@@ -255,172 +370,501 @@
         to { transform: rotate(360deg); }
     }
     
-    /* Success message animation */
-    .alert-success-custom {
-        background-color: var(--primary-light);
-        border-color: var(--primary-color);
-        color: var(--primary-dark);
-        border-left: 4px solid var(--primary-color);
-        animation: slideInRight 0.5s ease-out;
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
-    @keyframes slideInRight {
-        from { transform: translateX(20px); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+    .card {
+        animation: fadeIn 0.4s ease-out;
+    }
+    
+    /* ==================== MEDIA QUERIES ==================== */
+    
+    /* Small Mobile (≤ 360px) */
+    @media (max-width: 360px) {
+        .form-container {
+            padding: 0.5rem;
+        }
+        
+        .card-header-gradient {
+            padding: 1rem 0.75rem !important;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+        }
+        
+        .card-body {
+            padding: 1rem 0.75rem;
+        }
+        
+        .form-section {
+            padding: 0.875rem;
+        }
+        
+        .form-section-title {
+            font-size: 0.95rem;
+        }
+        
+        .btn {
+            padding: 0.625rem 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .current-image,
+        .image-placeholder {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .upload-area {
+            padding: 1rem 0.5rem;
+        }
+        
+        .upload-area h5 {
+            font-size: 0.9rem;
+        }
+        
+        .card-footer {
+            padding: 0.875rem 0.75rem;
+        }
+    }
+    
+    /* Medium Mobile (361px - 480px) */
+    @media (min-width: 361px) and (max-width: 480px) {
+        .form-container {
+            padding: 0.75rem;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+        }
+        
+        .current-image,
+        .image-placeholder {
+            width: 110px;
+            height: 110px;
+        }
+    }
+    
+    /* Large Mobile (481px - 576px) */
+    @media (min-width: 481px) and (max-width: 576px) {
+        .form-container {
+            padding: 1rem;
+        }
+        
+        .card-header-gradient {
+            padding: 1.5rem 1.25rem !important;
+        }
+        
+        .card-body {
+            padding: 1.5rem 1.25rem;
+        }
+        
+        .form-section {
+            padding: 1.25rem;
+        }
+        
+        .form-section-title {
+            font-size: 1.05rem;
+        }
+        
+        .current-image,
+        .image-placeholder {
+            width: 130px;
+            height: 130px;
+        }
+    }
+    
+    /* Tablet (577px - 768px) */
+    @media (min-width: 577px) and (max-width: 768px) {
+        .form-container {
+            max-width: 90%;
+            margin: 0 auto;
+        }
+        
+        .card-header-content {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .status-badge {
+            margin-top: 0;
+            align-self: center;
+        }
+        
+        .button-group {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .footer-info {
+            flex-direction: row;
+            justify-content: space-between;
+        }
+    }
+    
+    /* Small Desktop (769px - 992px) */
+    @media (min-width: 769px) and (max-width: 992px) {
+        .form-container {
+            max-width: 85%;
+        }
+        
+        .card-title {
+            font-size: 1.4rem;
+        }
+        
+        .card-subtitle {
+            font-size: 0.95rem;
+        }
+        
+        .form-section {
+            padding: 1.5rem;
+        }
+        
+        .form-section-title {
+            font-size: 1.1rem;
+        }
+        
+        .form-control-lg {
+            padding: 0.875rem;
+        }
+        
+        .current-image,
+        .image-placeholder {
+            width: 140px;
+            height: 140px;
+        }
+        
+        .upload-area {
+            padding: 1.5rem;
+        }
+        
+        .button-group {
+            flex-direction: row;
+        }
+        
+        .btn-outline-secondary,
+        .btn-outline-danger {
+            flex: 1;
+        }
+        
+        .btn-primary-gradient {
+            flex: 2;
+        }
+    }
+    
+    /* Desktop (993px - 1200px) */
+    @media (min-width: 993px) and (max-width: 1200px) {
+        .form-container {
+            max-width: 800px;
+            padding: 2rem 1rem;
+        }
+        
+        .card-header-gradient {
+            padding: 2rem !important;
+        }
+        
+        .card-title {
+            font-size: 1.6rem;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .form-section {
+            padding: 1.75rem;
+            border-left-width: 4px;
+        }
+        
+        .current-image,
+        .image-placeholder {
+            width: 150px;
+            height: 150px;
+        }
+        
+        .upload-area h5 {
+            font-size: 1.1rem;
+        }
+    }
+    
+    /* Large Desktop (≥ 1201px) */
+    @media (min-width: 1201px) {
+        .form-container {
+            max-width: 850px;
+            padding: 2.5rem 1rem;
+        }
+        
+        .card-header-gradient {
+            padding: 2.5rem !important;
+        }
+        
+        .card-title {
+            font-size: 1.75rem;
+        }
+        
+        .card-body {
+            padding: 2.5rem;
+        }
+        
+        .form-section {
+            padding: 2rem;
+            margin-bottom: 1.75rem;
+        }
+        
+        .form-section-title {
+            font-size: 1.2rem;
+        }
+        
+        .current-image {
+            width: 180px;
+            height: 180px;
+        }
+        
+        .image-placeholder {
+            width: 180px;
+            height: 180px;
+        }
+        
+        .image-placeholder i {
+            font-size: 2rem;
+        }
+        
+        .upload-area {
+            padding: 2rem;
+        }
+        
+        .upload-icon {
+            font-size: 2.5rem;
+        }
+        
+        .upload-area h5 {
+            font-size: 1.2rem;
+        }
+        
+        .btn {
+            padding: 0.875rem 1.5rem;
+        }
+    }
+    
+    /* Landscape Mode */
+    @media (max-height: 600px) and (orientation: landscape) {
+        .form-container {
+            padding: 0.5rem;
+        }
+        
+        .card {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .card-header-gradient {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .form-section {
+            padding: 0.75rem;
+        }
+        
+        .image-preview-container,
+        .upload-area {
+            padding: 0.5rem;
+        }
+        
+        .current-image,
+        .image-placeholder {
+            width: 80px;
+            height: 80px;
+        }
+    }
+    
+    /* High DPI Screens */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+        .card {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-section {
+            box-shadow: 0 0.5px 2px rgba(0, 0, 0, 0.05);
+        }
+    }
+    
+    /* Print Styles */
+    @media print {
+        .card {
+            box-shadow: none;
+            border: 1px solid #ddd;
+        }
+        
+        .btn,
+        .upload-area,
+        .file-input,
+        .card-footer {
+            display: none !important;
+        }
+        
+        .form-section {
+            break-inside: avoid;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4 mb-5">
-    <div class="form-container">
-        <!-- Success Message (can be added dynamically) -->
-        {% if messages %}
-        <div class="mb-4">
-            {% for message in messages %}
-            <div class="alert alert-success-custom alert-dismissible fade show" role="alert">
-                <i class="fa-solid fa-circle-check me-2"></i>{{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endfor %}
+<div class="form-container">
+    <!-- Success Messages -->
+    {% if messages %}
+    <div class="alert-messages mb-3">
+        {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert" 
+             style="background: var(--primary-light); border-color: var(--primary-color); color: var(--primary-dark);">
+            <i class="fa-solid fa-circle-check me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <!-- Card Header -->
+        <div class="card-header card-header-gradient">
+            <div class="card-header-content">
+                <div>
+                    <h3 class="card-title">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        Edit Department
+                    </h3>
+                    <p class="card-subtitle">Update department information and image</p>
+                </div>
+                <span class="status-badge">
+                    <i class="fa-solid fa-hashtag"></i>
+                    ID: {{ department.id|default:"NEW" }}
+                </span>
+            </div>
+        </div>
         
-        <div class="card shadow-lg border-0">
-            <!-- Header with gradient background -->
-            <div class="card-header card-header-gradient">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <h3 class="mb-0"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Department</h3>
-                        <p class="mb-0 opacity-90">Update department information and image</p>
-                    </div>
-                    <div class="text-end">
-                        <span class="status-badge">
-                            <i class="fa-solid fa-hashtag me-1"></i>ID: {{ department.id|default:"NEW" }}
-                        </span>
+        <!-- Form Content -->
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" id="editDepartmentForm">
+                {% csrf_token %}
+                
+                <!-- Department Information -->
+                <div class="form-section">
+                    <h4 class="form-section-title">
+                        <i class="fa-solid fa-building"></i>
+                        Department Information
+                    </h4>
+                    
+                    <div class="mb-3">
+                        <label for="department_name" class="form-label">Department Name *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa-solid fa-hospital"></i>
+                            </span>
+                            <input type="text" name="department_name" id="department_name" 
+                                   class="form-control form-control-lg" 
+                                   value="{{ department.department_name }}" 
+                                   placeholder="Enter department name" required>
+                        </div>
+                        <div class="form-text">
+                            <i class="fa-solid fa-circle-info text-primary"></i>
+                            Enter the official name of the department
+                        </div>
+                        <div id="charCounter" class="form-text text-end"></div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Form content -->
-            <div class="card-body p-4">
-                <form method="POST" enctype="multipart/form-data" id="editDepartmentForm">
-                    {% csrf_token %}
+                
+                <!-- Department Image -->
+                <div class="form-section">
+                    <h4 class="form-section-title">
+                        <i class="fa-solid fa-image"></i>
+                        Department Image
+                    </h4>
                     
-                    <!-- Department Information Section -->
-                    <div class="form-section">
-                        <div class="form-section-title">
-                            <i class="fa-solid fa-building"></i> Department Information
-                        </div>
-                        
-                        <!-- Department Name -->
-                        <div class="mb-4">
-                            <label for="department_name" class="form-label">Department Name *</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="fa-solid fa-hospital"></i>
-                                </span>
-                                <input type="text" name="department_name" id="department_name" 
-                                       class="form-control form-control-lg" 
-                                       value="{{ department.department_name }}" 
-                                       placeholder="Enter department name" required>
-                            </div>
-                            <div class="form-text mt-2">
-                                <i class="fa-solid fa-circle-info me-1 text-primary"></i>Enter the official name of the department.
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Image Section -->
-                    <div class="form-section">
-                        <div class="form-section-title">
-                            <i class="fa-solid fa-image"></i> Department Image
-                        </div>
-                        
-                        <!-- Current Image -->
-                        <div class="mb-4">
-                            <label class="form-label">Current Image</label>
-                            <div class="image-preview-container text-center">
-                                {% if department.department_image %}
-                                    <div class="d-flex flex-column align-items-center">
-                                        <img src="{{ department.department_image.url }}" 
-                                             alt="{{ department.department_name }}" 
-                                             width="180" height="180" 
-                                             class="current-image mb-3">
-                                        <p class="mb-0">
-                                            <i class="fa-solid fa-check-circle text-success me-1"></i>
-                                            Current department image
-                                        </p>
-                                    </div>
-                                {% else %}
-                                    <div class="d-flex flex-column align-items-center">
-                                        <div class="image-placeholder mb-3">
-                                            <i class="fa-solid fa-image fa-2x"></i>
-                                        </div>
-                                        <p class="mb-0 text-muted">
-                                            <i class="fa-solid fa-triangle-exclamation me-1"></i>
-                                            No image uploaded for this department
-                                        </p>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Upload New Image -->
-                        <div class="mb-3">
-                            <label class="form-label">Change Department Image</label>
-                            <div class="upload-area" id="uploadArea">
-                                <div class="upload-icon">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <!-- Current Image -->
+                    <div class="mb-3">
+                        <label class="form-label">Current Image</label>
+                        <div class="image-preview-container">
+                            {% if department.department_image %}
+                                <img src="{{ department.department_image.url }}" 
+                                     alt="{{ department.department_name }}" 
+                                     class="current-image mb-2">
+                                <p class="mb-0 small text-success">
+                                    <i class="fa-solid fa-check-circle"></i>
+                                    Current department image
+                                </p>
+                            {% else %}
+                                <div class="image-placeholder mb-2">
+                                    <i class="fa-solid fa-image"></i>
                                 </div>
-                                <h5 class="text-primary fw-bold">Drag & Drop or Click to Upload</h5>
-                                <p class="text-muted mb-2">Upload a new image for this department</p>
-                                <small class="text-muted d-block">Supports: JPEG, PNG, GIF</small>
-                                <input type="file" name="department_image" id="department_image" 
-                                       class="d-none" accept="image/*">
-                                <div id="fileName" class="file-name"></div>
-                            </div>
-                            <div class="form-text mt-2">
-                                <i class="fa-solid fa-circle-info me-1 text-primary"></i>
-                                Recommended size: 500x500px. Max file size: 5MB.
-                            </div>
+                                <p class="mb-0 small text-muted">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    No image uploaded
+                                </p>
+                            {% endif %}
                         </div>
                     </div>
                     
-                    <!-- Action Buttons -->
-                    <div class="d-flex flex-column flex-md-row justify-content-between mt-4 pt-3 border-top">
-                        <div class="mb-3 mb-md-0">
-                            <a href="{% url 'department_list' %}" class="btn btn-outline-secondary btn-lg">
-                                <i class="fa-solid fa-arrow-left me-2"></i>Back to List
-                            </a>
+                    <!-- Upload New Image -->
+                    <div class="mb-3">
+                        <label class="form-label">Change Department Image</label>
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <h5>Drag & Drop or Click to Upload</h5>
+                            <p>Upload a new image for this department</p>
+                            <small>Supports: JPEG, PNG, GIF, WebP</small>
+                            <input type="file" name="department_image" id="department_image" 
+                                   class="d-none" accept="image/*">
+                            <div id="fileName" class="file-name"></div>
                         </div>
-                        <div class="d-flex flex-column flex-sm-row">
-                            <button type="reset" class="btn btn-outline-danger me-0 me-sm-2 mb-2 mb-sm-0 btn-lg">
-                                <i class="fa-solid fa-rotate-left me-2"></i>Reset Form
-                            </button>
-                            <button type="submit" class="btn btn-primary-gradient btn-lg">
-                                <i class="fa-solid fa-floppy-disk me-2"></i>Update Department
-                            </button>
+                        <div class="form-text">
+                            <i class="fa-solid fa-circle-info text-primary"></i>
+                            Recommended: 500x500px • Max size: 5MB
                         </div>
                     </div>
-                </form>
-            </div>
-            
-            <!-- Card footer with status -->
-            <div class="card-footer bg-light">
-                <div class="row align-items-center">
-                    <div class="col-md-6 mb-2 mb-md-0">
-                        <small class="text-muted">
-                            <i class="fa-solid fa-calendar-day me-1 text-primary"></i> 
-                            Last updated: {{ department.updated_at|date:"M d, Y H:i"|default:"Not available" }}
-                        </small>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <small class="text-muted">
-                            <i class="fa-solid fa-asterisk me-1 text-danger"></i> 
-                            Fields marked with * are required
-                        </small>
-                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <a href="{% url 'department_list' %}" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Back to List
+                    </a>
+                    <button type="reset" class="btn btn-outline-danger">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        Reset Form
+                    </button>
+                    <button type="submit" class="btn btn-primary-gradient">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Update Department
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Card Footer -->
+        <div class="card-footer">
+            <div class="footer-info">
+                <div>
+                    <i class="fa-solid fa-calendar-day text-primary"></i>
+                    <span>Last updated: {{ department.updated_at|date:"M d, Y H:i"|default:"Not available" }}</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-asterisk text-danger"></i>
+                    <span>Fields marked with * are required</span>
                 </div>
             </div>
         </div>
@@ -430,13 +874,13 @@
 
 {% block extra_js %}
 <script>
-    // File upload interaction
     document.addEventListener('DOMContentLoaded', function() {
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('department_image');
         const fileName = document.getElementById('fileName');
-        const primaryColor = '#2D9CDB';
-        const primaryDark = '#1e7cb3';
+        const form = document.getElementById('editDepartmentForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const departmentNameInput = document.getElementById('department_name');
         
         // Click on upload area to trigger file input
         uploadArea.addEventListener('click', function() {
@@ -451,7 +895,7 @@
                 // Validate file type
                 const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
                 if (!validTypes.includes(file.type)) {
-                    alert('Please select a valid image file (JPEG, PNG, GIF, or WebP).');
+                    showAlert('Please select a valid image file (JPEG, PNG, GIF, or WebP).', 'danger');
                     this.value = '';
                     return;
                 }
@@ -463,48 +907,42 @@
                 // Preview image
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Update upload area to show preview
                     uploadArea.innerHTML = `
-                        <div class="d-flex flex-column align-items-center">
-                            <img src="${e.target.result}" width="140" height="140" 
-                                 class="rounded mb-3 border" style="object-fit: cover; border-color: ${primaryColor} !important;">
-                            <p class="mb-1 fw-bold text-primary">${file.name}</p>
+                        <div class="text-center">
+                            <img src="${e.target.result}" width="100" height="100" 
+                                 class="rounded mb-2 border" style="object-fit: cover; border-color: #2D9CDB !important;">
+                            <p class="mb-1 fw-bold text-primary small">${file.name}</p>
                             <p class="mb-0 text-muted small">Click to change image</p>
                             <div id="fileName" class="file-name text-success fw-bold mt-1">Selected: ${file.name}</div>
                         </div>
                     `;
                     
-                    // Re-add click event to the updated upload area
+                    // Re-add click event
                     uploadArea.addEventListener('click', function() {
                         fileInput.click();
                     });
                 };
                 reader.readAsDataURL(file);
-            } else {
-                fileName.textContent = '';
             }
         });
         
         // Drag and drop functionality
         uploadArea.addEventListener('dragover', function(e) {
             e.preventDefault();
-            uploadArea.style.borderColor = primaryDark;
-            uploadArea.style.backgroundColor = 'rgba(45, 156, 219, 0.15)';
-            uploadArea.style.transform = 'translateY(-2px)';
+            uploadArea.style.borderColor = '#1e7cb3';
+            uploadArea.style.background = 'rgba(45, 156, 219, 0.1)';
         });
         
         uploadArea.addEventListener('dragleave', function(e) {
             e.preventDefault();
-            uploadArea.style.borderColor = primaryColor;
-            uploadArea.style.backgroundColor = '';
-            uploadArea.style.transform = 'translateY(0)';
+            uploadArea.style.borderColor = '';
+            uploadArea.style.background = '';
         });
         
         uploadArea.addEventListener('drop', function(e) {
             e.preventDefault();
-            uploadArea.style.borderColor = primaryColor;
-            uploadArea.style.backgroundColor = '';
-            uploadArea.style.transform = 'translateY(0)';
+            uploadArea.style.borderColor = '';
+            uploadArea.style.background = '';
             
             if (e.dataTransfer.files.length > 0) {
                 fileInput.files = e.dataTransfer.files;
@@ -514,10 +952,6 @@
         });
         
         // Form validation
-        const form = document.getElementById('editDepartmentForm');
-        const departmentNameInput = document.getElementById('department_name');
-        const submitBtn = form.querySelector('button[type="submit"]');
-        
         form.addEventListener('submit', function(e) {
             let isValid = true;
             
@@ -526,12 +960,11 @@
                 isValid = false;
                 departmentNameInput.classList.add('is-invalid');
                 
-                // Add error message if not already present
                 if (!document.getElementById('nameError')) {
                     const errorDiv = document.createElement('div');
                     errorDiv.id = 'nameError';
                     errorDiv.className = 'invalid-feedback d-block';
-                    errorDiv.innerHTML = '<i class="fa-solid fa-circle-exclamation me-1"></i>Department name is required.';
+                    errorDiv.innerHTML = '<i class="fa-solid fa-circle-exclamation me-1"></i>Department name is required';
                     departmentNameInput.parentNode.appendChild(errorDiv);
                 }
             } else {
@@ -540,102 +973,107 @@
                 if (errorDiv) errorDiv.remove();
             }
             
-            // Validate file size if a file is selected
+            // Validate file size
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                const maxSize = 5 * 1024 * 1024; // 5MB
                 
                 if (file.size > maxSize) {
                     isValid = false;
-                    alert('File size exceeds 5MB limit. Please choose a smaller image.');
+                    showAlert('File size exceeds 5MB limit. Please choose a smaller image.', 'danger');
                 }
             }
             
             if (!isValid) {
                 e.preventDefault();
-                
-                // Scroll to first error
-                const firstInvalid = form.querySelector('.is-invalid');
-                if (firstInvalid) {
-                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+                departmentNameInput.focus();
             } else {
-                // Show loading state on submit button
+                // Show loading state
                 submitBtn.classList.add('btn-loading');
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Updating...';
             }
         });
         
-        // Reset form button
+        // Reset form
         const resetBtn = form.querySelector('button[type="reset"]');
         resetBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to reset all form fields? This cannot be undone.')) {
-                // Reset file name display
+            if (confirm('Are you sure you want to reset all form fields?')) {
+                // Reset file input
+                fileInput.value = '';
                 fileName.textContent = '';
                 fileName.className = 'file-name';
                 
-                // Reset upload area to default
+                // Reset upload area
                 uploadArea.innerHTML = `
                     <div class="upload-icon">
                         <i class="fa-solid fa-cloud-arrow-up"></i>
                     </div>
-                    <h5 class="text-primary fw-bold">Drag & Drop or Click to Upload</h5>
-                    <p class="text-muted mb-2">Upload a new image for this department</p>
-                    <small class="text-muted d-block">Supports: JPEG, PNG, GIF</small>
+                    <h5>Drag & Drop or Click to Upload</h5>
+                    <p>Upload a new image for this department</p>
+                    <small>Supports: JPEG, PNG, GIF, WebP</small>
                     <div id="fileName" class="file-name"></div>
                 `;
                 
-                // Re-add click event to reset upload area
+                // Re-add click event
                 uploadArea.addEventListener('click', function() {
                     fileInput.click();
                 });
                 
-                // Remove any validation errors
+                // Clear validation errors
                 departmentNameInput.classList.remove('is-invalid');
                 const errorDiv = document.getElementById('nameError');
                 if (errorDiv) errorDiv.remove();
                 
-                // Show reset confirmation
-                const alertDiv = document.createElement('div');
-                alertDiv.className = 'alert alert-success-custom mt-3';
-                alertDiv.innerHTML = `
-                    <i class="fa-solid fa-check-circle me-2"></i>
-                    Form has been reset to original values.
-                `;
-                form.prepend(alertDiv);
-                
-                // Remove the alert after 3 seconds
-                setTimeout(() => {
-                    alertDiv.remove();
-                }, 3000);
+                showAlert('Form has been reset to original values.', 'success');
             }
         });
         
-        // Real-time character counter for department name
+        // Character counter
         departmentNameInput.addEventListener('input', function() {
             const charCount = this.value.length;
-            const counterDiv = document.getElementById('charCounter') || 
-                               (() => {
-                                   const div = document.createElement('div');
-                                   div.id = 'charCounter';
-                                   div.className = 'form-text text-end small mt-1';
-                                   this.parentNode.appendChild(div);
-                                   return div;
-                               })();
+            const counter = document.getElementById('charCounter');
             
-            counterDiv.textContent = `${charCount} characters`;
-            
-            if (charCount > 50) {
-                counterDiv.classList.add('text-warning');
-            } else {
-                counterDiv.classList.remove('text-warning');
+            if (counter) {
+                counter.textContent = `${charCount} characters`;
+                
+                if (charCount > 50) {
+                    counter.style.color = 'var(--warning-color)';
+                } else {
+                    counter.style.color = '';
+                }
             }
         });
         
-        // Trigger input event to show initial character count
+        // Initialize character counter
         if (departmentNameInput.value) {
             departmentNameInput.dispatchEvent(new Event('input'));
+        }
+        
+        // Helper function to show alerts
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
+            alertDiv.innerHTML = `
+                <i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-exclamation'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.form-container');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // Handle mobile keyboard
+        if ('virtualKeyboard' in navigator) {
+            departmentNameInput.addEventListener('focus', function() {
+                setTimeout(() => {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
         }
     });
 </script>

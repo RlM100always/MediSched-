@@ -14,14 +14,17 @@
         --warning-color: #f39c12;
         --danger-color: #e74c3c;
         --light-bg: #f8fafc;
-        --card-shadow: 0 15px 45px rgba(45, 156, 219, 0.12);
-        --hover-shadow: 0 25px 65px rgba(45, 156, 219, 0.2);
+        --card-shadow: 0 10px 30px rgba(45, 156, 219, 0.12);
+        --hover-shadow: 0 20px 50px rgba(45, 156, 219, 0.18);
     }
     
+    /* Mobile First Base Styles - Minimal padding */
     .form-container {
-        max-width: 750px;
-        margin: 2rem auto;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
         animation: slideInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        width: 100%;
     }
     
     @keyframes slideInUp {
@@ -35,471 +38,283 @@
         }
     }
     
+    /* Card */
     .form-card {
         border: none;
-        border-radius: 22px;
+        border-radius: 0;
         overflow: hidden;
-        box-shadow: var(--card-shadow);
-        transition: all 0.4s ease;
+        box-shadow: none;
         background: white;
+        min-height: 100vh;
     }
     
-    .form-card:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--hover-shadow);
-    }
-    
+    /* Header */
     .card-header-custom {
         background: var(--primary-gradient);
         color: white;
-        padding: 2rem;
+        padding: 1rem 0.75rem;
         position: relative;
         overflow: hidden;
-    }
-    
-    .card-header-custom::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 150px;
-        height: 150px;
-        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
-        opacity: 0.3;
-        transform: rotate(45deg);
+        width: 100%;
     }
     
     .header-content {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 1.5rem;
+        flex-direction: column;
+        gap: 0.75rem;
         position: relative;
         z-index: 2;
+        max-width: 100%;
     }
     
     .header-title {
         display: flex;
         align-items: center;
         margin: 0;
-        font-weight: 800;
-        font-size: 1.9rem;
-        letter-spacing: 0.5px;
+        font-weight: 700;
+        font-size: 1.25rem;
+        letter-spacing: 0.3px;
+        width: 100%;
     }
     
     .header-title i {
-        font-size: 2.3rem;
-        margin-right: 1.2rem;
-        background: rgba(255, 255, 255, 0.25);
-        padding: 1rem;
-        border-radius: 16px;
-        backdrop-filter: blur(10px);
-        animation: bounce 2s infinite ease-in-out;
-    }
-    
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0) rotate(0deg); }
-        50% { transform: translateY(-8px) rotate(5deg); }
+        font-size: 1.25rem;
+        margin-right: 0.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem;
+        border-radius: 8px;
+        backdrop-filter: blur(5px);
+        flex-shrink: 0;
     }
     
     .upazila-badge {
-        background: rgba(255, 255, 255, 0.3);
-        backdrop-filter: blur(20px);
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        padding: 0.9rem 1.8rem;
-        border-radius: 50px;
-        font-weight: 800;
-        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        align-self: flex-start;
+        flex-shrink: 0;
+    }
+    
+    /* Card Body */
+    .card-body {
+        padding: 1rem 0.75rem;
+        background: #f8fafc;
+        width: 100%;
+    }
+    
+    /* Hierarchy Info */
+    .hierarchy-info {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        width: 100%;
+    }
+    
+    .info-card {
+        background: white;
+        padding: 0.75rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border-left: 3px solid var(--primary-color);
+    }
+    
+    .info-label {
+        font-size: 0.75rem;
+        color: #718096;
+        font-weight: 600;
+        margin-bottom: 0.125rem;
         display: flex;
         align-items: center;
-        gap: 1rem;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
+        gap: 0.25rem;
     }
     
-    .upazila-badge:hover {
-        transform: scale(1.08);
-        background: rgba(255, 255, 255, 0.4);
+    .info-value {
+        font-size: 0.875rem;
+        color: #2d3748;
+        font-weight: 600;
     }
     
-    .card-body {
-        padding: 3rem;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    }
-    
-    @media (max-width: 768px) {
-        .card-body {
-            padding: 2.2rem;
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .card-body {
-            padding: 1.8rem;
-        }
-        .header-content {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 1.2rem;
-        }
-    }
-    
+    /* Form Section */
     .form-section {
         background: white;
-        border-radius: 20px;
-        padding: 2.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        border-radius: 10px;
+        padding: 0.875rem;
+        margin-bottom: 0.875rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         border: 1px solid #eef2f7;
-        transition: all 0.3s ease;
-    }
-    
-    .form-section:hover {
-        box-shadow: 0 15px 40px rgba(45, 156, 219, 0.12);
-        border-color: var(--primary-light);
+        width: 100%;
     }
     
     .section-title {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.5rem;
         color: #2d3748;
-        font-weight: 700;
-        font-size: 1.3rem;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 3px solid var(--primary-light);
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.875rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-light);
+        width: 100%;
     }
     
     .section-title i {
         color: var(--primary-color);
         background: var(--primary-light);
-        padding: 0.8rem;
-        border-radius: 12px;
-        font-size: 1.2rem;
+        padding: 0.375rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        flex-shrink: 0;
     }
     
+    /* Form Elements */
     .form-label {
-        font-weight: 700;
+        font-weight: 600;
         color: #2d3748;
-        margin-bottom: 0.8rem;
-        font-size: 1.05rem;
+        margin-bottom: 0.375rem;
+        font-size: 0.875rem;
         display: flex;
         align-items: center;
-        gap: 0.8rem;
+        gap: 0.375rem;
+        width: 100%;
     }
     
     .form-label i {
         color: var(--primary-color);
-        font-size: 1.1rem;
+        font-size: 0.75rem;
+        flex-shrink: 0;
     }
     
-    .input-group-custom {
-        position: relative;
-        margin-bottom: 2rem;
-    }
-    
-    .form-control-custom {
+    .form-control-custom,
+    .form-select-custom {
         border: 2px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 1.2rem 1.5rem;
-        font-size: 1.1rem;
-        transition: all 0.3s ease;
-        background: white;
-        font-weight: 500;
-        letter-spacing: 0.3px;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 0.875rem;
         width: 100%;
+        background: white;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
     }
     
-    .form-control-custom:focus {
+    .form-control-custom:focus,
+    .form-select-custom:focus {
         border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px rgba(45, 156, 219, 0.2);
-        transform: translateY(-2px);
+        box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.15);
         outline: none;
-    }
-    
-    .form-control-custom:hover {
-        border-color: #cbd5e0;
     }
     
     .select-wrapper {
         position: relative;
+        width: 100%;
     }
     
     .select-wrapper::after {
         content: "▾";
-        font-size: 1.3rem;
+        font-size: 0.875rem;
         color: var(--primary-color);
         position: absolute;
-        right: 1.5rem;
+        right: 0.75rem;
         top: 50%;
         transform: translateY(-50%);
         pointer-events: none;
-        font-weight: bold;
     }
     
     .form-select-custom {
         appearance: none;
-        border: 2px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 1.2rem 1.5rem;
-        font-size: 1.1rem;
-        background: white;
         cursor: pointer;
-        transition: all 0.3s ease;
         width: 100%;
-        font-weight: 500;
-        letter-spacing: 0.3px;
-    }
-    
-    .form-select-custom:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px rgba(45, 156, 219, 0.2);
-        outline: none;
-        transform: translateY(-2px);
-    }
-    
-    .form-select-custom:hover {
-        border-color: #cbd5e0;
-    }
-    
-    .option-group {
-        display: block;
-        padding: 0.8rem 1rem;
-        margin: 0.2rem 0;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-        cursor: pointer;
-    }
-    
-    .option-group:hover {
-        background: var(--primary-light);
-        transform: translateX(5px);
-    }
-    
-    .district-name {
-        font-weight: 600;
-        color: #2d3748;
-    }
-    
-    .division-name {
-        font-size: 0.85rem;
-        color: #718096;
-        margin-left: 0.5rem;
-        font-style: italic;
-    }
-    
-    .form-helper {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        color: #718096;
-        font-size: 0.9rem;
-        margin-top: 0.8rem;
-        font-weight: 500;
-    }
-    
-    .form-helper i {
-        color: var(--primary-color);
-        font-size: 0.85rem;
-    }
-    
-    .button-group {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 3rem;
-        padding-top: 2.5rem;
-        border-top: 3px solid #edf2f7;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-    }
-    
-    @media (max-width: 576px) {
-        .button-group {
-            flex-direction: column;
-        }
-        .button-group a, 
-        .button-group button {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-    
-    .btn-back {
-        background: white;
-        color: #4a5568;
-        border: 2px solid #e2e8f0;
-        padding: 1.1rem 2.2rem;
-        border-radius: 14px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 1.2rem;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-    }
-    
-    .btn-back:hover {
-        background: #f7fafc;
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-        transform: translateX(-8px);
-        box-shadow: 0 12px 25px rgba(45, 156, 219, 0.15);
-    }
-    
-    .btn-update {
-        background: var(--primary-gradient);
-        color: white;
-        border: none;
-        padding: 1.2rem 2.8rem;
-        border-radius: 14px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 1.2rem;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 8px 20px rgba(45, 156, 219, 0.35);
-    }
-    
-    .btn-update::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-    
-    .btn-update:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-    
-    .btn-update:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 15px 30px rgba(45, 156, 219, 0.5);
-    }
-    
-    .btn-update:active {
-        transform: translateY(-2px);
-    }
-    
-    .btn-update span {
-        position: relative;
-        z-index: 2;
-    }
-    
-    .btn-update i {
-        position: relative;
-        z-index: 2;
-    }
-    
-    .btn-loading {
-        position: relative;
-        color: transparent !important;
-    }
-    
-    .btn-loading::after {
-        content: '';
-        position: absolute;
-        width: 24px;
-        height: 24px;
-        top: 50%;
-        left: 50%;
-        margin: -12px 0 0 -12px;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-        z-index: 3;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    .hierarchy-info {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
-    }
-    
-    .info-card {
-        background: white;
-        padding: 1.8rem;
-        border-radius: 16px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
-        border-left: 5px solid var(--primary-color);
-        transition: all 0.3s ease;
-    }
-    
-    .info-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(45, 156, 219, 0.15);
-    }
-    
-    .info-label {
-        font-size: 0.9rem;
-        color: #718096;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-    }
-    
-    .info-value {
-        font-size: 1.1rem;
-        color: #2d3748;
-        font-weight: 700;
     }
     
     .current-selection {
         background: var(--primary-light);
-        border: 2px solid var(--primary-color);
-        border-radius: 14px;
-        padding: 1.2rem 1.5rem;
-        margin-bottom: 1.5rem;
+        border: 1px solid var(--primary-color);
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
         display: flex;
         align-items: center;
-        gap: 1rem;
-        animation: pulseBorder 2s infinite;
-    }
-    
-    @keyframes pulseBorder {
-        0%, 100% { border-color: var(--primary-color); }
-        50% { border-color: var(--primary-dark); }
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        width: 100%;
     }
     
     .current-selection i {
         color: var(--primary-color);
-        font-size: 1.2rem;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+    
+    .current-selection-text {
+        font-size: 0.75rem;
+        color: #2d3748;
+        line-height: 1.3;
     }
     
     .current-selection-text strong {
         color: var(--primary-dark);
     }
     
+    /* Search Box */
+    .search-box {
+        position: relative;
+        margin-bottom: 0.75rem;
+        width: 100%;
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a0aec0;
+        z-index: 2;
+        font-size: 0.875rem;
+    }
+    
+    .search-input {
+        padding-left: 2.25rem !important;
+        border-radius: 8px !important;
+        width: 100%;
+    }
+    
+    /* Form Helper */
+    .form-helper {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        color: #718096;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        font-weight: 500;
+        width: 100%;
+    }
+    
+    .form-helper i {
+        color: var(--primary-color);
+        font-size: 0.625rem;
+        flex-shrink: 0;
+    }
+    
+    /* Validation */
     .validation-feedback {
         display: flex;
         align-items: center;
-        gap: 0.6rem;
-        margin-top: 0.6rem;
-        font-size: 0.9rem;
+        gap: 0.25rem;
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
         font-weight: 500;
         opacity: 0;
-        transform: translateY(-10px);
-        transition: all 0.3s ease;
+        transform: translateY(-5px);
+        transition: all 0.2s ease;
+        width: 100%;
     }
     
     .validation-feedback.show {
@@ -515,49 +330,449 @@
         color: var(--danger-color);
     }
     
-    .search-box {
-        position: relative;
-        margin-bottom: 1.5rem;
+    /* Buttons */
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 2px solid #edf2f7;
+        width: 100%;
     }
     
-    .search-box i {
-        position: absolute;
-        left: 1.2rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #a0aec0;
-        z-index: 2;
-    }
-    
-    .search-input {
-        padding-left: 3rem !important;
-        border-radius: 12px !important;
-    }
-    
-    .success-toast {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        background: var(--success-color);
-        color: white;
-        padding: 1.5rem 2rem;
-        border-radius: 16px;
+    .btn-back,
+    .btn-update {
+        border-radius: 8px;
+        font-weight: 600;
         display: flex;
         align-items: center;
-        gap: 1.2rem;
-        box-shadow: 0 15px 35px rgba(39, 174, 96, 0.4);
-        z-index: 9999;
-        animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        width: 100%;
+        border: none;
+        box-sizing: border-box;
     }
     
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
+    .btn-back {
+        background: white;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .btn-back:hover {
+        background: #f7fafc;
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .btn-update {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 2px 8px rgba(45, 156, 219, 0.3);
+    }
+    
+    .btn-update:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(45, 156, 219, 0.4);
+    }
+    
+    .btn-loading {
+        position: relative;
+        color: transparent !important;
+    }
+    
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        top: 50%;
+        left: 50%;
+        margin: -9px 0 0 -9px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Success Toast */
+    .success-toast {
+        position: fixed;
+        bottom: 15px;
+        left: 0.75rem;
+        right: 0.75rem;
+        background: var(--success-color);
+        color: white;
+        padding: 0.875rem 1rem;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        z-index: 9999;
+        animation: slideInUp 0.3s ease-out;
+        display: none;
+    }
+    
+    .success-toast i {
+        font-size: 1.125rem;
+        flex-shrink: 0;
+    }
+    
+    /* Tablet Styles (min-width: 576px) */
+    @media (min-width: 576px) {
+        .form-container {
+            padding: 1rem;
+            max-width: 540px;
+            margin: 0 auto;
         }
-        to {
-            transform: translateX(0);
-            opacity: 1;
+        
+        .form-card {
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            min-height: auto;
+        }
+        
+        .card-header-custom {
+            padding: 1.25rem;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .header-content {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-title {
+            font-size: 1.375rem;
+        }
+        
+        .header-title i {
+            font-size: 1.5rem;
+            padding: 0.625rem;
+            margin-right: 0.75rem;
+        }
+        
+        .upazila-badge {
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .hierarchy-info {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-card {
+            padding: 1rem;
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+        }
+        
+        .info-value {
+            font-size: 1rem;
+        }
+        
+        .form-section {
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            border-radius: 12px;
+        }
+        
+        .section-title {
+            font-size: 1.125rem;
+            margin-bottom: 1.25rem;
+        }
+        
+        .section-title i {
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .form-label {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control-custom,
+        .form-select-custom {
+            padding: 0.875rem;
+            font-size: 0.95rem;
+        }
+        
+        .current-selection {
+            padding: 0.875rem;
+            font-size: 0.875rem;
+        }
+        
+        .search-box i {
+            left: 0.875rem;
+        }
+        
+        .search-input {
+            padding-left: 2.5rem !important;
+        }
+        
+        .form-helper {
+            font-size: 0.75rem;
+            margin-top: 0.375rem;
+        }
+        
+        .validation-feedback {
+            font-size: 0.75rem;
+            margin-top: 0.375rem;
+        }
+        
+        .button-group {
+            flex-direction: row;
+            gap: 0.875rem;
+            margin-top: 2rem;
+        }
+        
+        .btn-back,
+        .btn-update {
+            flex: 1;
+            min-width: 120px;
+        }
+    }
+    
+    /* Desktop Styles (min-width: 768px) */
+    @media (min-width: 768px) {
+        .form-container {
+            max-width: 720px;
+            padding: 2rem 1rem;
+        }
+        
+        .card-header-custom {
+            padding: 1.75rem;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+        }
+        
+        .header-title i {
+            font-size: 1.75rem;
+            padding: 0.875rem;
+        }
+        
+        .upazila-badge {
+            font-size: 1rem;
+            padding: 0.625rem 1.25rem;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .hierarchy-info {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-card {
+            padding: 1.25rem;
+        }
+        
+        .info-label {
+            font-size: 0.875rem;
+        }
+        
+        .info-value {
+            font-size: 1.125rem;
+        }
+        
+        .form-section {
+            padding: 1.75rem;
+            margin-bottom: 1.75rem;
+            border-radius: 14px;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title i {
+            padding: 0.625rem;
+            font-size: 1.125rem;
+        }
+        
+        .form-label {
+            font-size: 1rem;
+        }
+        
+        .form-control-custom,
+        .form-select-custom {
+            padding: 1rem;
+            font-size: 1rem;
+            border-radius: 10px;
+        }
+        
+        .current-selection {
+            padding: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .search-box {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-helper {
+            font-size: 0.875rem;
+        }
+        
+        .validation-feedback {
+            font-size: 0.875rem;
+        }
+        
+        .button-group {
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            padding-top: 1.75rem;
+        }
+        
+        .btn-back,
+        .btn-update {
+            width: auto;
+            padding: 0.875rem 1.75rem;
+            font-size: 0.95rem;
+        }
+        
+        .success-toast {
+            left: auto;
+            right: 1.5rem;
+            width: auto;
+            max-width: 380px;
+            padding: 1rem 1.5rem;
+        }
+    }
+    
+    /* Large Desktop (min-width: 992px) */
+    @media (min-width: 992px) {
+        .form-container {
+            max-width: 750px;
+        }
+    }
+    
+    /* Extra Small Devices Fix (<= 360px) */
+    @media (max-width: 360px) {
+        .card-header-custom {
+            padding: 0.875rem 0.5rem;
+        }
+        
+        .header-title {
+            font-size: 1.125rem;
+        }
+        
+        .header-title i {
+            font-size: 1.125rem;
+            padding: 0.375rem;
+            margin-right: 0.375rem;
+        }
+        
+        .upazila-badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .card-body {
+            padding: 0.75rem 0.5rem;
+        }
+        
+        .form-section {
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .section-title {
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .form-label {
+            font-size: 0.8rem;
+        }
+        
+        .form-control-custom,
+        .form-select-custom {
+            padding: 0.625rem;
+            font-size: 0.8rem;
+        }
+        
+        .current-selection {
+            padding: 0.625rem;
+            font-size: 0.7rem;
+        }
+        
+        .search-box i {
+            left: 0.625rem;
+        }
+        
+        .search-input {
+            padding-left: 2rem !important;
+        }
+        
+        .form-helper,
+        .validation-feedback {
+            font-size: 0.7rem;
+        }
+        
+        .btn-back,
+        .btn-update {
+            padding: 0.625rem 0.75rem;
+            font-size: 0.8rem;
+        }
+        
+        .success-toast {
+            left: 0.5rem;
+            right: 0.5rem;
+            padding: 0.75rem 0.875rem;
+            font-size: 0.8rem;
+        }
+    }
+    
+    /* Extra Extra Small (<= 320px) */
+    @media (max-width: 320px) {
+        .header-title {
+            font-size: 1rem;
+        }
+        
+        .header-title i {
+            font-size: 1rem;
+        }
+        
+        .card-body {
+            padding: 0.5rem;
+        }
+        
+        .form-section {
+            padding: 0.625rem;
+        }
+        
+        .btn-back span,
+        .btn-update span {
+            font-size: 0.75rem;
         }
     }
 </style>
@@ -623,7 +838,7 @@
                         Upazila Information
                     </div>
                     
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label for="upazila_name" class="form-label">
                             <i class="fa-solid fa-map-pin"></i>
                             Upazila Name *
@@ -640,7 +855,7 @@
                         >
                         <div class="form-helper">
                             <i class="fa-solid fa-circle-info"></i>
-                            Enter the official name of the upazila (max 100 characters)
+                            Enter the official name (max 100 characters)
                         </div>
                         <div class="validation-feedback valid-feedback" id="nameValid">
                             <i class="fa-solid fa-circle-check"></i>
@@ -648,7 +863,7 @@
                         </div>
                         <div class="validation-feedback invalid-feedback" id="nameError">
                             <i class="fa-solid fa-circle-exclamation"></i>
-                            Please enter a valid upazila name (minimum 3 characters)
+                            Minimum 3 characters required
                         </div>
                     </div>
                 </div>
@@ -664,13 +879,13 @@
                     <div class="current-selection">
                         <i class="fa-solid fa-check-circle"></i>
                         <div class="current-selection-text">
-                            Currently selected: 
+                            Currently: 
                             <strong>{{ upazila.district.district_name }}</strong> 
                             ({{ upazila.district.division.division_name }})
                         </div>
                     </div>
                     
-                    <!-- District Search (Optional) -->
+                    <!-- District Search -->
                     <div class="search-box">
                         <i class="fa-solid fa-search"></i>
                         <input 
@@ -681,7 +896,7 @@
                         >
                     </div>
                     
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label for="district_id" class="form-label">
                             <i class="fa-solid fa-map-marked-alt"></i>
                             Select District *
@@ -699,10 +914,8 @@
                                         value="{{ dist.id }}" 
                                         {% if dist.id == upazila.district.id %}selected{% endif %}
                                         data-division="{{ dist.division.division_name }}"
-                                        class="option-group"
                                     >
-                                        <span class="district-name">{{ dist.district_name }}</span>
-                                        <span class="division-name">({{ dist.division.division_name }})</span>
+                                        {{ dist.district_name }} ({{ dist.division.division_name }})
                                     </option>
                                 {% endfor %}
                             </select>
@@ -726,7 +939,7 @@
                 <div class="button-group">
                     <a href="{% url 'upazila_list' %}" class="btn-back">
                         <i class="fa-solid fa-arrow-left-long"></i>
-                        <span>Back to Upazilas</span>
+                        <span>Back to List</span>
                     </a>
                     <button type="submit" class="btn-update" id="submitBtn">
                         <i class="fa-solid fa-floppy-disk"></i>
@@ -738,12 +951,12 @@
     </div>
 </div>
 
-<!-- Success Toast (Hidden by default) -->
-<div class="success-toast" id="successToast" style="display: none;">
-    <i class="fa-solid fa-circle-check fa-2x"></i>
+<!-- Success Toast -->
+<div class="success-toast" id="successToast">
+    <i class="fa-solid fa-circle-check"></i>
     <div>
         <strong>Upazila Updated!</strong>
-        <div style="font-size: 0.9rem;">Changes have been saved successfully</div>
+        <div style="font-size: 0.8rem;">Changes saved successfully</div>
     </div>
 </div>
 {% endblock %}
@@ -758,48 +971,50 @@
         const submitBtn = document.getElementById('submitBtn');
         const successToast = document.getElementById('successToast');
         
-        // Character counter for upazila name
-        const charCounter = document.createElement('div');
-        charCounter.className = 'form-helper text-end mt-1';
-        charCounter.id = 'charCounter';
-        upazilaNameInput.parentNode.appendChild(charCounter);
-        
-        // Update character counter
+        // Character counter
         function updateCharCounter() {
             const charCount = upazilaNameInput.value.length;
-            const maxLength = upazilaNameInput.getAttribute('maxlength');
-            charCounter.textContent = `${charCount}/${maxLength} characters`;
+            const maxLength = 100;
+            const counter = document.getElementById('charCounter') || createCharCounter();
             
-            // Update color based on usage
-            const percentage = (charCount / maxLength) * 100;
-            if (percentage > 90) {
-                charCounter.style.color = 'var(--danger-color)';
-                charCounter.style.fontWeight = 'bold';
-            } else if (percentage > 75) {
-                charCounter.style.color = 'var(--warning-color)';
-                charCounter.style.fontWeight = '600';
+            counter.textContent = `${charCount}/${maxLength}`;
+            
+            // Color coding
+            if (charCount > 90) {
+                counter.style.color = 'var(--danger-color)';
+                counter.style.fontWeight = 'bold';
+            } else if (charCount > 75) {
+                counter.style.color = 'var(--warning-color)';
+                counter.style.fontWeight = '600';
             } else {
-                charCounter.style.color = '';
-                charCounter.style.fontWeight = '';
+                counter.style.color = '#718096';
+                counter.style.fontWeight = 'normal';
             }
         }
         
-        // Initial character count
+        function createCharCounter() {
+            const counter = document.createElement('div');
+            counter.id = 'charCounter';
+            counter.className = 'form-helper text-end';
+            upazilaNameInput.parentNode.appendChild(counter);
+            return counter;
+        }
+        
+        // Initialize
         updateCharCounter();
         
-        // Real-time character counter
+        // Event Listeners
         upazilaNameInput.addEventListener('input', function() {
             updateCharCounter();
             validateUpazilaName();
         });
         
-        // Real-time validation for district select
         districtSelect.addEventListener('change', function() {
             validateDistrict();
             updateCurrentSelection();
         });
         
-        // District search functionality
+        // District search
         districtSearch.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const options = districtSelect.querySelectorAll('option');
@@ -807,13 +1022,8 @@
             options.forEach(option => {
                 if (option.value === '') return;
                 
-                const districtName = option.querySelector('.district-name')?.textContent.toLowerCase() || '';
-                const divisionName = option.getAttribute('data-division')?.toLowerCase() || '';
                 const optionText = option.textContent.toLowerCase();
-                
-                if (districtName.includes(searchTerm) || 
-                    divisionName.includes(searchTerm) || 
-                    optionText.includes(searchTerm)) {
+                if (optionText.includes(searchTerm)) {
                     option.style.display = '';
                 } else {
                     option.style.display = 'none';
@@ -821,23 +1031,19 @@
             });
         });
         
-        // Validation functions
+        // Validation
         function validateUpazilaName() {
             const value = upazilaNameInput.value.trim();
             const nameValid = document.getElementById('nameValid');
             const nameError = document.getElementById('nameError');
             
             if (value.length < 3) {
-                upazilaNameInput.classList.remove('is-valid');
-                upazilaNameInput.classList.add('is-invalid');
                 showValidation(nameError, true);
                 showValidation(nameValid, false);
                 return false;
             } else {
-                upazilaNameInput.classList.remove('is-invalid');
-                upazilaNameInput.classList.add('is-valid');
-                showValidation(nameValid, true);
                 showValidation(nameError, false);
+                showValidation(nameValid, true);
                 return true;
             }
         }
@@ -848,16 +1054,12 @@
             const districtError = document.getElementById('districtError');
             
             if (!value) {
-                districtSelect.classList.remove('is-valid');
-                districtSelect.classList.add('is-invalid');
                 showValidation(districtError, true);
                 showValidation(districtValid, false);
                 return false;
             } else {
-                districtSelect.classList.remove('is-invalid');
-                districtSelect.classList.add('is-valid');
-                showValidation(districtValid, true);
                 showValidation(districtError, false);
+                showValidation(districtValid, true);
                 return true;
             }
         }
@@ -870,22 +1072,24 @@
             }
         }
         
-        // Update current selection display
+        // Update current selection
         function updateCurrentSelection() {
             const selectedOption = districtSelect.options[districtSelect.selectedIndex];
             if (selectedOption && selectedOption.value) {
-                const districtName = selectedOption.querySelector('.district-name')?.textContent || selectedOption.textContent;
-                const divisionName = selectedOption.getAttribute('data-division') || '';
+                const text = selectedOption.textContent;
+                const match = text.match(/(.+)\s\((.+)\)/);
                 
-                document.querySelector('.current-selection-text').innerHTML = `
-                    Currently selected: 
-                    <strong>${districtName}</strong> 
-                    ${divisionName ? `(${divisionName})` : ''}
-                `;
+                if (match) {
+                    document.querySelector('.current-selection-text').innerHTML = `
+                        Currently: 
+                        <strong>${match[1]}</strong> 
+                        (${match[2]})
+                    `;
+                }
             }
         }
         
-        // Form submission handler
+        // Form submission
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -893,98 +1097,75 @@
             const isDistrictValid = validateDistrict();
             
             if (isNameValid && isDistrictValid) {
-                // Show loading state
+                // Loading state
                 submitBtn.classList.add('btn-loading');
                 submitBtn.disabled = true;
-                
-                // Simulate API call delay for better UX
-                await new Promise(resolve => setTimeout(resolve, 800));
                 
                 // Show success toast
                 showSuccessToast();
                 
-                // Submit the form after showing success
+                // Submit after delay
                 setTimeout(() => {
                     form.submit();
                 }, 1500);
             } else {
-                // Show error animation on invalid fields
-                const invalidFields = form.querySelectorAll('.is-invalid');
-                invalidFields.forEach(field => {
-                    field.classList.add('animate__animated', 'animate__headShake');
+                // Shake invalid fields
+                const invalidFields = form.querySelectorAll('.validation-feedback.show.invalid-feedback');
+                invalidFields.forEach(feedback => {
+                    feedback.parentElement.classList.add('animate__animated', 'animate__headShake');
                     setTimeout(() => {
-                        field.classList.remove('animate__animated', 'animate__headShake');
+                        feedback.parentElement.classList.remove('animate__animated', 'animate__headShake');
                     }, 1000);
                 });
                 
-                // Focus on first invalid field
-                const firstInvalid = invalidFields[0];
-                if (firstInvalid) {
-                    firstInvalid.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center' 
-                    });
-                    setTimeout(() => firstInvalid.focus(), 500);
+                // Focus first invalid field
+                if (!isNameValid) {
+                    upazilaNameInput.focus();
+                } else if (!isDistrictValid) {
+                    districtSelect.focus();
                 }
             }
         });
         
-        // Success toast function
+        // Success toast
         function showSuccessToast() {
             successToast.style.display = 'flex';
             
             setTimeout(() => {
-                successToast.style.animation = 'slideInRight 0.5s reverse forwards';
-                setTimeout(() => {
-                    successToast.style.display = 'none';
-                    successToast.style.animation = '';
-                }, 500);
-            }, 3000);
-        }
-        
-        // Initialize validation on page load
-        validateUpazilaName();
-        validateDistrict();
-        
-        // Add focus animation to inputs
-        const inputs = [upazilaNameInput, districtSelect];
-        inputs.forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.classList.add('animate__animated', 'animate__pulse');
-                setTimeout(() => {
-                    this.parentElement.classList.remove('animate__animated', 'animate__pulse');
-                }, 500);
-            });
-        });
-        
-        // Auto-save simulation
-        let autoSaveTimeout;
-        const saveChanges = () => {
-            clearTimeout(autoSaveTimeout);
-            
-            autoSaveTimeout = setTimeout(() => {
-                // Create auto-save indicator
-                const indicator = document.createElement('div');
-                indicator.className = 'position-fixed bottom-0 start-0 m-3 p-2 bg-primary text-white rounded-pill small';
-                indicator.innerHTML = '<i class="fa-solid fa-sync fa-spin me-2"></i>Saving changes...';
-                indicator.style.zIndex = '1050';
-                document.body.appendChild(indicator);
+                successToast.style.opacity = '0';
+                successToast.style.transform = 'translateY(20px)';
+                successToast.style.transition = 'all 0.3s ease';
                 
                 setTimeout(() => {
-                    indicator.innerHTML = '<i class="fa-solid fa-check me-2"></i>Changes saved';
-                    indicator.style.backgroundColor = 'var(--success-color)';
-                    
-                    setTimeout(() => indicator.remove(), 1500);
-                }, 1000);
-            }, 2000);
-        };
+                    successToast.style.display = 'none';
+                    successToast.style.opacity = '';
+                    successToast.style.transform = '';
+                }, 300);
+            }, 2500);
+        }
         
-        // Listen for changes
-        upazilaNameInput.addEventListener('input', saveChanges);
-        districtSelect.addEventListener('change', saveChanges);
+        // Initialize validation
+        validateUpazilaName();
+        validateDistrict();
     });
 </script>
 
-<!-- Include Animate.css for animations -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<!-- Minimal animation styles -->
+<style>
+    .animate__animated {
+        animation-duration: 0.5s;
+    }
+    
+    .animate__headShake {
+        animation-name: headShake;
+    }
+    
+    @keyframes headShake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-5px); }
+        40% { transform: translateX(5px); }
+        60% { transform: translateX(-5px); }
+        80% { transform: translateX(5px); }
+    }
+</style>
 {% endblock %}
