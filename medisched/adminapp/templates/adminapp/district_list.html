@@ -3,41 +3,409 @@
 
 {% block title %}Manage Districts | MediSched Admin{% endblock %}
 
+{% block extra_css %}
+<style>
+  /* District Management Styles */
+  .management-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(45, 156, 219, 0.1);
+  }
+
+  .management-header h3 {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.75rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .management-header h3 i {
+    color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.1);
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+
+  /* Form Card */
+  .form-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  .form-card h5 {
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 1.25rem;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .form-card h5 i {
+    color: #10b981;
+  }
+
+  .form-control, .form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  }
+
+  /* Table Card */
+  .table-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  .table-header {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .table-header h5 {
+    font-weight: 600;
+    color: #334155;
+    margin: 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .table-header h5 i {
+    color: #f59e0b;
+  }
+
+  /* Table Styles */
+  .data-table {
+    margin: 0;
+    border: none;
+  }
+
+  .data-table thead th {
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 1.25rem;
+    border: none;
+  }
+
+  .data-table tbody tr {
+    transition: all 0.2s;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .data-table tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  .data-table tbody td {
+    padding: 1.25rem;
+    vertical-align: middle;
+    color: #475569;
+    font-weight: 500;
+    border: none;
+  }
+
+  .data-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  /* Badge for Division */
+  .division-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+  }
+
+  .division-badge i {
+    font-size: 0.9rem;
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+  }
+
+  .btn-action {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    min-width: 80px;
+    justify-content: center;
+  }
+
+  .btn-action i {
+    font-size: 0.9rem;
+  }
+
+  .btn-edit {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+  }
+
+  .btn-edit:hover {
+    background: #8b5cf6;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  }
+
+  .btn-delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  .btn-delete:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+
+  /* Empty State */
+  .empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state h5 {
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-state p {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 992px) {
+    .form-card .row {
+      gap: 1rem;
+    }
+    
+    .form-card .col-6,
+    .form-card .col-4,
+    .form-card .col-2 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+    }
+    
+    .btn-action {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .management-header h3 {
+      font-size: 1.5rem;
+    }
+    
+    .management-header h3 i {
+      width: 40px;
+      height: 40px;
+      font-size: 1.25rem;
+    }
+    
+    .table-header {
+      padding: 1.25rem;
+    }
+    
+    .data-table thead {
+      display: none;
+    }
+    
+    .data-table tbody tr {
+      display: block;
+      margin-bottom: 1.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    
+    .data-table tbody td {
+      display: block;
+      text-align: right;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .data-table tbody td:before {
+      content: attr(data-label);
+      float: left;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+    
+    .data-table tbody td:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    .data-table tbody td:first-child {
+      padding-top: 0;
+    }
+    
+    .division-badge {
+      display: inline-flex;
+      margin-top: 0.5rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .form-card,
+    .table-card {
+      padding: 1.25rem;
+      border-radius: 12px;
+    }
+    
+    .empty-state {
+      padding: 2rem 1rem;
+    }
+    
+    .empty-state i {
+      font-size: 2.5rem;
+    }
+  }
+
+  /* Animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .form-card, .table-card {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .data-table tbody tr {
+    animation: fadeIn 0.5s ease-out;
+    animation-fill-mode: both;
+  }
+
+  .data-table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+  .data-table tbody tr:nth-child(2) { animation-delay: 0.2s; }
+  .data-table tbody tr:nth-child(3) { animation-delay: 0.3s; }
+  .data-table tbody tr:nth-child(4) { animation-delay: 0.4s; }
+  .data-table tbody tr:nth-child(5) { animation-delay: 0.5s; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
+<div class="container-fluid">
   <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3><i class="fa-solid fa-city me-2"></i> Manage Districts</h3>
+  <div class="management-header">
+    <h3>
+      <i class="fa-solid fa-city"></i>
+      Manage Districts
+    </h3>
   </div>
 
   <!-- Add District Form -->
-  <div class="card p-4 mb-4">
-    <form method="POST" action="{% url 'add_district' %}" class="row g-3">
+  <div class="form-card">
+    <h5><i class="fa-solid fa-circle-plus"></i> Add New District</h5>
+    <form method="POST" action="{% url 'add_district' %}">
       {% csrf_token %}
-      <div class="col-6">
-        <input type="text" name="district_name" class="form-control" placeholder="New District Name" required>
-      </div>
-      <div class="col-4">
-        <select name="division_id" class="form-select" required>
-          <option value="">Select Division</option>
-          {% for div in divisions %}
-            <option value="{{ div.id }}">{{ div.division_name }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-2 d-grid">
-        <button class="btn btn-success"><i class="fa-solid fa-plus me-2"></i>Add</button>
+      <div class="row g-3 align-items-end">
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label small text-muted mb-2">District Name</label>
+          <input type="text" name="district_name" class="form-control" 
+                 placeholder="e.g., Dhaka, Chittagong" required>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label small text-muted mb-2">Division</label>
+          <select name="division_id" class="form-select" required>
+            <option value="">Select a Division</option>
+            {% for div in divisions %}
+              <option value="{{ div.id }}">{{ div.division_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-lg-4 col-md-12">
+          <button type="submit" class="btn btn-success w-100" style="padding: 0.75rem;">
+            <i class="fa-solid fa-plus me-2"></i>Add District
+          </button>
+        </div>
       </div>
     </form>
   </div>
 
-  <!-- District Table -->
-  <div class="card p-4">
+  <!-- Districts Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h5><i class="fa-solid fa-list"></i> All Districts ({{ districts|length }})</h5>
+    </div>
+    
     <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead class="table-dark">
+      <table class="table data-table">
+        <thead>
           <tr>
-            <th>#ID</th>
+            <th>ID</th>
             <th>District Name</th>
             <th>Division</th>
             <th>Actions</th>
@@ -46,15 +414,22 @@
         <tbody>
           {% for dist in districts %}
           <tr>
-            <td>{{ dist.id }}</td>
-            <td>{{ dist.district_name }}</td>
-            <td>{{ dist.division.division_name }}</td>
-            <td>
-              <div class="d-flex gap-2">
-                <a href="{% url 'edit_district' dist.id %}" class="btn btn-primary btn-sm">
+            <td data-label="ID">{{ dist.id }}</td>
+            <td data-label="District">
+              <strong>{{ dist.district_name }}</strong>
+            </td>
+            <td data-label="Division">
+              <span class="division-badge">
+                <i class="fa-solid fa-map"></i>
+                {{ dist.division.division_name }}
+              </span>
+            </td>
+            <td data-label="Actions">
+              <div class="action-buttons">
+                <a href="{% url 'edit_district' dist.id %}" class="btn-action btn-edit">
                   <i class="fa-solid fa-pen-to-square"></i> Edit
                 </a>
-                <a href="{% url 'delete_district' dist.id %}" class="btn btn-danger btn-sm">
+                <a href="{% url 'delete_district' dist.id %}" class="btn-action btn-delete">
                   <i class="fa-solid fa-trash"></i> Delete
                 </a>
               </div>
@@ -62,8 +437,12 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="4" class="text-center text-muted">
-              No districts found. Add a new district above.
+            <td colspan="4">
+              <div class="empty-state">
+                <i class="fa-solid fa-city-circle-exclamation"></i>
+                <h5>No Districts Found</h5>
+                <p>Start by adding your first district using the form above.</p>
+              </div>
             </td>
           </tr>
           {% endfor %}
@@ -72,4 +451,15 @@
     </div>
   </div>
 </div>
+
+<script>
+  // Confirm delete
+  document.querySelectorAll('.btn-delete').forEach(button => {
+    button.addEventListener('click', function(e) {
+      if (!confirm('Are you sure you want to delete this district? This action cannot be undone.')) {
+        e.preventDefault();
+      }
+    });
+  });
+</script>
 {% endblock %}

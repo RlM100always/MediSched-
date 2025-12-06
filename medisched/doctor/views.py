@@ -9,33 +9,110 @@ from django.contrib.auth import logout
 from django.views.decorators.cache import cache_control
 from adminapp.models import Division, District, Upazila, Department, Symptom
 from .models import Doctor,DoctorSpecializationDepartment,DoctorSpecializationSymptom,DoctorExperience
+from django.utils import timezone
+from django.db.models import Sum
+from appointment.models import Appointment
+from datetime import timedelta
 
 
-
-
+# doctor/views.py - doctor_dashboard function
 @login_required
 @cache_control(no_cache=True, no_store=True, must_revalidate=True, max_age=0)
 def doctor_dashboard(request):
     if not hasattr(request.user, 'doctor_profile'):
-        return redirect('/')  # Unauthorized access
-
+        print(f"❌ User {request.user.username} is not a doctor!")
+        return redirect('/')
+    
+    doctor = request.user.doctor_profile
+    
+    print(f"\n{'='*60}")
+    print(f"🩺 DOCTOR DASHBOARD - {doctor.user.username}")
+    print(f"{'='*60}")
+    
+    # Debug: Print all appointments
+    all_apps = doctor.appointments.all()
+    print(f"📋 ALL APPOINTMENTS ({all_apps.count()}):")
+    for app in all_apps:
+        print(f"  - #{app.id}: {app.patient.username} | {app.appointment_date} | "
+              f"Status: {app.status} | Fee: ${app.consultation_fee}")
+    
+    # SIMPLE CALCULATIONS
+    from django.utils import timezone
+    now = timezone.now()
+    today = now.date()
+    
+    print(f"\n📊 CURRENT TIME: {now}")
+    print(f"📅 TODAY'S DATE: {today}")
+    
+    # 1. Upcoming appointments (any status, future dates)
+    upcoming = doctor.appointments.filter(
+        appointment_date__gte=now
+    ).order_by('appointment_date')
+    
+    print(f"\n📅 UPCOMING (future dates): {upcoming.count()}")
+    for app in upcoming:
+        print(f"  - #{app.id}: {app.appointment_date} - {app.status}")
+    
+    # 2. Today's appointments (any status)
+    from datetime import datetime, timedelta
+    today_start = datetime(today.year, today.month, today.day)
+    today_end = today_start + timedelta(days=1)
+    
+    # For Django timezone support
+    from django.utils import timezone
+    today_start = timezone.make_aware(today_start)
+    today_end = timezone.make_aware(today_end)
+    
+    today_apps = doctor.appointments.filter(
+        appointment_date__range=[today_start, today_end]
+    )
+    
+    print(f"\n👥 TODAY'S APPOINTMENTS: {today_apps.count()}")
+    for app in today_apps:
+        print(f"  - #{app.id}: {app.appointment_date.time()} - {app.status}")
+    
+    # 3. Today's earnings (completed + paid today)
+    today_earnings = doctor.appointments.filter(
+        appointment_date__date=today,
+        status='completed',
+        payment_status='paid'
+    ).aggregate(total=Sum('consultation_fee'))['total'] or 0
+    
+    print(f"\n💰 TODAY'S EARNINGS: ${today_earnings}")
+    
+    # 4. Calculate earnings for debugging
+    completed_today = doctor.appointments.filter(
+        appointment_date__date=today,
+        status='completed',
+        payment_status='paid'
+    )
+    print(f"📈 Completed appointments today: {completed_today.count()}")
+    for app in completed_today:
+        print(f"  - #{app.id}: ${app.consultation_fee}")
+    
+    # Doctor rating (default to 4.5 if not set)
+    avg_rating = doctor.rating if doctor.rating else 4.5
+    total_reviews = doctor.total_reviews if doctor.total_reviews else 5
+    
     context = {
-        'doctor_user': request.user,
-        'upcoming_appointments_count': 5,
-        'patients_today_count': 8,
-        'earnings_today': 120,
-        'total_reviews': 15,
-        'upcoming_appointments': [
-            {
-                'patient': {'first_name': 'John', 'last_name': 'Doe'},
-                'appointment_date': '2025-11-08',
-                'appointment_time': '10:00 AM',
-                'status': {'status_name': 'Pending'}
-            },
-        ]
+        'doctor': doctor,
+        'upcoming_appointments': upcoming,
+        'upcoming_appointments_count': upcoming.count(),
+        'patients_today_count': today_apps.count(),
+        'earnings_today': today_earnings,
+        'avg_rating': avg_rating,
+        'total_reviews': total_reviews,
     }
+    
+    print(f"\n📊 SENDING TO TEMPLATE:")
+    print(f"  - Doctor: {doctor.user.username}")
+    print(f"  - Upcoming count: {context['upcoming_appointments_count']}")
+    print(f"  - Patients today: {context['patients_today_count']}")
+    print(f"  - Earnings: ${context['earnings_today']}")
+    print(f"  - Rating: {context['avg_rating']} ({context['total_reviews']} reviews)")
+    print(f"{'='*60}\n")
+    
     return render(request, 'doctor/dashboard.html', context)
-
 
 @login_required
 def doctor_profile(request):
@@ -301,3 +378,90 @@ def manage_appointment_fees(request):
 def doctor_logout_view(request):
     logout(request)
     return render(request, "users/logout_replace.html")
+
+@login_required
+def doctor_appointments(request):
+    """View all appointments"""
+    if not hasattr(request.user, 'doctor_profile'):
+        return redirect('/')
+    
+    doctor = request.user.doctor_profile
+    appointments = Appointment.objects.filter(
+        doctor=doctor
+    ).order_by('-appointment_date')
+    
+    context = {
+        'doctor': doctor,
+        'appointments': appointments,
+    }
+    return render(request, 'doctor/appointments.html', context)
+
+
+@login_required
+def doctor_patients(request):
+    """View all patients"""
+    if not hasattr(request.user, 'doctor_profile'):
+        return redirect('/')
+    
+    doctor = request.user.doctor_profile
+    # Get unique patients from appointments
+    patient_ids = Appointment.objects.filter(
+        doctor=doctor
+    ).values_list('patient', flat=True).distinct()
+    
+    patients = CustomUser.objects.filter(id__in=patient_ids)
+    
+    context = {
+        'doctor': doctor,
+        'patients': patients,
+    }
+    return render(request, 'doctor/patients.html', context)
+
+
+@login_required
+def doctor_reviews(request):
+    """View doctor reviews"""
+    if not hasattr(request.user, 'doctor_profile'):
+        return redirect('/')
+    
+    doctor = request.user.doctor_profile
+    # You'll need to create a Review model or use existing ratings
+    
+    context = {
+        'doctor': doctor,
+    }
+    return render(request, 'doctor/reviews.html', context)
+
+
+@login_required
+def doctor_analytics(request):
+    """Analytics dashboard"""
+    if not hasattr(request.user, 'doctor_profile'):
+        return redirect('/')
+    
+    doctor = request.user.doctor_profile
+    
+    # Calculate monthly earnings
+    from django.db.models import Sum, Count
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    # Last 6 months earnings
+    six_months_ago = timezone.now() - timedelta(days=180)
+    monthly_earnings = Appointment.objects.filter(
+        doctor=doctor,
+        appointment_date__gte=six_months_ago,
+        status='completed',
+        payment_status='paid'
+    ).extra(
+        {'month': "strftime('%%Y-%%m', appointment_date)"}
+    ).values('month').annotate(
+        total=Sum('consultation_fee'),
+        count=Count('id')
+    ).order_by('month')
+    
+    context = {
+        'doctor': doctor,
+        'monthly_earnings': monthly_earnings,
+    }
+    return render(request, 'doctor/analytics.html', context)

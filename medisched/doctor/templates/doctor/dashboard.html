@@ -1,11 +1,9 @@
 <!-- dashboard.html -->
 {% extends 'doctor/doctor_sidebar.html' %}
-
 {% block title %}Dashboard | MediSched{% endblock %}
 
 {% block content %}
 <style>
-    
     /* Dashboard Header */
     .dashboard-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -398,7 +396,7 @@
 <!-- Dashboard Header -->
 <div class="dashboard-header d-flex justify-content-between align-items-center">
     <div>
-        <h1>Welcome back, Dr. {{ doctor.user.first_name }}! 👋</h1>
+        <h1>Welcome back, {% if doctor.user.first_name %}Dr. {{ doctor.user.first_name }}{% else %}Doctor{% endif %}! 👋</h1>
         <p>Here's what's happening with your practice today</p>
     </div>
     <div class="header-icons">
@@ -419,7 +417,8 @@
                 <div class="stat-value">{{ upcoming_appointments_count|default:"0" }}</div>
                 <div class="stat-label">Upcoming Appointments</div>
                 <div class="stat-change">
-                    <i class="fa-solid fa-arrow-up"></i> 12% from last week
+                    <i class="fa-solid fa-arrow-up"></i> 
+                    {% if upcoming_appointments_count > 0 %}Active{% else %}No appointments{% endif %}
                 </div>
             </div>
             <div class="stat-icon purple">
@@ -434,7 +433,8 @@
                 <div class="stat-value">{{ patients_today_count|default:"0" }}</div>
                 <div class="stat-label">Patients Today</div>
                 <div class="stat-change">
-                    <i class="fa-solid fa-arrow-up"></i> 8% from yesterday
+                    <i class="fa-solid fa-arrow-up"></i> 
+                    {% if patients_today_count > 0 %}Scheduled{% else %}No patients{% endif %}
                 </div>
             </div>
             <div class="stat-icon blue">
@@ -449,7 +449,8 @@
                 <div class="stat-value">${{ earnings_today|default:"0" }}</div>
                 <div class="stat-label">Today's Earnings</div>
                 <div class="stat-change">
-                    <i class="fa-solid fa-arrow-up"></i> 23% from yesterday
+                    <i class="fa-solid fa-arrow-up"></i> 
+                    {% if earnings_today > 0 %}From completed appointments{% else %}No earnings yet{% endif %}
                 </div>
             </div>
             <div class="stat-icon green">
@@ -461,10 +462,10 @@
     <div class="stat-card">
         <div class="stat-header">
             <div>
-                <div class="stat-value">{{ total_reviews|default:"0" }}</div>
-                <div class="stat-label">Total Reviews</div>
+                <div class="stat-value">{{ avg_rating|floatformat:1|default:"0.0" }}</div>
+                <div class="stat-label">Average Rating</div>
                 <div class="stat-change">
-                    <i class="fa-solid fa-star"></i> 4.8 Average Rating
+                    <i class="fa-solid fa-star"></i> Based on {{ total_reviews|default:"0" }} reviews
                 </div>
             </div>
             <div class="stat-icon orange">
@@ -487,6 +488,7 @@
                 <tr>
                     <th>Patient</th>
                     <th>Date & Time</th>
+                    <th>Consultation Type</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -495,37 +497,52 @@
                 {% for appointment in upcoming_appointments %}
                 <tr>
                     <td>
-                        <div class="patient-info">
-                            <div class="patient-avatar">
-                                {{ appointment.patient.first_name.0 }}{{ appointment.patient.last_name.0 }}
-                            </div>
-                            <div class="patient-details">
-                                <span class="patient-name">{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</span>
-                                <span class="patient-id">ID: #{{ appointment.patient.id }}</span>
-                            </div>
-                        </div>
+                        <!-- Line ~480 in dashboard.html -->
+<div class="patient-info">
+    <div class="patient-avatar">
+        {{ appointment.patient.first_name.0|default:appointment.patient.username.0 }}{{ appointment.patient.last_name.0|default:'' }}
+    </div>
+    <div class="patient-details">
+        <span class="patient-name">
+            {{ appointment.patient.get_full_name|default:appointment.patient.username }}
+        </span>
+        <span class="patient-id">ID: #{{ appointment.patient.id }}</span>
+    </div>
+</div>
                     </td>
                     <td>
                         <div>{{ appointment.appointment_date|date:"M d, Y" }}</div>
-                        <div style="color: #9ca3af; font-size: 0.85rem;">{{ appointment.appointment_time }}</div>
+                        <div style="color: #9ca3af; font-size: 0.85rem;">
+                            {{ appointment.appointment_date|time:"H:i A" }}
+                        </div>
                     </td>
                     <td>
-                        <span class="status-badge status-confirmed">{{ appointment.status.status_name }}</span>
+                        {{ appointment.get_consultation_type_display }}
+                    </td>
+                    <td>
+                        {% if appointment.status == 'confirmed' %}
+                            <span class="status-badge status-confirmed">Confirmed</span>
+                        {% elif appointment.status == 'pending' %}
+                            <span class="status-badge status-pending">Pending</span>
+                        {% else %}
+                            <span class="status-badge">{{ appointment.status }}</span>
+                        {% endif %}
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="action-btn btn-view">
-                                <i class="fa-solid fa-eye"></i> View
-                            </button>
-                            <button class="action-btn btn-complete">
+                            <a href="{% url 'communication:chat_detail' appointment.id %}" 
+                               class="action-btn btn-view">
+                                <i class="fa-solid fa-comment-medical"></i> Chat
+                            </a>
+                            <a href="#" class="action-btn btn-complete">
                                 <i class="fa-solid fa-check"></i> Complete
-                            </button>
+                            </a>
                         </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4">
+                    <td colspan="5">
                         <div class="empty-state">
                             <i class="fa-solid fa-calendar-xmark"></i>
                             <p>No upcoming appointments scheduled</p>
@@ -545,21 +562,21 @@
 <div class="quick-actions">
     <a href="#" class="quick-action-card">
         <div class="quick-action-icon">
-            <i class="fa-solid fa-user-plus"></i>
-        </div>
-        <p>Add New Patient</p>
-    </a>
-    <a href="#" class="quick-action-card">
-        <div class="quick-action-icon">
             <i class="fa-solid fa-calendar-plus"></i>
         </div>
         <p>Schedule Appointment</p>
     </a>
-    <a href="#" class="quick-action-card">
+    <a href="{% url 'doctor:manage_appointment_fees' %}" class="quick-action-card">
         <div class="quick-action-icon">
-            <i class="fa-solid fa-file-prescription"></i>
+            <i class="fa-solid fa-dollar-sign"></i>
         </div>
-        <p>Create Prescription</p>
+        <p>Update Fees</p>
+    </a>
+    <a href="{% url 'doctor:experience_manage' %}" class="quick-action-card">
+        <div class="quick-action-icon">
+            <i class="fa-solid fa-briefcase"></i>
+        </div>
+        <p>Update Experience</p>
     </a>
 </div>
 

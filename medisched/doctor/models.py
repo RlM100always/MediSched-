@@ -12,7 +12,8 @@ class Doctor(models.Model):
     working_hours = models.JSONField(blank=True, null=True)  # e.g., {"Mon": "9-5", "Tue": "10-4"}
     profile_image = models.ImageField(upload_to='doctor_profiles/', blank=True, null=True)
     is_verified = models.BooleanField(default=False)
-
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0, blank=True, null=True)
+    total_reviews = models.PositiveIntegerField(default=0)
     # ForeignKeys with NULL support to prevent IntegrityError
     division = models.ForeignKey(Division, on_delete=models.SET_NULL, null=True, blank=True)
     district = models.ForeignKey(District, on_delete=models.SET_NULL, null=True, blank=True)

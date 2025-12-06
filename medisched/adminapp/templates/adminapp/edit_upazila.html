@@ -3,38 +3,988 @@
 
 {% block title %}Edit Upazila | MediSched Admin{% endblock %}
 
-{% block content %}
-<div class="container mt-5">
-  <div class="card p-4">
-    <h3 class="mb-4"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Upazila</h3>
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2D9CDB;
+        --primary-dark: #1e7cb3;
+        --primary-light: #e1f1fa;
+        --primary-gradient: linear-gradient(135deg, #2D9CDB 0%, #1e7cb3 100%);
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --light-bg: #f8fafc;
+        --card-shadow: 0 15px 45px rgba(45, 156, 219, 0.12);
+        --hover-shadow: 0 25px 65px rgba(45, 156, 219, 0.2);
+    }
     
-    <form method="POST">
-      {% csrf_token %}
-      <div class="mb-3">
-        <label for="upazila_name" class="form-label">Upazila Name</label>
-        <input type="text" name="upazila_name" id="upazila_name" class="form-control" value="{{ upazila.upazila_name }}" required>
-      </div>
+    .form-container {
+        max-width: 750px;
+        margin: 2rem auto;
+        animation: slideInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+    }
+    
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .form-card {
+        border: none;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        transition: all 0.4s ease;
+        background: white;
+    }
+    
+    .form-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .card-header-custom {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-header-custom::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 150px;
+        height: 150px;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
+        transform: rotate(45deg);
+    }
+    
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .header-title {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        font-weight: 800;
+        font-size: 1.9rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .header-title i {
+        font-size: 2.3rem;
+        margin-right: 1.2rem;
+        background: rgba(255, 255, 255, 0.25);
+        padding: 1rem;
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+        animation: bounce 2s infinite ease-in-out;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-8px) rotate(5deg); }
+    }
+    
+    .upazila-badge {
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        padding: 0.9rem 1.8rem;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .upazila-badge:hover {
+        transform: scale(1.08);
+        background: rgba(255, 255, 255, 0.4);
+    }
+    
+    .card-body {
+        padding: 3rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 2.2rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 1.8rem;
+        }
+        .header-content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.2rem;
+        }
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        border: 1px solid #eef2f7;
+        transition: all 0.3s ease;
+    }
+    
+    .form-section:hover {
+        box-shadow: 0 15px 40px rgba(45, 156, 219, 0.12);
+        border-color: var(--primary-light);
+    }
+    
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: #2d3748;
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid var(--primary-light);
+    }
+    
+    .section-title i {
+        color: var(--primary-color);
+        background: var(--primary-light);
+        padding: 0.8rem;
+        border-radius: 12px;
+        font-size: 1.2rem;
+    }
+    
+    .form-label {
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.8rem;
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .form-label i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+    
+    .input-group-custom {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+    
+    .form-control-custom {
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1.2rem 1.5rem;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        background: white;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        width: 100%;
+    }
+    
+    .form-control-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(45, 156, 219, 0.2);
+        transform: translateY(-2px);
+        outline: none;
+    }
+    
+    .form-control-custom:hover {
+        border-color: #cbd5e0;
+    }
+    
+    .select-wrapper {
+        position: relative;
+    }
+    
+    .select-wrapper::after {
+        content: "▾";
+        font-size: 1.3rem;
+        color: var(--primary-color);
+        position: absolute;
+        right: 1.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        font-weight: bold;
+    }
+    
+    .form-select-custom {
+        appearance: none;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1.2rem 1.5rem;
+        font-size: 1.1rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+    }
+    
+    .form-select-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(45, 156, 219, 0.2);
+        outline: none;
+        transform: translateY(-2px);
+    }
+    
+    .form-select-custom:hover {
+        border-color: #cbd5e0;
+    }
+    
+    .option-group {
+        display: block;
+        padding: 0.8rem 1rem;
+        margin: 0.2rem 0;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .option-group:hover {
+        background: var(--primary-light);
+        transform: translateX(5px);
+    }
+    
+    .district-name {
+        font-weight: 600;
+        color: #2d3748;
+    }
+    
+    .division-name {
+        font-size: 0.85rem;
+        color: #718096;
+        margin-left: 0.5rem;
+        font-style: italic;
+    }
+    
+    .form-helper {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: #718096;
+        font-size: 0.9rem;
+        margin-top: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .form-helper i {
+        color: var(--primary-color);
+        font-size: 0.85rem;
+    }
+    
+    .button-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 2.5rem;
+        border-top: 3px solid #edf2f7;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+    
+    @media (max-width: 576px) {
+        .button-group {
+            flex-direction: column;
+        }
+        .button-group a, 
+        .button-group button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    .btn-back {
+        background: white;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+        padding: 1.1rem 2.2rem;
+        border-radius: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .btn-back:hover {
+        background: #f7fafc;
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateX(-8px);
+        box-shadow: 0 12px 25px rgba(45, 156, 219, 0.15);
+    }
+    
+    .btn-update {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 1.2rem 2.8rem;
+        border-radius: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(45, 156, 219, 0.35);
+    }
+    
+    .btn-update::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn-update:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .btn-update:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 30px rgba(45, 156, 219, 0.5);
+    }
+    
+    .btn-update:active {
+        transform: translateY(-2px);
+    }
+    
+    .btn-update span {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .btn-update i {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .btn-loading {
+        position: relative;
+        color: transparent !important;
+    }
+    
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        top: 50%;
+        left: 50%;
+        margin: -12px 0 0 -12px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        z-index: 3;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .hierarchy-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .info-card {
+        background: white;
+        padding: 1.8rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        border-left: 5px solid var(--primary-color);
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(45, 156, 219, 0.15);
+    }
+    
+    .info-label {
+        font-size: 0.9rem;
+        color: #718096;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+    
+    .info-value {
+        font-size: 1.1rem;
+        color: #2d3748;
+        font-weight: 700;
+    }
+    
+    .current-selection {
+        background: var(--primary-light);
+        border: 2px solid var(--primary-color);
+        border-radius: 14px;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        animation: pulseBorder 2s infinite;
+    }
+    
+    @keyframes pulseBorder {
+        0%, 100% { border-color: var(--primary-color); }
+        50% { border-color: var(--primary-dark); }
+    }
+    
+    .current-selection i {
+        color: var(--primary-color);
+        font-size: 1.2rem;
+    }
+    
+    .current-selection-text strong {
+        color: var(--primary-dark);
+    }
+    
+    .validation-feedback {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-top: 0.6rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    }
+    
+    .validation-feedback.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .valid-feedback {
+        color: var(--success-color);
+    }
+    
+    .invalid-feedback {
+        color: var(--danger-color);
+    }
+    
+    .search-box {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a0aec0;
+        z-index: 2;
+    }
+    
+    .search-input {
+        padding-left: 3rem !important;
+        border-radius: 12px !important;
+    }
+    
+    .success-toast {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: var(--success-color);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        box-shadow: 0 15px 35px rgba(39, 174, 96, 0.4);
+        z-index: 9999;
+        animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}
 
-      <div class="mb-3">
-        <label for="district_id" class="form-label">District</label>
-        <select name="district_id" id="district_id" class="form-select" required>
-          {% for dist in districts %}
-          <option value="{{ dist.id }}" {% if dist.id == upazila.district.id %}selected{% endif %}>
-            {{ dist.district_name }} ({{ dist.division.division_name }})
-          </option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="d-flex justify-content-between">
-        <a href="{% url 'upazila_list' %}" class="btn btn-secondary">
-          <i class="fa-solid fa-arrow-left me-2"></i>Back
-        </a>
-        <button type="submit" class="btn btn-primary">
-          <i class="fa-solid fa-save me-2"></i>Update
-        </button>
-      </div>
-    </form>
-  </div>
+{% block content %}
+<div class="form-container">
+    <div class="card form-card">
+        <!-- Header -->
+        <div class="card-header card-header-custom">
+            <div class="header-content">
+                <h2 class="header-title">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    Edit Upazila
+                </h2>
+                <div class="upazila-badge">
+                    <i class="fa-solid fa-hashtag"></i>
+                    ID: {{ upazila.id }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Body -->
+        <div class="card-body">
+            <!-- Location Hierarchy -->
+            <div class="hierarchy-info">
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="fa-solid fa-map"></i>
+                        Division
+                    </div>
+                    <div class="info-value">
+                        {{ upazila.district.division.division_name }}
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="fa-solid fa-map-marker-alt"></i>
+                        District
+                    </div>
+                    <div class="info-value">
+                        {{ upazila.district.district_name }}
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        Created
+                    </div>
+                    <div class="info-value">
+                        {{ upazila.created_at|date:"M d, Y"|default:"N/A" }}
+                    </div>
+                </div>
+            </div>
+            
+            <form method="POST" id="editUpazilaForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- Upazila Name Section -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-signature"></i>
+                        Upazila Information
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="upazila_name" class="form-label">
+                            <i class="fa-solid fa-map-pin"></i>
+                            Upazila Name *
+                        </label>
+                        <input 
+                            type="text" 
+                            name="upazila_name" 
+                            id="upazila_name" 
+                            class="form-control-custom" 
+                            value="{{ upazila.upazila_name }}" 
+                            placeholder="Enter upazila name"
+                            required
+                            maxlength="100"
+                        >
+                        <div class="form-helper">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Enter the official name of the upazila (max 100 characters)
+                        </div>
+                        <div class="validation-feedback valid-feedback" id="nameValid">
+                            <i class="fa-solid fa-circle-check"></i>
+                            Upazila name is valid
+                        </div>
+                        <div class="validation-feedback invalid-feedback" id="nameError">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            Please enter a valid upazila name (minimum 3 characters)
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- District Selection Section -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-location-dot"></i>
+                        District Selection
+                    </div>
+                    
+                    <!-- Current Selection Display -->
+                    <div class="current-selection">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <div class="current-selection-text">
+                            Currently selected: 
+                            <strong>{{ upazila.district.district_name }}</strong> 
+                            ({{ upazila.district.division.division_name }})
+                        </div>
+                    </div>
+                    
+                    <!-- District Search (Optional) -->
+                    <div class="search-box">
+                        <i class="fa-solid fa-search"></i>
+                        <input 
+                            type="text" 
+                            id="districtSearch" 
+                            class="form-control-custom search-input" 
+                            placeholder="Search districts..."
+                        >
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="district_id" class="form-label">
+                            <i class="fa-solid fa-map-marked-alt"></i>
+                            Select District *
+                        </label>
+                        <div class="select-wrapper">
+                            <select 
+                                name="district_id" 
+                                id="district_id" 
+                                class="form-select-custom"
+                                required
+                            >
+                                <option value="" disabled>Select a district</option>
+                                {% for dist in districts %}
+                                    <option 
+                                        value="{{ dist.id }}" 
+                                        {% if dist.id == upazila.district.id %}selected{% endif %}
+                                        data-division="{{ dist.division.division_name }}"
+                                        class="option-group"
+                                    >
+                                        <span class="district-name">{{ dist.district_name }}</span>
+                                        <span class="division-name">({{ dist.division.division_name }})</span>
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-helper">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Select the district this upazila belongs to
+                        </div>
+                        <div class="validation-feedback valid-feedback" id="districtValid">
+                            <i class="fa-solid fa-circle-check"></i>
+                            District selected
+                        </div>
+                        <div class="validation-feedback invalid-feedback" id="districtError">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            Please select a district
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <a href="{% url 'upazila_list' %}" class="btn-back">
+                        <i class="fa-solid fa-arrow-left-long"></i>
+                        <span>Back to Upazilas</span>
+                    </a>
+                    <button type="submit" class="btn-update" id="submitBtn">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Update Upazila</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+<!-- Success Toast (Hidden by default) -->
+<div class="success-toast" id="successToast" style="display: none;">
+    <i class="fa-solid fa-circle-check fa-2x"></i>
+    <div>
+        <strong>Upazila Updated!</strong>
+        <div style="font-size: 0.9rem;">Changes have been saved successfully</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('editUpazilaForm');
+        const upazilaNameInput = document.getElementById('upazila_name');
+        const districtSelect = document.getElementById('district_id');
+        const districtSearch = document.getElementById('districtSearch');
+        const submitBtn = document.getElementById('submitBtn');
+        const successToast = document.getElementById('successToast');
+        
+        // Character counter for upazila name
+        const charCounter = document.createElement('div');
+        charCounter.className = 'form-helper text-end mt-1';
+        charCounter.id = 'charCounter';
+        upazilaNameInput.parentNode.appendChild(charCounter);
+        
+        // Update character counter
+        function updateCharCounter() {
+            const charCount = upazilaNameInput.value.length;
+            const maxLength = upazilaNameInput.getAttribute('maxlength');
+            charCounter.textContent = `${charCount}/${maxLength} characters`;
+            
+            // Update color based on usage
+            const percentage = (charCount / maxLength) * 100;
+            if (percentage > 90) {
+                charCounter.style.color = 'var(--danger-color)';
+                charCounter.style.fontWeight = 'bold';
+            } else if (percentage > 75) {
+                charCounter.style.color = 'var(--warning-color)';
+                charCounter.style.fontWeight = '600';
+            } else {
+                charCounter.style.color = '';
+                charCounter.style.fontWeight = '';
+            }
+        }
+        
+        // Initial character count
+        updateCharCounter();
+        
+        // Real-time character counter
+        upazilaNameInput.addEventListener('input', function() {
+            updateCharCounter();
+            validateUpazilaName();
+        });
+        
+        // Real-time validation for district select
+        districtSelect.addEventListener('change', function() {
+            validateDistrict();
+            updateCurrentSelection();
+        });
+        
+        // District search functionality
+        districtSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const options = districtSelect.querySelectorAll('option');
+            
+            options.forEach(option => {
+                if (option.value === '') return;
+                
+                const districtName = option.querySelector('.district-name')?.textContent.toLowerCase() || '';
+                const divisionName = option.getAttribute('data-division')?.toLowerCase() || '';
+                const optionText = option.textContent.toLowerCase();
+                
+                if (districtName.includes(searchTerm) || 
+                    divisionName.includes(searchTerm) || 
+                    optionText.includes(searchTerm)) {
+                    option.style.display = '';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+        
+        // Validation functions
+        function validateUpazilaName() {
+            const value = upazilaNameInput.value.trim();
+            const nameValid = document.getElementById('nameValid');
+            const nameError = document.getElementById('nameError');
+            
+            if (value.length < 3) {
+                upazilaNameInput.classList.remove('is-valid');
+                upazilaNameInput.classList.add('is-invalid');
+                showValidation(nameError, true);
+                showValidation(nameValid, false);
+                return false;
+            } else {
+                upazilaNameInput.classList.remove('is-invalid');
+                upazilaNameInput.classList.add('is-valid');
+                showValidation(nameValid, true);
+                showValidation(nameError, false);
+                return true;
+            }
+        }
+        
+        function validateDistrict() {
+            const value = districtSelect.value;
+            const districtValid = document.getElementById('districtValid');
+            const districtError = document.getElementById('districtError');
+            
+            if (!value) {
+                districtSelect.classList.remove('is-valid');
+                districtSelect.classList.add('is-invalid');
+                showValidation(districtError, true);
+                showValidation(districtValid, false);
+                return false;
+            } else {
+                districtSelect.classList.remove('is-invalid');
+                districtSelect.classList.add('is-valid');
+                showValidation(districtValid, true);
+                showValidation(districtError, false);
+                return true;
+            }
+        }
+        
+        function showValidation(element, show) {
+            if (show) {
+                element.classList.add('show');
+            } else {
+                element.classList.remove('show');
+            }
+        }
+        
+        // Update current selection display
+        function updateCurrentSelection() {
+            const selectedOption = districtSelect.options[districtSelect.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                const districtName = selectedOption.querySelector('.district-name')?.textContent || selectedOption.textContent;
+                const divisionName = selectedOption.getAttribute('data-division') || '';
+                
+                document.querySelector('.current-selection-text').innerHTML = `
+                    Currently selected: 
+                    <strong>${districtName}</strong> 
+                    ${divisionName ? `(${divisionName})` : ''}
+                `;
+            }
+        }
+        
+        // Form submission handler
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const isNameValid = validateUpazilaName();
+            const isDistrictValid = validateDistrict();
+            
+            if (isNameValid && isDistrictValid) {
+                // Show loading state
+                submitBtn.classList.add('btn-loading');
+                submitBtn.disabled = true;
+                
+                // Simulate API call delay for better UX
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // Show success toast
+                showSuccessToast();
+                
+                // Submit the form after showing success
+                setTimeout(() => {
+                    form.submit();
+                }, 1500);
+            } else {
+                // Show error animation on invalid fields
+                const invalidFields = form.querySelectorAll('.is-invalid');
+                invalidFields.forEach(field => {
+                    field.classList.add('animate__animated', 'animate__headShake');
+                    setTimeout(() => {
+                        field.classList.remove('animate__animated', 'animate__headShake');
+                    }, 1000);
+                });
+                
+                // Focus on first invalid field
+                const firstInvalid = invalidFields[0];
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                    setTimeout(() => firstInvalid.focus(), 500);
+                }
+            }
+        });
+        
+        // Success toast function
+        function showSuccessToast() {
+            successToast.style.display = 'flex';
+            
+            setTimeout(() => {
+                successToast.style.animation = 'slideInRight 0.5s reverse forwards';
+                setTimeout(() => {
+                    successToast.style.display = 'none';
+                    successToast.style.animation = '';
+                }, 500);
+            }, 3000);
+        }
+        
+        // Initialize validation on page load
+        validateUpazilaName();
+        validateDistrict();
+        
+        // Add focus animation to inputs
+        const inputs = [upazilaNameInput, districtSelect];
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('animate__animated', 'animate__pulse');
+                setTimeout(() => {
+                    this.parentElement.classList.remove('animate__animated', 'animate__pulse');
+                }, 500);
+            });
+        });
+        
+        // Auto-save simulation
+        let autoSaveTimeout;
+        const saveChanges = () => {
+            clearTimeout(autoSaveTimeout);
+            
+            autoSaveTimeout = setTimeout(() => {
+                // Create auto-save indicator
+                const indicator = document.createElement('div');
+                indicator.className = 'position-fixed bottom-0 start-0 m-3 p-2 bg-primary text-white rounded-pill small';
+                indicator.innerHTML = '<i class="fa-solid fa-sync fa-spin me-2"></i>Saving changes...';
+                indicator.style.zIndex = '1050';
+                document.body.appendChild(indicator);
+                
+                setTimeout(() => {
+                    indicator.innerHTML = '<i class="fa-solid fa-check me-2"></i>Changes saved';
+                    indicator.style.backgroundColor = 'var(--success-color)';
+                    
+                    setTimeout(() => indicator.remove(), 1500);
+                }, 1000);
+            }, 2000);
+        };
+        
+        // Listen for changes
+        upazilaNameInput.addEventListener('input', saveChanges);
+        districtSelect.addEventListener('change', saveChanges);
+    });
+</script>
+
+<!-- Include Animate.css for animations -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 {% endblock %}

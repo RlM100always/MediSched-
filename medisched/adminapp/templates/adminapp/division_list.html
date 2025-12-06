@@ -3,65 +3,764 @@
 
 {% block title %}Manage Divisions | MediSched Admin{% endblock %}
 
+{% block extra_css %}
+<style>
+  :root {
+    --card-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --border-radius: 16px;
+    --primary-gradient: linear-gradient(135deg, #2D9CDB 0%, #1a7db8 100%);
+  }
+
+  /* Page Header */
+  .page-header {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+    border-left: 6px solid #2D9CDB;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+  }
+
+  .page-title-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(45, 156, 219, 0.3);
+  }
+
+  .page-title-text {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.75rem;
+    margin: 0;
+  }
+
+  .stats-badge {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(45, 156, 219, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Form Card */
+  .form-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .form-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .form-card-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+  }
+
+  .form-card-title {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 1.25rem;
+    margin: 0;
+  }
+
+  /* Form Styling */
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .form-label i {
+    color: #2D9CDB;
+  }
+
+  .form-control {
+    padding: 1rem 1.25rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .form-control:focus {
+    border-color: #2D9CDB;
+    box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.15);
+    transform: translateY(-1px);
+  }
+
+  .form-control::placeholder {
+    color: #94a3b8;
+  }
+
+  .form-hint {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .form-hint i {
+    color: #94a3b8;
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+  }
+
+  /* Data Card */
+  .data-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .data-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .data-card-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+  }
+
+  .data-card-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+  }
+
+  .data-card-title-text {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 1.25rem;
+    margin: 0;
+  }
+
+  /* Table Styling */
+  .data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .data-table thead {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  }
+
+  .data-table th {
+    padding: 1.25rem 1.5rem;
+    color: white;
+    font-weight: 600;
+    text-align: left;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+  }
+
+  .data-table th:first-child {
+    border-top-left-radius: 12px;
+  }
+
+  .data-table th:last-child {
+    border-top-right-radius: 12px;
+  }
+
+  .data-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
+  }
+
+  .data-table tbody tr:hover {
+    background: rgba(45, 156, 219, 0.03);
+    transform: translateY(-1px);
+  }
+
+  .data-table td {
+    padding: 1.25rem 1.5rem;
+    vertical-align: middle;
+    color: #475569;
+    font-weight: 500;
+  }
+
+  .id-badge {
+    background: rgba(45, 156, 219, 0.1);
+    color: #2D9CDB;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: inline-block;
+  }
+
+  .division-name {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .division-icon {
+    color: #2D9CDB;
+    font-size: 1.25rem;
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-action {
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    min-width: 100px;
+    justify-content: center;
+  }
+
+  .btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-edit {
+    background: rgba(45, 156, 219, 0.1);
+    color: #2D9CDB;
+    border: 2px solid #2D9CDB;
+  }
+
+  .btn-edit:hover {
+    background: #2D9CDB;
+    color: white;
+  }
+
+  .btn-delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 2px solid #ef4444;
+  }
+
+  .btn-delete:hover {
+    background: #ef4444;
+    color: white;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #64748b;
+  }
+
+  .empty-state-icon {
+    font-size: 4rem;
+    color: #cbd5e1;
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+  }
+
+  .empty-state-title {
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+  }
+
+  .empty-state-text {
+    font-size: 1rem;
+    margin-bottom: 0;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1200px) {
+    .page-header,
+    .form-card,
+    .data-card {
+      padding: 1.5rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+      padding: 1rem;
+    }
+  }
+
+  @media (max-width: 992px) {
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .data-card-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .action-buttons {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .btn-action {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .page-title {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    
+    .page-title-text {
+      font-size: 1.5rem;
+    }
+    
+    .form-card-header,
+    .data-card-title {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    
+    .data-table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    
+    .data-table th,
+    .data-table td {
+      font-size: 0.9rem;
+    }
+    
+    .btn-action {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .page-header,
+    .form-card,
+    .data-card {
+      padding: 1.25rem;
+      border-radius: 12px;
+    }
+    
+    .page-title-text {
+      font-size: 1.35rem;
+    }
+    
+    .form-control {
+      padding: 0.875rem 1rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+      padding: 0.875rem;
+    }
+    
+    .id-badge {
+      font-size: 0.85rem;
+      padding: 0.375rem 0.75rem;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+    }
+    
+    .btn-action {
+      width: 100%;
+    }
+  }
+
+  /* Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .form-card {
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  .data-card {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .data-table tbody tr {
+    animation: fadeInUp 0.8s ease-out forwards;
+    animation-delay: calc(var(--row-index) * 0.1s);
+    opacity: 0;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-  <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3><i class="fa-solid fa-map me-2"></i> Manage Divisions</h3>
+<div class="container-fluid">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-title">
+      <div class="page-title-icon">
+        <i class="fa-solid fa-map"></i>
+      </div>
+      <div>
+        <h1 class="page-title-text">Manage Divisions</h1>
+        <p class="text-muted mb-0">Organize and manage geographical divisions</p>
+      </div>
+    </div>
+    <div class="stats-badge">
+      <i class="fa-solid fa-layer-group"></i>
+      {{ divisions|length }} Division{{ divisions|pluralize }}
+    </div>
   </div>
 
   <!-- Add Division Form -->
-  <div class="card p-4 mb-4 shadow-sm">
-    <form method="POST" action="{% url 'add_division' %}" class="row g-3">
+  <div class="form-card">
+    <div class="form-card-header">
+      <div class="form-card-icon">
+        <i class="fa-solid fa-circle-plus"></i>
+      </div>
+      <h2 class="form-card-title">Add New Division</h2>
+    </div>
+    
+    <form method="POST" action="{% url 'add_division' %}">
       {% csrf_token %}
-      <div class="col-9">
-        <input type="text" name="division_name" class="form-control" placeholder="New Division Name" required>
+      <div class="form-group">
+        <label class="form-label" for="division_name">
+          <i class="fa-solid fa-signature"></i>
+          Division Name
+        </label>
+        <input type="text" 
+               id="division_name"
+               name="division_name" 
+               class="form-control" 
+               placeholder="Enter division name (e.g., Dhaka, Chittagong)" 
+               required
+               aria-label="Division Name">
+        <div class="form-hint">
+          <i class="fa-solid fa-circle-info"></i>
+          Enter the name of the geographical division
+        </div>
       </div>
-      <div class="col-3 d-grid">
-        <button class="btn btn-success">
-          <i class="fa-solid fa-plus me-2"></i>Add Division
-        </button>
-      </div>
+      
+      <button type="submit" class="btn-submit">
+        <i class="fa-solid fa-plus"></i>
+        Add New Division
+      </button>
     </form>
   </div>
 
   <!-- Division Table -->
-  <div class="card p-4 shadow-sm">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead class="table-dark">
-          <tr>
-            <th scope="col">#ID</th>
-            <th scope="col">Division Name</th>
-            <th scope="col">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for d in divisions %}
-          <tr>
-            <td>{{ d.id }}</td>
-            <td>{{ d.division_name }}</td>
-            <td>
-              <div class="d-flex gap-2">
-                <a href="{% url 'edit_division' d.id %}" class="btn btn-primary btn-sm">
-                  <i class="fa-solid fa-pen-to-square"></i> Edit
-                </a>
-                <a href="{% url 'delete_division' d.id %}" class="btn btn-danger btn-sm">
-                  <i class="fa-solid fa-trash"></i> Delete
-                </a>
-              </div>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="3" class="text-center text-muted">
-              No divisions found. Add a new division above.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  <div class="data-card">
+    <div class="data-card-header">
+      <div class="data-card-title">
+        <div class="data-card-icon">
+          <i class="fa-solid fa-list"></i>
+        </div>
+        <h2 class="data-card-title-text">All Divisions</h2>
+      </div>
     </div>
+    
+    {% if divisions %}
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Division Name</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for division in divisions %}
+            <tr style="--row-index: {{ forloop.counter }}">
+              <td>
+                <span class="id-badge">#{{ division.id }}</span>
+              </td>
+              <td>
+                <div class="division-name">
+                  <i class="fa-solid fa-map division-icon"></i>
+                  <strong>{{ division.division_name }}</strong>
+                </div>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <a href="{% url 'edit_division' division.id %}" 
+                     class="btn-action btn-edit"
+                     aria-label="Edit {{ division.division_name }}">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    Edit
+                  </a>
+                  <a href="{% url 'delete_division' division.id %}" 
+                     class="btn-action btn-delete"
+                     aria-label="Delete {{ division.division_name }}">
+                    <i class="fa-solid fa-trash"></i>
+                    Delete
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <i class="fa-solid fa-map"></i>
+        </div>
+        <h3 class="empty-state-title">No Divisions Found</h3>
+        <p class="empty-state-text">Add your first division using the form above.</p>
+      </div>
+    {% endif %}
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add animation delay to table rows
+    const rows = document.querySelectorAll('.data-table tbody tr');
+    rows.forEach((row, index) => {
+      row.style.setProperty('--row-index', index);
+    });
+
+    // Form validation
+    const form = document.querySelector('form');
+    const input = form.querySelector('#division_name');
+    
+    form.addEventListener('submit', function(e) {
+      if (!input.value.trim()) {
+        e.preventDefault();
+        input.classList.add('is-invalid');
+        input.focus();
+        
+        // Add error styling
+        if (!document.querySelector('.form-error')) {
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'form-error text-danger mt-2';
+          errorDiv.innerHTML = '<i class="fa-solid fa-exclamation-circle"></i> Please enter a division name';
+          input.parentNode.appendChild(errorDiv);
+        }
+        
+        return false;
+      }
+    });
+
+    // Clear error on input
+    input.addEventListener('input', function() {
+      this.classList.remove('is-invalid');
+      const errorDiv = this.parentNode.querySelector('.form-error');
+      if (errorDiv) {
+        errorDiv.remove();
+      }
+    });
+
+    // Delete confirmation with sweet alert style
+    const deleteButtons = document.querySelectorAll('.btn-delete');
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const url = this.href;
+        const divisionName = this.getAttribute('aria-label').replace('Delete ', '');
+        
+        // Custom confirmation dialog
+        const confirmationModal = document.createElement('div');
+        confirmationModal.className = 'confirmation-modal';
+        confirmationModal.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+          backdrop-filter: blur(4px);
+        `;
+        
+        confirmationModal.innerHTML = `
+          <div style="
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.3s ease-out;
+          ">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+              <div style="
+                width: 60px;
+                height: 60px;
+                background: rgba(239, 68, 68, 0.1);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1rem;
+              ">
+                <i class="fa-solid fa-exclamation-triangle" style="color: #ef4444; font-size: 1.5rem;"></i>
+              </div>
+              <h4 style="color: #1e293b; margin-bottom: 0.5rem;">Delete Division?</h4>
+              <p style="color: #64748b;">Are you sure you want to delete <strong>"${divisionName}"</strong>? This action cannot be undone.</p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+              <button class="btn-cancel" style="
+                flex: 1;
+                padding: 0.875rem;
+                border: 2px solid #e2e8f0;
+                background: white;
+                color: #64748b;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+              ">Cancel</button>
+              <button class="btn-confirm" style="
+                flex: 1;
+                padding: 0.875rem;
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+              ">Yes, Delete</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(confirmationModal);
+        
+        // Handle cancel
+        confirmationModal.querySelector('.btn-cancel').addEventListener('click', function() {
+          document.body.removeChild(confirmationModal);
+        });
+        
+        // Handle confirm
+        confirmationModal.querySelector('.btn-confirm').addEventListener('click', function() {
+          window.location.href = url;
+        });
+        
+        // Close on background click
+        confirmationModal.addEventListener('click', function(e) {
+          if (e.target === confirmationModal) {
+            document.body.removeChild(confirmationModal);
+          }
+        });
+      });
+    });
+  });
+</script>
 {% endblock %}

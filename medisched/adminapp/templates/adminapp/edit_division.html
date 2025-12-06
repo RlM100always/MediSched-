@@ -3,27 +3,758 @@
 
 {% block title %}Edit Division | MediSched Admin{% endblock %}
 
-{% block content %}
-<div class="container mt-5" style="max-width: 600px;">
-  <div class="card p-4">
-    <h3 class="mb-4"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Division</h3>
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2D9CDB;
+        --primary-dark: #1e7cb3;
+        --primary-light: #e1f1fa;
+        --primary-gradient: linear-gradient(135deg, #2D9CDB 0%, #1e7cb3 100%);
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --light-bg: #f8fafc;
+        --card-shadow: 0 10px 40px rgba(45, 156, 219, 0.1);
+        --hover-shadow: 0 20px 50px rgba(45, 156, 219, 0.15);
+    }
     
-    <form method="POST">
-      {% csrf_token %}
-      <div class="mb-3">
-        <label for="division_name" class="form-label">Division Name</label>
-        <input type="text" name="division_name" id="division_name" class="form-control" value="{{ division.division_name }}" required>
-      </div>
+    .form-container {
+        max-width: 650px;
+        margin: 2rem auto;
+        animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .form-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        background: linear-gradient(145deg, #ffffff, #f5f9fc);
+    }
+    
+    .form-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .card-header-custom {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-header-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .header-title {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.8rem;
+    }
+    
+    .header-title i {
+        font-size: 2.2rem;
+        margin-right: 1.2rem;
+        background: rgba(255, 255, 255, 0.25);
+        padding: 1rem;
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+        animation: floatIcon 3s ease-in-out infinite;
+    }
+    
+    @keyframes floatIcon {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(5deg); }
+    }
+    
+    .division-badge {
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        padding: 0.8rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .division-badge:hover {
+        transform: scale(1.05);
+        background: rgba(255, 255, 255, 0.4);
+    }
+    
+    .card-body {
+        padding: 3rem;
+        position: relative;
+    }
+    
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 2rem;
+        }
+        .header-title {
+            font-size: 1.6rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+        .header-title {
+            font-size: 1.4rem;
+        }
+        .header-content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
+    
+    .form-label {
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.8rem;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-label i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+    
+    .input-group-custom {
+        position: relative;
+        margin-bottom: 2.5rem;
+    }
+    
+    .input-wrapper {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-custom {
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1.2rem 1.5rem;
+        padding-left: 3.5rem;
+        font-size: 1.05rem;
+        transition: all 0.3s ease;
+        background: white;
+        width: 100%;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+    }
+    
+    .form-control-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(45, 156, 219, 0.15);
+        background: white;
+        outline: none;
+        transform: translateY(-2px);
+    }
+    
+    .form-control-custom:hover {
+        border-color: #cbd5e0;
+    }
+    
+    .form-icon {
+        position: absolute;
+        left: 1.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary-color);
+        font-size: 1.2rem;
+        z-index: 10;
+        background: var(--primary-light);
+        padding: 0.6rem;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-custom:focus + .form-icon {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    .form-helper {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: #718096;
+        font-size: 0.9rem;
+        margin-top: 0.6rem;
+        padding-left: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .form-helper i {
+        color: var(--primary-color);
+        font-size: 0.85rem;
+    }
+    
+    .validation-feedback {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-top: 0.6rem;
+        padding-left: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: none;
+    }
+    
+    .valid-feedback {
+        color: var(--success-color);
+    }
+    
+    .invalid-feedback {
+        color: var(--danger-color);
+    }
+    
+    .button-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3.5rem;
+        padding-top: 2rem;
+        border-top: 2px solid #edf2f7;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+    
+    @media (max-width: 576px) {
+        .button-group {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .button-group a,
+        .button-group button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    .btn-back {
+        background: white;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+        padding: 1rem 2rem;
+        border-radius: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .btn-back:hover {
+        background: #f7fafc;
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateX(-5px);
+        box-shadow: 0 8px 15px rgba(45, 156, 219, 0.1);
+    }
+    
+    .btn-update {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 1.1rem 2.5rem;
+        border-radius: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 6px 15px rgba(45, 156, 219, 0.3);
+    }
+    
+    .btn-update::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn-update:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .btn-update:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(45, 156, 219, 0.4);
+    }
+    
+    .btn-update:active {
+        transform: translateY(-1px);
+    }
+    
+    .btn-update span {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .btn-update i {
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Loading State */
+    .btn-loading {
+        position: relative;
+        color: transparent !important;
+    }
+    
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        top: 50%;
+        left: 50%;
+        margin: -12px 0 0 -12px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        z-index: 3;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Character Counter */
+    .char-counter {
+        position: absolute;
+        right: 1.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.85rem;
+        color: #a0aec0;
+        font-weight: 500;
+        pointer-events: none;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-custom:focus ~ .char-counter {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+    
+    /* Success Message Animation */
+    .success-message {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: var(--success-color);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
+        z-index: 1000;
+        animation: slideInRight 0.5s ease-out;
+        transform: translateX(0);
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Form Stats */
+    .form-stats {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-top: 2rem;
+        padding: 1.2rem;
+        background: var(--primary-light);
+        border-radius: 12px;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .stat-item i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        color: #4a5568;
+        font-weight: 500;
+    }
+    
+    .stat-value {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 0.9rem;
+    }
+    
+    /* Pulse Animation for Important Elements */
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(45, 156, 219, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(45, 156, 219, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(45, 156, 219, 0); }
+    }
+    
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+</style>
+{% endblock %}
 
-      <div class="d-flex justify-content-between">
-        <a href="{% url 'division_list' %}" class="btn btn-secondary">
-          <i class="fa-solid fa-arrow-left me-2"></i>Back
-        </a>
-        <button type="submit" class="btn btn-primary">
-          <i class="fa-solid fa-save me-2"></i>Update
-        </button>
-      </div>
-    </form>
-  </div>
+{% block content %}
+<div class="form-container">
+    <div class="card form-card">
+        <!-- Header -->
+        <div class="card-header card-header-custom">
+            <div class="header-content">
+                <h2 class="header-title">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    Edit Division
+                </h2>
+                <div class="division-badge pulse-animation">
+                    <i class="fa-solid fa-hashtag"></i>
+                    ID: {{ division.id }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Body -->
+        <div class="card-body">
+            <form method="POST" id="editDivisionForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- Division Name Field -->
+                <div class="input-group-custom">
+                    <label for="division_name" class="form-label">
+                        <i class="fa-solid fa-map-marked-alt"></i>
+                        Division Name
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-building form-icon"></i>
+                        <input 
+                            type="text" 
+                            name="division_name" 
+                            id="division_name" 
+                            class="form-control-custom" 
+                            value="{{ division.division_name }}" 
+                            placeholder="Enter division name"
+                            required
+                            maxlength="100"
+                        >
+                        <div class="char-counter" id="charCounter">
+                            0/100
+                        </div>
+                    </div>
+                    <div class="form-helper">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Enter the official name of the administrative division
+                    </div>
+                    <div class="validation-feedback valid-feedback" id="nameValid">
+                        <i class="fa-solid fa-circle-check"></i>
+                        Division name is valid
+                    </div>
+                    <div class="validation-feedback invalid-feedback" id="nameError">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        Please enter a valid division name (minimum 3 characters)
+                    </div>
+                </div>
+                
+                <!-- Form Statistics -->
+                <div class="form-stats">
+                    <div class="stat-item">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        <div>
+                            <div class="stat-label">Created</div>
+                            <div class="stat-value">{{ division.created_at|date:"M d, Y"|default:"Not available" }}</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <div>
+                            <div class="stat-label">Last Updated</div>
+                            <div class="stat-value">{{ division.updated_at|date:"M d, Y H:i"|default:"Not available" }}</div>
+                        </div>
+                    </div>
+                    {% if division.district_set.count > 0 %}
+                    <div class="stat-item">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <div>
+                            <div class="stat-label">Districts</div>
+                            <div class="stat-value">{{ division.district_set.count }} districts</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <a href="{% url 'division_list' %}" class="btn-back">
+                        <i class="fa-solid fa-arrow-left-long"></i>
+                        <span>Back to Divisions</span>
+                    </a>
+                    <button type="submit" class="btn-update" id="submitBtn">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Update Division</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+<!-- Success Message Template (hidden by default) -->
+<div id="successMessage" class="success-message" style="display: none;">
+    <i class="fa-solid fa-circle-check fa-lg"></i>
+    <div>
+        <strong>Success!</strong>
+        <div style="font-size: 0.9rem;">Division has been updated successfully</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('editDivisionForm');
+        const divisionNameInput = document.getElementById('division_name');
+        const charCounter = document.getElementById('charCounter');
+        const submitBtn = document.getElementById('submitBtn');
+        const nameValid = document.getElementById('nameValid');
+        const nameError = document.getElementById('nameError');
+        const successMessage = document.getElementById('successMessage');
+        
+        // Initial character count update
+        updateCharCounter();
+        
+        // Real-time character counter
+        divisionNameInput.addEventListener('input', function() {
+            updateCharCounter();
+            validateDivisionName();
+        });
+        
+        // Character counter function
+        function updateCharCounter() {
+            const charCount = divisionNameInput.value.length;
+            const maxLength = divisionNameInput.getAttribute('maxlength');
+            charCounter.textContent = `${charCount}/${maxLength}`;
+            
+            // Update color based on usage
+            const percentage = (charCount / maxLength) * 100;
+            if (percentage > 90) {
+                charCounter.style.color = 'var(--danger-color)';
+                charCounter.style.fontWeight = 'bold';
+            } else if (percentage > 75) {
+                charCounter.style.color = 'var(--warning-color)';
+                charCounter.style.fontWeight = '600';
+            } else {
+                charCounter.style.color = '';
+                charCounter.style.fontWeight = '';
+            }
+        }
+        
+        // Validation function
+        function validateDivisionName() {
+            const value = divisionNameInput.value.trim();
+            
+            if (value.length < 3) {
+                divisionNameInput.classList.remove('is-valid');
+                divisionNameInput.classList.add('is-invalid');
+                nameValid.style.display = 'none';
+                nameError.style.display = 'flex';
+                return false;
+            } else {
+                divisionNameInput.classList.remove('is-invalid');
+                divisionNameInput.classList.add('is-valid');
+                nameValid.style.display = 'flex';
+                nameError.style.display = 'none';
+                return true;
+            }
+        }
+        
+        // Form submission handler
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (validateDivisionName()) {
+                // Show loading state
+                submitBtn.classList.add('btn-loading');
+                submitBtn.disabled = true;
+                
+                // Simulate API call delay for better UX
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // In real implementation, you would submit the form
+                // For demonstration, show success message
+                showSuccessMessage();
+                
+                // Submit the form after showing success
+                setTimeout(() => {
+                    form.submit();
+                }, 1500);
+            } else {
+                // Show error animation
+                divisionNameInput.classList.add('animate__animated', 'animate__shakeX');
+                setTimeout(() => {
+                    divisionNameInput.classList.remove('animate__animated', 'animate__shakeX');
+                }, 1000);
+                
+                // Focus on the invalid field
+                divisionNameInput.focus();
+            }
+        });
+        
+        // Success message function
+        function showSuccessMessage() {
+            successMessage.style.display = 'flex';
+            
+            // Hide message after 3 seconds
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Auto-save simulation
+        let autoSaveTimeout;
+        divisionNameInput.addEventListener('input', function() {
+            clearTimeout(autoSaveTimeout);
+            
+            autoSaveTimeout = setTimeout(() => {
+                // Simulate auto-save
+                const autoSaveIndicator = document.createElement('div');
+                autoSaveIndicator.className = 'position-fixed bottom-0 start-0 m-3 p-2 bg-primary text-white rounded-pill small';
+                autoSaveIndicator.innerHTML = '<i class="fa-solid fa-sync fa-spin me-2"></i>Auto-saving...';
+                autoSaveIndicator.style.zIndex = '1050';
+                document.body.appendChild(autoSaveIndicator);
+                
+                setTimeout(() => {
+                    autoSaveIndicator.innerHTML = '<i class="fa-solid fa-check me-2"></i>Auto-saved';
+                    autoSaveIndicator.style.backgroundColor = 'var(--success-color)';
+                    
+                    setTimeout(() => {
+                        autoSaveIndicator.remove();
+                    }, 1500);
+                }, 1000);
+            }, 2000);
+        });
+        
+        // Unsaved changes warning
+        let hasUnsavedChanges = false;
+        
+        divisionNameInput.addEventListener('input', function() {
+            hasUnsavedChanges = true;
+        });
+        
+        window.addEventListener('beforeunload', function(e) {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+            }
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+S or Cmd+S to save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                submitBtn.click();
+            }
+            
+            // Escape to go back
+            if (e.key === 'Escape') {
+                const backBtn = document.querySelector('.btn-back');
+                if (backBtn) backBtn.click();
+            }
+        });
+        
+        // Initialize validation on page load
+        validateDivisionName();
+        
+        // Add animation to input on focus
+        divisionNameInput.addEventListener('focus', function() {
+            this.parentElement.classList.add('animate__animated', 'animate__pulse');
+            setTimeout(() => {
+                this.parentElement.classList.remove('animate__animated', 'animate__pulse');
+            }, 500);
+        });
+    });
+</script>
+
+<!-- Include Animate.css for animations -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 {% endblock %}

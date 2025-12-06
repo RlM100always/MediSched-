@@ -3,47 +3,666 @@
 
 {% block title %}Edit District | MediSched Admin{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2D9CDB;
+        --primary-dark: #1e7cb3;
+        --primary-light: #e1f1fa;
+        --primary-gradient: linear-gradient(135deg, #2D9CDB 0%, #1e7cb3 100%);
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --light-bg: #f8fafc;
+    }
+    
+    .form-container {
+        max-width: 700px;
+        margin: 2rem auto;
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .form-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(45, 156, 219, 0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .form-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(45, 156, 219, 0.18);
+    }
+    
+    .card-header-custom {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.8rem;
+        border-bottom: none;
+    }
+    
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .header-title {
+        display: flex;
+        align-items: center;
+        margin: 0;
+    }
+    
+    .header-title i {
+        font-size: 1.8rem;
+        margin-right: 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.8rem;
+        border-radius: 12px;
+    }
+    
+    .district-badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.6rem 1.2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .card-body {
+        padding: 2.5rem;
+        background: var(--light-bg);
+    }
+    
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1.8rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.6rem;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-label i {
+        color: var(--primary-color);
+    }
+    
+    .input-group-custom {
+        position: relative;
+        margin-bottom: 1.8rem;
+    }
+    
+    .form-control-custom {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .form-control-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.15);
+        background: white;
+    }
+    
+    .form-control-custom:hover {
+        border-color: #cbd5e0;
+    }
+    
+    .select-wrapper {
+        position: relative;
+    }
+    
+    .select-wrapper::after {
+        content: "▾";
+        font-size: 1.2rem;
+        color: var(--primary-color);
+        position: absolute;
+        right: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+    
+    .form-select-custom {
+        appearance: none;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .form-select-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.15);
+        outline: none;
+    }
+    
+    .form-select-custom:hover {
+        border-color: #cbd5e0;
+    }
+    
+    .option-item {
+        padding: 0.8rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .option-item:hover {
+        background: var(--primary-light);
+    }
+    
+    .form-helper {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #718096;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        padding-left: 0.3rem;
+    }
+    
+    .form-helper i {
+        color: var(--primary-color);
+        font-size: 0.8rem;
+    }
+    
+    .button-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #edf2f7;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    @media (max-width: 576px) {
+        .button-group {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .button-group a,
+        .button-group button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    .btn-back {
+        background: white;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+        padding: 0.9rem 1.8rem;
+        border-radius: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .btn-back:hover {
+        background: #f7fafc;
+        border-color: #cbd5e0;
+        transform: translateX(-5px);
+        color: #2d3748;
+    }
+    
+    .btn-update {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 1rem 2.2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-update::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: 0.5s;
+    }
+    
+    .btn-update:hover::before {
+        left: 100%;
+    }
+    
+    .btn-update:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(45, 156, 219, 0.25);
+    }
+    
+    .btn-update:active {
+        transform: translateY(-1px);
+    }
+    
+    .form-icon {
+        position: absolute;
+        left: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a0aec0;
+        z-index: 2;
+    }
+    
+    .input-with-icon {
+        padding-left: 3.2rem !important;
+    }
+    
+    .select-with-icon {
+        padding-left: 3.2rem !important;
+    }
+    
+    /* Success/Error States */
+    .is-valid {
+        border-color: var(--success-color) !important;
+    }
+    
+    .is-invalid {
+        border-color: var(--danger-color) !important;
+    }
+    
+    .valid-feedback, .invalid-feedback {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        padding-left: 0.3rem;
+    }
+    
+    .valid-feedback {
+        color: var(--success-color);
+    }
+    
+    .invalid-feedback {
+        color: var(--danger-color);
+    }
+    
+    /* Loading State */
+    .btn-loading {
+        position: relative;
+        color: transparent !important;
+    }
+    
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 50%;
+        left: 50%;
+        margin: -10px 0 0 -10px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Floating Animation for Header */
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    
+    .header-title i {
+        animation: float 3s ease-in-out infinite;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5" style="max-width: 600px;">
-  <div class="card p-4 shadow-sm">
-    <h3 class="mb-4">
-      <i class="fa-solid fa-pen-to-square me-2"></i>Edit District
-    </h3>
-
-    <form method="POST">
-      {% csrf_token %}
-      <div class="mb-3">
-        <label for="district_name" class="form-label">District Name</label>
-        <input 
-          type="text" 
-          name="district_name" 
-          id="district_name" 
-          class="form-control" 
-          value="{{ district.district_name }}" 
-          required
-        >
-      </div>
-
-      <div class="mb-3">
-        <label for="division_id" class="form-label">Division</label>
-        <select name="division_id" id="division_id" class="form-select" required>
-          {% for div in divisions %}
-            <option value="{{ div.id }}" {% if div.id == district.division.id %}selected{% endif %}>
-              {{ div.division_name }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="d-flex justify-content-between mt-4">
-        <a href="{% url 'district_list' %}" class="btn btn-secondary">
-          <i class="fa-solid fa-arrow-left me-2"></i>Back
-        </a>
-        <button type="submit" class="btn btn-primary">
-          <i class="fa-solid fa-save me-2"></i>Update
-        </button>
-      </div>
-    </form>
-  </div>
+<div class="form-container">
+    <div class="card form-card">
+        <!-- Header -->
+        <div class="card-header card-header-custom">
+            <div class="header-content">
+                <h2 class="header-title">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    Edit District
+                </h2>
+                <div class="district-badge">
+                    <i class="fa-solid fa-hashtag"></i>
+                    ID: {{ district.id }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Body -->
+        <div class="card-body">
+            <form method="POST" id="editDistrictForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- District Name Field -->
+                <div class="input-group-custom">
+                    <label for="district_name" class="form-label">
+                        <i class="fa-solid fa-location-dot"></i>
+                        District Name
+                    </label>
+                    <div class="position-relative">
+                        <i class="fa-solid fa-city form-icon"></i>
+                        <input 
+                            type="text" 
+                            name="district_name" 
+                            id="district_name" 
+                            class="form-control-custom input-with-icon" 
+                            value="{{ district.district_name }}" 
+                            placeholder="Enter district name"
+                            required
+                            maxlength="100"
+                        >
+                    </div>
+                    <div class="form-helper">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Enter the official name of the district
+                    </div>
+                    <div class="valid-feedback" id="nameValid" style="display: none;">
+                        <i class="fa-solid fa-circle-check"></i>
+                        District name is valid
+                    </div>
+                    <div class="invalid-feedback" id="nameError" style="display: none;">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        Please enter a valid district name
+                    </div>
+                </div>
+                
+                <!-- Division Selection Field -->
+                <div class="input-group-custom">
+                    <label for="division_id" class="form-label">
+                        <i class="fa-solid fa-map"></i>
+                        Division
+                    </label>
+                    <div class="select-wrapper position-relative">
+                        <i class="fa-solid fa-globe form-icon"></i>
+                        <select 
+                            name="division_id" 
+                            id="division_id" 
+                            class="form-select-custom select-with-icon"
+                            required
+                        >
+                            <option value="" disabled>Select a division</option>
+                            {% for div in divisions %}
+                                <option 
+                                    value="{{ div.id }}" 
+                                    {% if div.id == district.division.id %}selected{% endif %}
+                                    class="option-item"
+                                >
+                                    {{ div.division_name }}
+                                    {% if div.id == district.division.id %}
+                                        <small class="text-muted">(Current)</small>
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-helper">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Select the division this district belongs to
+                    </div>
+                    <div class="valid-feedback" id="divisionValid" style="display: none;">
+                        <i class="fa-solid fa-circle-check"></i>
+                        Division selected
+                    </div>
+                    <div class="invalid-feedback" id="divisionError" style="display: none;">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        Please select a division
+                    </div>
+                </div>
+                
+                <!-- Form Info -->
+                <div class="alert alert-light border mt-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-clock-rotate-left text-primary me-3 fs-5"></i>
+                        <div>
+                            <small class="text-muted">
+                                <strong>Last Updated:</strong> 
+                                {{ district.updated_at|date:"F d, Y H:i"|default:"Not available" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <a href="{% url 'district_list' %}" class="btn-back">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Back to Districts
+                    </a>
+                    <button type="submit" class="btn-update" id="submitBtn">
+                        <i class="fa-solid fa-save"></i>
+                        Update District
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('editDistrictForm');
+        const districtNameInput = document.getElementById('district_name');
+        const divisionSelect = document.getElementById('division_id');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Real-time validation for district name
+        districtNameInput.addEventListener('input', function() {
+            validateDistrictName();
+        });
+        
+        // Real-time validation for division select
+        divisionSelect.addEventListener('change', function() {
+            validateDivision();
+        });
+        
+        // Form submission handler
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (validateForm()) {
+                // Show loading state
+                submitBtn.classList.add('btn-loading');
+                submitBtn.disabled = true;
+                
+                // Submit the form after a brief delay to show loading state
+                setTimeout(() => {
+                    form.submit();
+                }, 800);
+            } else {
+                // Scroll to first error
+                const firstError = form.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                    
+                    // Add shake animation to error field
+                    firstError.classList.add('animate__animated', 'animate__headShake');
+                    setTimeout(() => {
+                        firstError.classList.remove('animate__animated', 'animate__headShake');
+                    }, 1000);
+                }
+            }
+        });
+        
+        // Validation functions
+        function validateDistrictName() {
+            const value = districtNameInput.value.trim();
+            const nameValid = document.getElementById('nameValid');
+            const nameError = document.getElementById('nameError');
+            
+            if (value.length < 2) {
+                districtNameInput.classList.remove('is-valid');
+                districtNameInput.classList.add('is-invalid');
+                nameValid.style.display = 'none';
+                nameError.style.display = 'flex';
+                return false;
+            } else {
+                districtNameInput.classList.remove('is-invalid');
+                districtNameInput.classList.add('is-valid');
+                nameValid.style.display = 'flex';
+                nameError.style.display = 'none';
+                return true;
+            }
+        }
+        
+        function validateDivision() {
+            const value = divisionSelect.value;
+            const divisionValid = document.getElementById('divisionValid');
+            const divisionError = document.getElementById('divisionError');
+            
+            if (!value) {
+                divisionSelect.classList.remove('is-valid');
+                divisionSelect.classList.add('is-invalid');
+                divisionValid.style.display = 'none';
+                divisionError.style.display = 'flex';
+                return false;
+            } else {
+                divisionSelect.classList.remove('is-invalid');
+                divisionSelect.classList.add('is-valid');
+                divisionValid.style.display = 'flex';
+                divisionError.style.display = 'none';
+                return true;
+            }
+        }
+        
+        function validateForm() {
+            const isNameValid = validateDistrictName();
+            const isDivisionValid = validateDivision();
+            
+            return isNameValid && isDivisionValid;
+        }
+        
+        // Character counter for district name
+        districtNameInput.addEventListener('input', function() {
+            const charCount = this.value.length;
+            const maxLength = this.getAttribute('maxlength');
+            
+            // Create or update counter display
+            let counter = document.getElementById('charCounter');
+            if (!counter) {
+                counter = document.createElement('div');
+                counter.id = 'charCounter';
+                counter.className = 'form-text text-end small mt-1';
+                this.parentNode.appendChild(counter);
+            }
+            
+            counter.textContent = `${charCount}/${maxLength} characters`;
+            
+            // Change color based on length
+            if (charCount > maxLength * 0.8) {
+                counter.style.color = 'var(--warning-color)';
+            } else if (charCount > maxLength * 0.9) {
+                counter.style.color = 'var(--danger-color)';
+            } else {
+                counter.style.color = '#718096';
+            }
+        });
+        
+        // Trigger initial validation
+        validateDistrictName();
+        validateDivision();
+        
+        // Auto-save feature (optional)
+        let autoSaveTimer;
+        const formData = new FormData(form);
+        
+        form.addEventListener('input', function() {
+            clearTimeout(autoSaveTimer);
+            
+            // Show auto-save indicator
+            const autoSaveIndicator = document.createElement('div');
+            autoSaveIndicator.className = 'position-fixed bottom-0 end-0 m-3 p-2 bg-primary text-white rounded-pill small';
+            autoSaveIndicator.innerHTML = '<i class="fa-solid fa-sync fa-spin me-2"></i>Saving...';
+            autoSaveIndicator.style.zIndex = '1050';
+            document.body.appendChild(autoSaveIndicator);
+            
+            autoSaveTimer = setTimeout(() => {
+                // In a real app, you would send an AJAX request here
+                autoSaveIndicator.innerHTML = '<i class="fa-solid fa-check me-2"></i>Auto-saved';
+                autoSaveIndicator.style.backgroundColor = 'var(--success-color)';
+                
+                setTimeout(() => {
+                    autoSaveIndicator.remove();
+                }, 2000);
+            }, 1500);
+        });
+        
+        // Confirmation before leaving if there are unsaved changes
+        let formChanged = false;
+        
+        form.addEventListener('input', function() {
+            formChanged = true;
+        });
+        
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+            }
+        });
+    });
+</script>
+
+<!-- Include Animate.css for animations -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 {% endblock %}

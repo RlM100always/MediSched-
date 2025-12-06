@@ -3,63 +3,1034 @@
 
 {% block title %}Edit Symptom | MediSched Admin{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2D9CDB;
+        --primary-dark: #1e7cb3;
+        --primary-light: #e1f1fa;
+        --primary-gradient: linear-gradient(135deg, #2D9CDB 0%, #1e7cb3 100%);
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --light-bg: #f8fafc;
+        --card-shadow: 0 15px 50px rgba(45, 156, 219, 0.12);
+        --hover-shadow: 0 25px 60px rgba(45, 156, 219, 0.2);
+        --image-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .form-container {
+        max-width: 850px;
+        margin: 2rem auto;
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-card {
+        border: none;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        background: white;
+    }
+    
+    .form-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .card-header-custom {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2.2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-header-custom::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, 
+            transparent 30%, 
+            rgba(255,255,255,0.1) 50%, 
+            transparent 70%);
+        animation: shimmer 3s infinite linear;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .header-title {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        font-weight: 800;
+        font-size: 1.9rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .header-title i {
+        font-size: 2.4rem;
+        margin-right: 1.2rem;
+        background: rgba(255, 255, 255, 0.3);
+        padding: 1rem;
+        border-radius: 18px;
+        backdrop-filter: blur(10px);
+        animation: pulse 2s infinite ease-in-out;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    .symptom-badge {
+        background: rgba(255, 255, 255, 0.35);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        padding: 0.9rem 1.8rem;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .symptom-badge:hover {
+        transform: scale(1.08);
+        background: rgba(255, 255, 255, 0.45);
+    }
+    
+    .card-body {
+        padding: 3rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 2.2rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 1.8rem;
+        }
+        .header-content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.2rem;
+        }
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eef2f7;
+        transition: all 0.3s ease;
+    }
+    
+    .form-section:hover {
+        box-shadow: 0 15px 40px rgba(45, 156, 219, 0.1);
+        border-color: var(--primary-light);
+    }
+    
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: #2d3748;
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid var(--primary-light);
+    }
+    
+    .section-title i {
+        color: var(--primary-color);
+        background: var(--primary-light);
+        padding: 0.8rem;
+        border-radius: 12px;
+        font-size: 1.2rem;
+    }
+    
+    .form-label {
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.8rem;
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .form-label i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+    
+    .form-control-custom {
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.2rem 1.5rem;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        background: white;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+    }
+    
+    .form-control-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(45, 156, 219, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .form-control-custom:hover {
+        border-color: #cbd5e0;
+    }
+    
+    .image-preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        align-items: center;
+        margin-top: 1.5rem;
+    }
+    
+    .current-image-wrapper {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .current-image {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        border: 4px solid white;
+        transition: all 0.4s ease;
+    }
+    
+    .current-image:hover {
+        transform: scale(1.05) rotate(2deg);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    }
+    
+    .no-image-placeholder {
+        width: 200px;
+        height: 200px;
+        background: var(--image-bg);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+    }
+    
+    .upload-zone {
+        border: 3px dashed var(--primary-color);
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, rgba(45, 156, 219, 0.05) 0%, rgba(30, 124, 179, 0.05) 100%);
+        flex: 1;
+        min-width: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .upload-zone:hover {
+        background: linear-gradient(135deg, rgba(45, 156, 219, 0.1) 0%, rgba(30, 124, 179, 0.1) 100%);
+        border-color: var(--primary-dark);
+        transform: translateY(-5px);
+    }
+    
+    .upload-zone.dragover {
+        background: linear-gradient(135deg, rgba(45, 156, 219, 0.2) 0%, rgba(30, 124, 179, 0.2) 100%);
+        border-color: var(--success-color);
+    }
+    
+    .upload-icon {
+        font-size: 3.5rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-zone:hover .upload-icon {
+        transform: scale(1.2);
+        color: var(--primary-dark);
+    }
+    
+    .upload-text {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.8rem;
+    }
+    
+    .upload-subtext {
+        color: #718096;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .file-info {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: var(--primary-light);
+        border-radius: 12px;
+        display: none;
+    }
+    
+    .file-info.show {
+        display: block;
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .button-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 2.5rem;
+        border-top: 3px solid #edf2f7;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+    
+    @media (max-width: 576px) {
+        .button-group {
+            flex-direction: column;
+        }
+        .button-group a, 
+        .button-group button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    .btn-back {
+        background: white;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+        padding: 1.1rem 2.2rem;
+        border-radius: 16px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .btn-back:hover {
+        background: #f7fafc;
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateX(-8px);
+        box-shadow: 0 12px 25px rgba(45, 156, 219, 0.15);
+    }
+    
+    .btn-update {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 1.2rem 2.8rem;
+        border-radius: 16px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(45, 156, 219, 0.35);
+    }
+    
+    .btn-update::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.4), 
+            transparent);
+        transition: 0.5s;
+    }
+    
+    .btn-update:hover::before {
+        left: 100%;
+    }
+    
+    .btn-update:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 30px rgba(45, 156, 219, 0.5);
+    }
+    
+    .btn-update:active {
+        transform: translateY(-2px);
+    }
+    
+    .btn-update span {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .btn-update i {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .btn-loading {
+        position: relative;
+        color: transparent !important;
+    }
+    
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        top: 50%;
+        left: 50%;
+        margin: -13px 0 0 -13px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        z-index: 3;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .symptom-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .info-card {
+        background: white;
+        padding: 1.8rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        border-left: 5px solid var(--primary-color);
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(45, 156, 219, 0.15);
+    }
+    
+    .info-label {
+        font-size: 0.9rem;
+        color: #718096;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+    
+    .info-value {
+        font-size: 1.1rem;
+        color: #2d3748;
+        font-weight: 700;
+    }
+    
+    .image-actions {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        display: flex;
+        gap: 0.8rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .current-image-wrapper:hover .image-actions {
+        opacity: 1;
+    }
+    
+    .image-action-btn {
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .image-action-btn:hover {
+        background: var(--primary-color);
+        transform: scale(1.1);
+    }
+    
+    .form-helper {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: #718096;
+        font-size: 0.9rem;
+        margin-top: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .form-helper i {
+        color: var(--primary-color);
+        font-size: 0.85rem;
+    }
+    
+    .success-toast {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: var(--success-color);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        box-shadow: 0 15px 35px rgba(39, 174, 96, 0.4);
+        z-index: 9999;
+        animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-  <div class="card p-4 shadow-lg rounded">
-    <h3 class="mb-4 text-primary">
-      <i class="fa-solid fa-pen-to-square me-2"></i>Edit Symptom
-    </h3>
-
-    <form method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-
-      <!-- Symptom Name -->
-      <div class="mb-3">
-        <label for="symptom_name" class="form-label fw-semibold">Symptom Name</label>
-        <input type="text" 
-               name="symptom_name" 
-               id="symptom_name" 
-               class="form-control" 
-               value="{{ symptom.symptom_name }}" 
-               required>
-      </div>
-
-      <!-- Current Image Preview -->
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Current Image</label><br>
-        {% if symptom.symptom_image %}
-          <img src="{{ symptom.symptom_image.url }}" 
-               alt="{{ symptom.symptom_name }}" 
-               class="rounded shadow-sm" 
-               width="150" height="150">
-        {% else %}
-          <p class="text-muted">No image uploaded.</p>
-        {% endif %}
-      </div>
-
-      <!-- Upload New Image -->
-      <div class="mb-4">
-        <label for="symptom_image" class="form-label fw-semibold">Upload New Image (optional)</label>
-        <input type="file" 
-               name="symptom_image" 
-               id="symptom_image" 
-               class="form-control" 
-               accept="image/*">
-        <div class="form-text text-muted">
-          Leave this empty if you don’t want to change the image.
+<div class="form-container">
+    <div class="card form-card">
+        <!-- Header -->
+        <div class="card-header card-header-custom">
+            <div class="header-content">
+                <h2 class="header-title">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    Edit Symptom
+                </h2>
+                <div class="symptom-badge">
+                    <i class="fa-solid fa-stethoscope"></i>
+                    ID: {{ symptom.id }}
+                </div>
+            </div>
         </div>
-      </div>
-
-      <!-- Buttons -->
-      <div class="d-flex justify-content-between">
-        <a href="{% url 'symptom_list' %}" class="btn btn-secondary">
-          <i class="fa-solid fa-arrow-left me-2"></i>Back
-        </a>
-        <button type="submit" class="btn btn-primary">
-          <i class="fa-solid fa-save me-2"></i>Update Symptom
-        </button>
-      </div>
-    </form>
-  </div>
+        
+        <!-- Form Body -->
+        <div class="card-body">
+            <!-- Symptom Information -->
+            <div class="symptom-info">
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                        Created Date
+                    </div>
+                    <div class="info-value">
+                        {{ symptom.created_at|date:"F d, Y"|default:"Not available" }}
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        Last Updated
+                    </div>
+                    <div class="info-value">
+                        {{ symptom.updated_at|date:"F d, Y H:i"|default:"Not available" }}
+                    </div>
+                </div>
+            </div>
+            
+            <form method="POST" enctype="multipart/form-data" id="editSymptomForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- Symptom Name Section -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-signature"></i>
+                        Symptom Name
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="symptom_name" class="form-label">
+                            <i class="fa-solid fa-file-signature"></i>
+                            Symptom Name *
+                        </label>
+                        <input 
+                            type="text" 
+                            name="symptom_name" 
+                            id="symptom_name" 
+                            class="form-control-custom" 
+                            value="{{ symptom.symptom_name }}" 
+                            placeholder="Enter symptom name"
+                            required
+                            maxlength="100"
+                        >
+                        <div class="form-helper">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Enter a descriptive name for the symptom (max 100 characters)
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Symptom Image Section -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-image"></i>
+                        Symptom Image
+                    </div>
+                    
+                    <!-- Current Image -->
+                    <div class="mb-5">
+                        <label class="form-label">
+                            <i class="fa-solid fa-image-portrait"></i>
+                            Current Image
+                        </label>
+                        <div class="image-preview-container">
+                            {% if symptom.symptom_image %}
+                                <div class="current-image-wrapper">
+                                    <img 
+                                        src="{{ symptom.symptom_image.url }}" 
+                                        alt="{{ symptom.symptom_name }}" 
+                                        class="current-image"
+                                    >
+                                    <div class="image-actions">
+                                        <button type="button" class="image-action-btn" onclick="previewImage('{{ symptom.symptom_image.url }}')">
+                                            <i class="fa-solid fa-expand"></i>
+                                        </button>
+                                        <button type="button" class="image-action-btn" onclick="removeCurrentImage()">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="no-image-placeholder">
+                                    <i class="fa-solid fa-image fa-3x"></i>
+                                    <span class="ms-3">No Image</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Upload New Image -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            Upload New Image (Optional)
+                        </label>
+                        
+                        <div class="upload-zone" id="uploadZone">
+                            <div class="upload-icon">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <div class="upload-text">
+                                Drag & Drop or Click to Upload
+                            </div>
+                            <div class="upload-subtext">
+                                Supports: JPG, PNG, GIF, WEBP
+                            </div>
+                            <div class="upload-subtext text-primary fw-semibold">
+                                Max file size: 5MB
+                            </div>
+                            <input 
+                                type="file" 
+                                name="symptom_image" 
+                                id="symptom_image" 
+                                class="d-none" 
+                                accept="image/*"
+                            >
+                            <div class="file-info" id="fileInfo"></div>
+                        </div>
+                        
+                        <div class="form-helper">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Leave empty to keep the current image. New image will replace the existing one.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <a href="{% url 'symptom_list' %}" class="btn-back">
+                        <i class="fa-solid fa-arrow-left-long"></i>
+                        <span>Back to Symptoms</span>
+                    </a>
+                    <button type="submit" class="btn-update" id="submitBtn">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Update Symptom</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+<!-- Success Toast (Hidden by default) -->
+<div class="success-toast" id="successToast" style="display: none;">
+    <i class="fa-solid fa-circle-check fa-2x"></i>
+    <div>
+        <strong>Symptom Updated!</strong>
+        <div style="font-size: 0.9rem;">Changes have been saved successfully</div>
+    </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Image Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="previewImage" src="" alt="Preview" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('editSymptomForm');
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('symptom_image');
+        const fileInfo = document.getElementById('fileInfo');
+        const submitBtn = document.getElementById('submitBtn');
+        const successToast = document.getElementById('successToast');
+        
+        // Click on upload zone to trigger file input
+        uploadZone.addEventListener('click', function(e) {
+            if (e.target !== fileInput) {
+                fileInput.click();
+            }
+        });
+        
+        // Handle file selection
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                displayFileInfo(file);
+            }
+        });
+        
+        // Display file information
+        function displayFileInfo(file) {
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            
+            if (!validTypes.includes(file.type)) {
+                showError('Please select a valid image file (JPG, PNG, GIF, or WEBP)');
+                fileInput.value = '';
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showError('File size exceeds 5MB limit');
+                fileInput.value = '';
+                return;
+            }
+            
+            fileInfo.innerHTML = `
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <strong>Selected File:</strong> ${file.name}<br>
+                        <small>Size: ${(file.size / 1024).toFixed(2)} KB</small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFileSelection()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+            `;
+            fileInfo.classList.add('show');
+            
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadZone.innerHTML = `
+                    <div class="text-center">
+                        <img src="${e.target.result}" 
+                             alt="Preview" 
+                             class="rounded mb-3"
+                             style="width: 200px; height: 200px; object-fit: cover; border: 4px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                        <div class="upload-text text-success">Image Selected ✓</div>
+                        <div class="upload-subtext">${file.name}</div>
+                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="changeImage()">
+                            Change Image
+                        </button>
+                        <input type="file" name="symptom_image" id="symptom_image" class="d-none" accept="image/*">
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            uploadZone.classList.add('dragover');
+        }
+        
+        function unhighlight() {
+            uploadZone.classList.remove('dragover');
+        }
+        
+        uploadZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                const event = new Event('change', { bubbles: true });
+                fileInput.dispatchEvent(event);
+            }
+        }
+        
+        // Form validation and submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const symptomName = document.getElementById('symptom_name').value.trim();
+            
+            if (!symptomName) {
+                showError('Please enter a symptom name');
+                document.getElementById('symptom_name').focus();
+                return;
+            }
+            
+            if (symptomName.length < 3) {
+                showError('Symptom name must be at least 3 characters long');
+                document.getElementById('symptom_name').focus();
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.classList.add('btn-loading');
+            submitBtn.disabled = true;
+            
+            // Simulate processing delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Show success toast
+            showSuccessToast();
+            
+            // Submit the form
+            setTimeout(() => {
+                form.submit();
+            }, 2000);
+        });
+        
+        // Show success toast
+        function showSuccessToast() {
+            successToast.style.display = 'flex';
+            
+            setTimeout(() => {
+                successToast.style.animation = 'slideOutRight 0.5s forwards';
+                setTimeout(() => {
+                    successToast.style.display = 'none';
+                    successToast.style.animation = '';
+                }, 500);
+            }, 3000);
+        }
+        
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
+            errorDiv.style.zIndex = '9999';
+            errorDiv.innerHTML = `
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+        
+        // Character counter for symptom name
+        const symptomNameInput = document.getElementById('symptom_name');
+        symptomNameInput.addEventListener('input', function() {
+            const charCount = this.value.length;
+            const maxLength = this.getAttribute('maxlength');
+            
+            let counter = document.getElementById('charCounter');
+            if (!counter) {
+                counter = document.createElement('div');
+                counter.id = 'charCounter';
+                counter.className = 'form-helper text-end mt-1';
+                this.parentNode.appendChild(counter);
+            }
+            
+            counter.textContent = `${charCount}/${maxLength} characters`;
+            
+            if (charCount > maxLength * 0.9) {
+                counter.style.color = 'var(--danger-color)';
+            } else if (charCount > maxLength * 0.75) {
+                counter.style.color = 'var(--warning-color)';
+            }
+        });
+    });
+    
+    // Global functions
+    window.previewImage = function(imageUrl) {
+        document.getElementById('previewImage').src = imageUrl;
+        new bootstrap.Modal(document.getElementById('imagePreviewModal')).show();
+    };
+    
+    window.removeCurrentImage = function() {
+        if (confirm('Are you sure you want to remove the current image?')) {
+            // Add a hidden input to indicate removal
+            let hiddenInput = document.getElementById('removeImageFlag');
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'remove_image';
+                hiddenInput.id = 'removeImageFlag';
+                hiddenInput.value = 'true';
+                document.getElementById('editSymptomForm').appendChild(hiddenInput);
+            }
+            
+            // Hide current image preview
+            document.querySelector('.current-image-wrapper')?.remove();
+            
+            // Show placeholder
+            const container = document.querySelector('.image-preview-container');
+            container.innerHTML = `
+                <div class="no-image-placeholder">
+                    <i class="fa-solid fa-image fa-3x"></i>
+                    <span class="ms-3">Image Removed</span>
+                </div>
+            `;
+        }
+    };
+    
+    window.clearFileSelection = function() {
+        const fileInput = document.getElementById('symptom_image');
+        const fileInfo = document.getElementById('fileInfo');
+        const uploadZone = document.getElementById('uploadZone');
+        
+        fileInput.value = '';
+        fileInfo.classList.remove('show');
+        fileInfo.innerHTML = '';
+        
+        // Reset upload zone
+        uploadZone.innerHTML = `
+            <div class="upload-icon">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div class="upload-text">
+                Drag & Drop or Click to Upload
+            </div>
+            <div class="upload-subtext">
+                Supports: JPG, PNG, GIF, WEBP
+            </div>
+            <div class="upload-subtext text-primary fw-semibold">
+                Max file size: 5MB
+            </div>
+            <input type="file" name="symptom_image" id="symptom_image" class="d-none" accept="image/*">
+            <div class="file-info" id="fileInfo"></div>
+        `;
+    };
+    
+    window.changeImage = function() {
+        document.getElementById('symptom_image').click();
+    };
+</script>
 {% endblock %}
