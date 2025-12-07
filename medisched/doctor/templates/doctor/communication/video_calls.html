@@ -1,0 +1,323 @@
+{% extends 'doctor/base.html' %}
+{% load static %}
+
+{% block title %}Video Calls - Doctor Portal{% endblock %}
+{% block page_title %}Video Calls{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb bg-transparent p-0">
+        <li class="breadcrumb-item"><a href="{% url 'doctor:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Video Calls</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Ongoing Call Alert -->
+    {% if ongoing_call %}
+    <div class="alert alert-warning alert-dismissible fade show mb-4">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-video fa-2x me-3"></i>
+            <div class="flex-grow-1">
+                <h5 class="alert-heading mb-1">Ongoing Video Call</h5>
+                <p class="mb-0">You have an active video call with {{ ongoing_call.patient.get_full_name }}</p>
+            </div>
+            <div>
+                <a href="{% url 'doctor:video_call_room' ongoing_call.call_id %}" class="btn btn-danger me-2">
+                    <i class="fas fa-video me-2"></i>Join Call
+                </a>
+                <a href="#" class="btn btn-outline-danger" id="endCallBtn" data-call-id="{{ ongoing_call.call_id }}">
+                    <i class="fas fa-phone-slash me-2"></i>End Call
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Schedule New Call Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-0">Video Calls</h4>
+            <p class="text-muted mb-0">Schedule and manage video consultations with patients</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scheduleCallModal">
+            <i class="fas fa-plus me-2"></i>Schedule New Call
+        </button>
+    </div>
+    
+    <div class="row">
+        <!-- Upcoming Calls -->
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                        Upcoming Calls
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_calls %}
+                    <div class="list-group list-group-flush">
+                        {% for call in upcoming_calls %}
+                        <div class="list-group-item border-0 py-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ call.patient.get_full_name }}</h6>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge {% if call.call_type == 'video' %}bg-primary{% else %}bg-info{% endif %} me-2">
+                                            {{ call.call_type|title }}
+                                        </span>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ call.scheduled_time|date:"M d, Y" }} at {{ call.scheduled_time|time:"g:i A" }}
+                                        </small>
+                                    </div>
+                                    {% if call.notes %}
+                                    <p class="mb-0 small text-muted">{{ call.notes }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="btn-group">
+                                    <a href="{% url 'doctor:video_call_room' call.call_id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-video"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger cancel-call-btn" 
+                                            data-call-id="{{ call.call_id }}"
+                                            data-patient="{{ call.patient.get_full_name }}"
+                                            data-time="{{ call.scheduled_time|date:'M d, Y g:i A' }}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+                        <h5>No upcoming calls</h5>
+                        <p class="text-muted">Schedule your first video call with a patient</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Past Calls -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2 text-secondary"></i>
+                        Past Calls
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if past_calls %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Type</th>
+                                    <th>Date & Time</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for call in past_calls|slice:":10" %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if call.patient.profile_photo %}
+                                            <img src="{{ call.patient.profile_photo.url }}" 
+                                                 alt="{{ call.patient.get_full_name }}" 
+                                                 class="rounded-circle me-2" 
+                                                 style="width: 30px; height: 30px; object-fit: cover;">
+                                            {% endif %}
+                                            <span>{{ call.patient.get_full_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if call.call_type == 'video' %}bg-primary{% else %}bg-info{% endif %}">
+                                            {{ call.call_type|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ call.scheduled_time|date:"M d, g:i A" }}</td>
+                                    <td>
+                                        {% if call.duration %}
+                                        {{ call.duration }} mins
+                                        {% else %}
+                                        --
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if call.status == 'completed' %}bg-success
+                                            {% elif call.status == 'cancelled' %}bg-danger
+                                            {% elif call.status == 'missed' %}bg-warning
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ call.status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No past calls found</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Call Modal -->
+<div class="modal fade" id="scheduleCallModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Schedule Video Call</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="scheduleCallForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Patient</label>
+                        <select class="form-select" id="patientSelect" required>
+                            <option value="">Choose patient...</option>
+                            {% for appointment in active_appointments %}
+                            <option value="{{ appointment.id }}" 
+                                    data-patient-id="{{ appointment.patient.id }}"
+                                    data-patient-name="{{ appointment.patient.get_full_name }}">
+                                {{ appointment.patient.get_full_name }} - Appointment #{{ appointment.id }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Call Type</label>
+                            <select class="form-select" name="call_type" required>
+                                <option value="video">Video Call</option>
+                                <option value="audio">Audio Call</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date & Time</label>
+                            <input type="datetime-local" class="form-control" name="scheduled_time" 
+                                   min="{% now 'Y-m-d' %}T{% now 'H:i' %}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" name="notes" rows="3" 
+                                  placeholder="Add any notes about the call..."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        The patient will receive a notification about the scheduled call.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Schedule Call</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // End ongoing call
+    $('#endCallBtn').click(function(e) {
+        e.preventDefault();
+        const callId = $(this).data('call-id');
+        
+        if (confirm('Are you sure you want to end this call?')) {
+            $.ajax({
+                url: `/doctor/video-call/${callId}/end/`,
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                }
+            });
+        }
+    });
+    
+    // Cancel scheduled call
+    $('.cancel-call-btn').click(function() {
+        const callId = $(this).data('call-id');
+        const patientName = $(this).data('patient');
+        const callTime = $(this).data('time');
+        
+        if (confirm(`Cancel video call with ${patientName} scheduled for ${callTime}?`)) {
+            $.ajax({
+                url: `/doctor/video-call/${callId}/cancel/`,
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                }
+            });
+        }
+    });
+    
+    // Schedule new call
+    $('#scheduleCallForm').submit(function(e) {
+        e.preventDefault();
+        
+        const patientSelect = $('#patientSelect');
+        const selectedOption = patientSelect.find('option:selected');
+        const appointmentId = selectedOption.val();
+        
+        if (!appointmentId) {
+            alert('Please select a patient');
+            return;
+        }
+        
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: `/doctor/video-call/schedule/${appointmentId}/`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#scheduleCallModal').modal('hide');
+                    alert(`Call scheduled successfully for ${response.scheduled_time}`);
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

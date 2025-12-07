@@ -28,6 +28,9 @@ DEBUG = True
 ALLOWED_HOSTS = ["*", ".onrender.com"]
 
 
+AGORA_APP_ID = "4e38e5e2e4204f3b971924b443c7ecc5"
+
+
 # Application definition
 
 INSTALLED_APPS = [

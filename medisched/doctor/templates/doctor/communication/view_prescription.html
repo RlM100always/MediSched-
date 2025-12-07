@@ -1,0 +1,301 @@
+{% extends 'doctor/base.html' %}
+{% load static %}
+
+{% block title %}View Prescription - Doctor Portal{% endblock %}
+{% block page_title %}Prescription #{{ prescription.id }}{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb bg-transparent p-0">
+        <li class="breadcrumb-item"><a href="{% url 'doctor:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'doctor:chat_detail' prescription.appointment.id %}">Chat</a></li>
+        <li class="breadcrumb-item active">Prescription #{{ prescription.id }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Prescription Details -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Prescription Details</h5>
+                        <small class="text-muted">Created on {{ prescription.created_at|date:"F d, Y" }}</small>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary btn-sm" onclick="window.print()">
+                            <i class="fas fa-print me-1"></i>Print
+                        </button>
+                        <a href="{% url 'doctor:chat_detail' prescription.appointment.id %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-comments me-1"></i>Back to Chat
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Doctor & Patient Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Doctor Information</h6>
+                                    <p class="mb-1">
+                                        <strong>Dr. {{ prescription.doctor.user.get_full_name }}</strong>
+                                    </p>
+                                    <p class="mb-1 small text-muted">
+                                        {{ prescription.doctor.qualification }}
+                                    </p>
+                                    <p class="mb-1 small text-muted">
+                                        {{ prescription.doctor.specialization }}
+                                    </p>
+                                    <p class="mb-0 small text-muted">
+                                        License: {{ prescription.doctor.license_number|default:"Not provided" }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Patient Information</h6>
+                                    <p class="mb-1">
+                                        <strong>{{ prescription.patient.get_full_name }}</strong>
+                                    </p>
+                                    <p class="mb-1 small text-muted">
+                                        Appointment #{{ prescription.appointment.id }}
+                                    </p>
+                                    {% if prescription.appointment.patient_age %}
+                                    <p class="mb-1 small text-muted">
+                                        Age: {{ prescription.appointment.patient_age }} years
+                                    </p>
+                                    {% endif %}
+                                    {% if prescription.appointment.patient_gender %}
+                                    <p class="mb-0 small text-muted">
+                                        Gender: {{ prescription.appointment.patient_gender|title }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Diagnosis -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary mb-3">
+                            <i class="fas fa-stethoscope me-2"></i>Diagnosis
+                        </h6>
+                        <div class="card">
+                            <div class="card-body">
+                                {{ prescription.diagnosis|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Medicines -->
+                    {% if prescription.medicines %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary mb-3">
+                            <i class="fas fa-pills me-2"></i>Prescribed Medicines
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered prescription-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Medicine Name</th>
+                                        <th>Dosage</th>
+                                        <th>Duration</th>
+                                        <th>Instructions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for medicine in prescription.medicines %}
+                                    <tr>
+                                        <td>{{ medicine.name }}</td>
+                                        <td>{{ medicine.dosage|default:"--" }}</td>
+                                        <td>{{ medicine.duration|default:"--" }}</td>
+                                        <td>{{ medicine.instructions|default:"--" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Suggested Tests -->
+                    {% if prescription.suggested_tests %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary mb-3">
+                            <i class="fas fa-vial me-2"></i>Suggested Tests
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Test Name</th>
+                                        <th>Instructions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for test in prescription.suggested_tests %}
+                                    <tr>
+                                        <td>{{ test.test_name }}</td>
+                                        <td>{{ test.instructions|default:"--" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Advice -->
+                    {% if prescription.advice %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary mb-3">
+                            <i class="fas fa-comment-medical me-2"></i>Advice
+                        </h6>
+                        <div class="card">
+                            <div class="card-body">
+                                {{ prescription.advice|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Follow-up Date -->
+                    {% if prescription.follow_up_date %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary mb-3">
+                            <i class="fas fa-calendar-check me-2"></i>Follow-up Date
+                        </h6>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Recommended follow-up on <strong>{{ prescription.follow_up_date|date:"F d, Y" }}</strong>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            Last updated: {{ prescription.updated_at|date:"F d, Y g:i A" }}
+                        </small>
+                        <div>
+                            <a href="{% url 'doctor:chat_detail' prescription.appointment.id %}" class="btn btn-light me-2">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Chat
+                            </a>
+                            <a href="{% url 'doctor:create_prescription' prescription.appointment.id %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Create New Prescription
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Appointment Info -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">Appointment Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Appointment ID</small>
+                        <strong>#{{ prescription.appointment.id }}</strong>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Appointment Date</small>
+                        <strong>
+                            {% if prescription.appointment.appointment_date %}
+                            {{ prescription.appointment.appointment_date|date:"F d, Y" }}
+                            {% else %}
+                            Not scheduled
+                            {% endif %}
+                        </strong>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Status</small>
+                        <span class="badge 
+                            {% if prescription.appointment.status == 'confirmed' %}bg-success
+                            {% elif prescription.appointment.status == 'completed' %}bg-secondary
+                            {% elif prescription.appointment.status == 'cancelled' %}bg-danger
+                            {% else %}bg-warning{% endif %}">
+                            {{ prescription.appointment.status|title }}
+                        </span>
+                    </div>
+                    
+                    {% if prescription.appointment.symptoms %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Reported Symptoms</small>
+                        <p class="mb-0 small">{{ prescription.appointment.symptoms|truncatechars:150 }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Related Actions -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'doctor:chat_detail' prescription.appointment.id %}" 
+                           class="list-group-item list-group-item-action">
+                            <i class="fas fa-comments me-2 text-primary"></i>
+                            Continue Chat with Patient
+                        </a>
+                        <a href="{% url 'doctor:schedule_video_call' prescription.appointment.id %}" 
+                           class="list-group-item list-group-item-action">
+                            <i class="fas fa-video me-2 text-success"></i>
+                            Schedule Follow-up Call
+                        </a>
+                        <a href="{% url 'doctor:appointment_detail' prescription.appointment.id %}" 
+                           class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar-alt me-2 text-info"></i>
+                            View Full Appointment
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="window.print()">
+                            <i class="fas fa-print me-2 text-secondary"></i>
+                            Print Prescription
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .sidebar, .main-content nav, .card-footer, .col-lg-4 {
+        display: none !important;
+    }
+    
+    .col-lg-8 {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .card-header {
+        background: white !important;
+        border-bottom: 2px solid #000 !important;
+    }
+}
+</style>
+{% endblock %}

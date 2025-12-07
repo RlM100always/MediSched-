@@ -1,0 +1,373 @@
+{% extends 'doctor/communication/chat_home.html' %}
+{% load static %}
+
+{% block chat_content %}
+<div class="card h-100">
+    <!-- Chat Header -->
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            {% if appointment.patient.profile_photo %}
+            <img src="{{ appointment.patient.profile_photo.url }}" 
+                 alt="{{ appointment.patient.get_full_name }}" 
+                 class="rounded-circle me-3" 
+                 style="width: 50px; height: 50px; object-fit: cover;">
+            {% else %}
+            <div class="avatar-placeholder rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3"
+                 style="width: 50px; height: 50px; font-size: 20px;">
+                {{ appointment.patient.get_full_name|default:appointment.patient.username|slice:":1"|upper }}
+            </div>
+            {% endif %}
+            
+            <div>
+                <h5 class="mb-0">{{ appointment.patient.get_full_name|default:appointment.patient.username }}</h5>
+                <div class="d-flex align-items-center">
+                    <small class="text-muted me-3">Appointment #{{ appointment.id }}</small>
+                    <span class="badge 
+                        {% if appointment.status == 'confirmed' %}bg-success
+                        {% elif appointment.status == 'completed' %}bg-secondary
+                        {% elif appointment.status == 'cancelled' %}bg-danger
+                        {% else %}bg-warning{% endif %}">
+                        {{ appointment.status|title }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-cog"></i> Actions
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'doctor:create_prescription' appointment.id %}">
+                    <i class="fas fa-prescription me-2"></i>Create Prescription
+                </a></li>
+                <li><a class="dropdown-item" href="{% url 'doctor:schedule_video_call' appointment.id %}">
+                    <i class="fas fa-video me-2"></i>Schedule Video Call
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'doctor:appointment_detail' appointment.id %}">
+                    <i class="fas fa-calendar-alt me-2"></i>View Appointment
+                </a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Messages Container -->
+    <div class="card-body p-0">
+        <div class="chat-container p-3" id="messagesContainer">
+            {% for message in messages %}
+            <div class="message-bubble {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                <!-- Message Header -->
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <small class="fw-bold">
+                        {% if message.sender == request.user %}
+                        You
+                        {% else %}
+                        {{ message.sender.get_full_name|default:message.sender.username }}
+                        {% endif %}
+                    </small>
+                    <small class="text-muted">{{ message.created_at|time }}</small>
+                </div>
+                
+                <!-- Message Content -->
+                {% if message.message_type == 'image' and message.image %}
+                <div class="mb-2">
+                    <img src="{{ message.image.url }}" alt="Image" class="img-fluid rounded" style="max-height: 200px;">
+                </div>
+                {% if message.content %}
+                <p class="mb-0">{{ message.content }}</p>
+                {% endif %}
+                
+                {% elif message.message_type == 'file' and message.file %}
+                <div class="d-flex align-items-center p-2 bg-white rounded mb-2">
+                    <i class="fas fa-file-alt fa-2x text-primary me-3"></i>
+                    <div class="flex-grow-1">
+                        <a href="{{ message.file.url }}" target="_blank" class="text-decoration-none d-block mb-1">
+                            <strong>Download File</strong>
+                        </a>
+                        <small class="text-muted">{{ message.file.size|filesizeformat }}</small>
+                    </div>
+                </div>
+                {% if message.content %}
+                <p class="mb-0">{{ message.content }}</p>
+                {% endif %}
+                
+                {% elif message.message_type == 'prescription' %}
+                <div class="alert alert-info mb-2">
+                    <i class="fas fa-prescription me-2"></i>
+                    <strong>Prescription Created</strong>
+                    <p class="mb-0 small">A new prescription has been created for this appointment.</p>
+                </div>
+                {% if message.content %}
+                <p class="mb-0">{{ message.content }}</p>
+                {% endif %}
+                
+                {% elif message.message_type == 'test_report' %}
+                <div class="alert alert-warning mb-2">
+                    <i class="fas fa-file-medical me-2"></i>
+                    <strong>Test Report Uploaded</strong>
+                    <p class="mb-0 small">A test report has been uploaded for this appointment.</p>
+                </div>
+                {% if message.content %}
+                <p class="mb-0">{{ message.content }}</p>
+                {% endif %}
+                
+                {% else %}
+                <p class="mb-0">{{ message.content }}</p>
+                {% endif %}
+                
+                <!-- Message Status -->
+                {% if message.sender == request.user %}
+                <div class="text-end mt-1">
+                    <small class="text-muted">
+                        <i class="fas fa-check {% if message.is_read %}text-primary{% endif %}"></i>
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="text-center py-5">
+                <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                <h5>No messages yet</h5>
+                <p class="text-muted">Start the conversation by sending a message below.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Message Input -->
+    <div class="card-footer bg-white">
+        <form id="messageForm" class="d-flex align-items-center">
+            {% csrf_token %}
+            
+            <!-- File Upload Button -->
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-light" data-bs-toggle="dropdown">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="#" id="uploadImageBtn">
+                            <i class="fas fa-image me-2"></i>Image
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="uploadFileBtn">
+                            <i class="fas fa-file me-2"></i>File
+                        </a>
+                    </li>
+                </ul>
+                <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                <input type="file" id="fileUpload" style="display: none;">
+            </div>
+            
+            <!-- Message Input -->
+            <input type="text" name="content" class="form-control flex-grow-1 me-2" 
+                   placeholder="Type your message..." id="messageInput" required>
+            
+            <!-- Send Button -->
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Prescriptions & Reports Side Panel -->
+<div class="modal fade" id="documentsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Documents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Prescriptions Tab -->
+                <ul class="nav nav-tabs" id="documentsTab">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#prescriptions">
+                            <i class="fas fa-prescription me-2"></i>Prescriptions
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#testReports">
+                            <i class="fas fa-file-medical me-2"></i>Test Reports
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content mt-3">
+                    <!-- Prescriptions -->
+                    <div class="tab-pane fade show active" id="prescriptions">
+                        {% if prescriptions %}
+                        <div class="list-group">
+                            {% for prescription in prescriptions %}
+                            <a href="{% url 'doctor:view_prescription' prescription.id %}" 
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Prescription #{{ prescription.id }}</h6>
+                                        <small class="text-muted">{{ prescription.created_at|date:"M d, Y" }}</small>
+                                    </div>
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-prescription fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No prescriptions created yet</p>
+                            <a href="{% url 'doctor:create_prescription' appointment.id %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create Prescription
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Test Reports -->
+                    <div class="tab-pane fade" id="testReports">
+                        {% if test_reports %}
+                        <div class="list-group">
+                            {% for report in test_reports %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ report.test_name }}</h6>
+                                        <small class="text-muted">
+                                            {{ report.test_date|date:"M d, Y" }}
+                                            <span class="badge ms-2 
+                                                {% if report.status == 'reviewed' %}bg-success
+                                                {% elif report.status == 'submitted' %}bg-warning
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ report.status|title }}
+                                            </span>
+                                        </small>
+                                    </div>
+                                    <a href="{% url 'doctor:review_test_report' report.id %}" class="btn btn-sm btn-outline-primary">
+                                        {% if report.status == 'submitted' %}
+                                        <i class="fas fa-eye me-1"></i>Review
+                                        {% else %}
+                                        <i class="fas fa-edit me-1"></i>View
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-medical fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No test reports uploaded yet</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    const messagesContainer = $('#messagesContainer');
+    const messageForm = $('#messageForm');
+    const messageInput = $('#messageInput');
+    const csrfToken = $('[name=csrfmiddlewaretoken]').val();
+    
+    // Scroll to bottom
+    messagesContainer.scrollTop(messagesContainer[0].scrollHeight);
+    
+    // Auto-refresh messages every 3 seconds
+    function loadMessages() {
+        $.ajax({
+            url: '{% url "doctor:get_messages" appointment.id %}',
+            type: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    // Update messages (simplified - implement proper update)
+                    console.log('Messages loaded', response.messages.length);
+                }
+            }
+        });
+    }
+    
+    // Send message
+    messageForm.on('submit', function(e) {
+        e.preventDefault();
+        const content = messageInput.val().trim();
+        
+        if (!content) return;
+        
+        $.ajax({
+            url: '{% url "doctor:send_message" appointment.id %}',
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            data: {
+                'content': content,
+                'message_type': 'text'
+            },
+            success: function(response) {
+                if (response.success) {
+                    messageInput.val('');
+                    loadMessages();
+                }
+            }
+        });
+    });
+    
+    // File upload handlers
+    $('#uploadImageBtn').click(function(e) {
+        e.preventDefault();
+        $('#imageUpload').click();
+    });
+    
+    $('#uploadFileBtn').click(function(e) {
+        e.preventDefault();
+        $('#fileUpload').click();
+    });
+    
+    $('#imageUpload').change(function() {
+        if (this.files.length > 0) {
+            uploadFile(this.files[0], 'image');
+        }
+    });
+    
+    $('#fileUpload').change(function() {
+        if (this.files.length > 0) {
+            uploadFile(this.files[0], 'file');
+        }
+    });
+    
+    function uploadFile(file, type) {
+        const formData = new FormData();
+        formData.append('message_type', type);
+        if (type === 'image') {
+            formData.append('image', file);
+        } else {
+            formData.append('file', file);
+        }
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        
+        $.ajax({
+            url: '{% url "doctor:send_message" appointment.id %}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    loadMessages();
+                }
+            }
+        });
+    }
+    
+    // Auto-refresh
+    setInterval(loadMessages, 3000);
+});
+</script>
+{% endblock %}

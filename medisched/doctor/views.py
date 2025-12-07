@@ -9,6 +9,17 @@ from django.db.models import Sum, Count, Q
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.core.paginator import Paginator
+from django.conf import settings
+from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_exempt
+
+import json
+from datetime import datetime, timedelta
+
+from appointment.models import Appointment
+from communication.models import Conversation, Message, Prescription, TestReport, VideoCall, Notification
+from doctor.models import Doctor
+import uuid
 
 
 from adminapp.models import Division, District, Upazila, Department, Symptom
@@ -774,3 +785,702 @@ def export_appointments(request):
     }
     
     return render(request, 'doctor/export_appointments.html', context)
+
+
+
+
+
+
+
+
+
+
+
+
+# Chat & Messaging Views
+@login_required
+def doctor_chat_home(request):
+    """Doctor's chat dashboard showing all conversations"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return redirect('home')
+    
+    # Get all appointments with active conversations
+    appointments = Appointment.objects.filter(
+        doctor=doctor,
+        status__in=['confirmed', 'completed']
+    ).select_related('patient', 'conversation').order_by('-created_at')
+    
+    # Get unread message counts for each conversation
+    conversations = []
+    for appointment in appointments:
+        try:
+            conversation = appointment.conversation
+            unread_count = Message.objects.filter(
+                conversation=conversation,
+                is_read=False
+            ).exclude(sender=request.user).count()
+            
+            # Get last message
+            last_message = Message.objects.filter(
+                conversation=conversation
+            ).order_by('-created_at').first()
+            
+            conversations.append({
+                'appointment': appointment,
+                'conversation': conversation,
+                'unread_count': unread_count,
+                'last_message': last_message,
+                'patient': appointment.patient
+            })
+        except Conversation.DoesNotExist:
+            # Create conversation if doesn't exist
+            conversation = Conversation.objects.create(
+                appointment=appointment,
+                patient=appointment.patient,
+                doctor=doctor,
+                is_active=True
+            )
+            conversations.append({
+                'appointment': appointment,
+                'conversation': conversation,
+                'unread_count': 0,
+                'last_message': None,
+                'patient': appointment.patient
+            })
+    
+    context = {
+        'conversations': conversations,
+        'active_tab': 'chat'
+    }
+    return render(request, 'doctor/communication/chat_home.html', context)
+
+@login_required
+def doctor_chat_detail(request, appointment_id):
+    """Doctor's chat interface for a specific appointment"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return redirect('home')
+    
+    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
+    
+    # Get or create conversation
+    conversation, created = Conversation.objects.get_or_create(
+        appointment=appointment,
+        defaults={
+            'patient': appointment.patient,
+            'doctor': doctor,
+            'is_active': True
+        }
+    )
+    
+    # Mark all messages as read
+    Message.objects.filter(
+        conversation=conversation,
+        is_read=False
+    ).exclude(sender=request.user).update(is_read=True)
+    
+    # Get all messages
+    messages = Message.objects.filter(conversation=conversation).order_by('created_at')
+    
+    # Get prescriptions for this appointment
+    prescriptions = Prescription.objects.filter(appointment=appointment).order_by('-created_at')
+    
+    # Get test reports for this appointment
+    test_reports = TestReport.objects.filter(appointment=appointment).order_by('-created_at')
+    
+    context = {
+        'appointment': appointment,
+        'conversation': conversation,
+        'messages': messages,
+        'prescriptions': prescriptions,
+        'test_reports': test_reports,
+        'active_tab': 'chat'
+    }
+    return render(request, 'doctor/communication/chat_detail.html', context)
+
+@login_required
+@require_POST
+def send_message(request, appointment_id):
+    """Send a message in chat"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Doctor not found'})
+    
+    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
+    
+    # Get or create conversation
+    conversation, created = Conversation.objects.get_or_create(
+        appointment=appointment,
+        defaults={
+            'patient': appointment.patient,
+            'doctor': doctor,
+            'is_active': True
+        }
+    )
+    
+    message_type = request.POST.get('message_type', 'text')
+    content = request.POST.get('content', '')
+    file = request.FILES.get('file')
+    image = request.FILES.get('image')
+    
+    if not content and not file and not image:
+        return JsonResponse({'success': False, 'error': 'Message cannot be empty'})
+    
+    # Create message
+    message = Message.objects.create(
+        conversation=conversation,
+        sender=request.user,
+        message_type=message_type,
+        content=content,
+        file=file,
+        image=image,
+        is_read=True  # Doctor's own message is marked as read
+    )
+    
+    # Create notification for patient
+    Notification.objects.create(
+        user=appointment.patient,
+        notification_type='message',
+        title=f'New Message from Dr. {doctor.user.get_full_name()}',
+        message=content[:100] if content else f'New {message_type} message',
+        related_id=appointment.id,
+        is_read=False
+    )
+    
+    # Update conversation timestamp
+    conversation.save()
+    
+    return JsonResponse({
+        'success': True,
+        'message_id': message.id,
+        'sender_name': request.user.get_full_name(),
+        'sender_type': 'doctor',
+        'content': content,
+        'message_type': message_type,
+        'created_at': message.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'file_url': message.file.url if message.file else None,
+        'image_url': message.image.url if message.image else None
+    })
+
+@login_required
+@require_GET
+def get_messages(request, appointment_id):
+    """Get messages for a conversation (AJAX)"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Doctor not found'})
+    
+    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
+    
+    try:
+        conversation = Conversation.objects.get(appointment=appointment)
+        messages = Message.objects.filter(conversation=conversation).order_by('created_at')
+        
+        # Mark messages as read
+        Message.objects.filter(
+            conversation=conversation,
+            is_read=False
+        ).exclude(sender=request.user).update(is_read=True)
+        
+        messages_data = []
+        for msg in messages:
+            messages_data.append({
+                'id': msg.id,
+                'sender_id': msg.sender.id,
+                'sender_name': msg.sender.get_full_name(),
+                'sender_type': 'doctor' if hasattr(msg.sender, 'doctor_profile') else 'patient',
+                'message_type': msg.message_type,
+                'content': msg.content,
+                'file_url': msg.file.url if msg.file else None,
+                'image_url': msg.image.url if msg.image else None,
+                'is_read': msg.is_read,
+                'created_at': msg.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'time': msg.created_at.strftime('%I:%M %p')
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'messages': messages_data,
+            'patient_name': appointment.patient.get_full_name(),
+            'appointment_status': appointment.status
+        })
+    except Conversation.DoesNotExist:
+        return JsonResponse({'success': True, 'messages': [], 'appointment_status': appointment.status})
+
+# Prescription Management
+@login_required
+def create_prescription_view(request, appointment_id):
+    """Create prescription for an appointment"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return redirect('home')
+    
+    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
+    
+    if request.method == 'POST':
+        try:
+            # Parse medicines from form
+            medicine_names = request.POST.getlist('medicine_name[]')
+            medicine_dosages = request.POST.getlist('medicine_dosage[]')
+            medicine_durations = request.POST.getlist('medicine_duration[]')
+            medicine_instructions = request.POST.getlist('medicine_instructions[]')
+            
+            medicines = []
+            for i in range(len(medicine_names)):
+                if medicine_names[i].strip():
+                    medicines.append({
+                        'name': medicine_names[i],
+                        'dosage': medicine_dosages[i] if i < len(medicine_dosages) else '',
+                        'duration': medicine_durations[i] if i < len(medicine_durations) else '',
+                        'instructions': medicine_instructions[i] if i < len(medicine_instructions) else ''
+                    })
+            
+            # Parse suggested tests
+            test_names = request.POST.getlist('test_name[]')
+            test_instructions = request.POST.getlist('test_instructions[]')
+            
+            suggested_tests = []
+            for i in range(len(test_names)):
+                if test_names[i].strip():
+                    suggested_tests.append({
+                        'test_name': test_names[i],
+                        'instructions': test_instructions[i] if i < len(test_instructions) else ''
+                    })
+            
+            # Create prescription
+            prescription = Prescription.objects.create(
+                appointment=appointment,
+                doctor=doctor,
+                patient=appointment.patient,
+                diagnosis=request.POST.get('diagnosis', ''),
+                advice=request.POST.get('advice', ''),
+                follow_up_date=request.POST.get('follow_up_date') or None,
+                medicines=medicines,
+                suggested_tests=suggested_tests
+            )
+            
+            # Add prescription as message in conversation
+            try:
+                conversation = Conversation.objects.get(appointment=appointment)
+                Message.objects.create(
+                    conversation=conversation,
+                    sender=request.user,
+                    message_type='prescription',
+                    content=f'New prescription created for {appointment.patient.get_full_name()}',
+                    is_read=False
+                )
+            except Conversation.DoesNotExist:
+                pass
+            
+            # Create notification for patient
+            Notification.objects.create(
+                user=appointment.patient,
+                notification_type='prescription',
+                title=f'New Prescription from Dr. {doctor.user.get_full_name()}',
+                message=f'Doctor has prescribed medicines for your appointment',
+                related_id=appointment.id,
+                is_read=False
+            )
+            
+            return JsonResponse({'success': True, 'prescription_id': prescription.id})
+        
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    context = {
+        'appointment': appointment,
+        'active_tab': 'appointments'
+    }
+    return render(request, 'doctor/communication/create_prescription.html', context)
+
+@login_required
+def view_prescription(request, prescription_id):
+    """View prescription details"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return redirect('home')
+    
+    prescription = get_object_or_404(Prescription, id=prescription_id, doctor=doctor)
+    
+    context = {
+        'prescription': prescription,
+        'appointment': prescription.appointment
+    }
+    return render(request, 'doctor/communication/view_prescription.html', context)
+
+# Test Report Management
+@login_required
+def review_test_report(request, report_id):
+    """Doctor reviews a test report"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return redirect('home')
+    
+    test_report = get_object_or_404(TestReport, id=report_id, appointment__doctor=doctor)
+    
+    if request.method == 'POST':
+        test_report.doctor_notes = request.POST.get('doctor_notes', '')
+        test_report.status = 'reviewed'
+        test_report.save()
+        
+        # Create notification for patient
+        Notification.objects.create(
+            user=test_report.patient,
+            notification_type='test_report',
+            title='Test Report Reviewed',
+            message=f'Dr. {doctor.user.get_full_name()} has reviewed your test report',
+            related_id=test_report.appointment.id,
+            is_read=False
+        )
+        
+        return JsonResponse({'success': True})
+    
+    context = {
+        'test_report': test_report,
+        'appointment': test_report.appointment
+    }
+    return render(request, 'doctor/communication/review_test_report.html', context)
+
+# Video Call Management
+@login_required
+def doctor_video_calls(request):
+    """Doctor's video calls dashboard"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return redirect('home')
+    
+    # Get upcoming calls
+    upcoming_calls = VideoCall.objects.filter(
+        doctor=doctor,
+        status__in=['scheduled'],
+        scheduled_time__gte=timezone.now()
+    ).select_related('appointment', 'patient').order_by('scheduled_time')
+    
+    # Get past calls
+    past_calls = VideoCall.objects.filter(
+        doctor=doctor,
+        status__in=['completed', 'cancelled', 'missed']
+    ).select_related('appointment', 'patient').order_by('-scheduled_time')[:50]
+    
+    # Get ongoing call if any
+    ongoing_call = VideoCall.objects.filter(
+        doctor=doctor,
+        status='ongoing'
+    ).first()
+    
+    context = {
+        'upcoming_calls': upcoming_calls,
+        'past_calls': past_calls,
+        'ongoing_call': ongoing_call,
+        'active_tab': 'video_calls'
+    }
+    return render(request, 'doctor/communication/video_calls.html', context)
+
+@login_required
+def schedule_video_call_view(request, appointment_id):
+    """Schedule a video call with patient"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return redirect('home')
+    
+    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
+    
+    if request.method == 'POST':
+        try:
+            scheduled_time_str = request.POST.get('scheduled_time')
+            call_type = request.POST.get('call_type', 'video')
+            notes = request.POST.get('notes', '')
+            
+            scheduled_time = datetime.strptime(scheduled_time_str, '%Y-%m-%dT%H:%M')
+            
+            # Generate unique call ID
+            call_id = f"call_{str(uuid.uuid4())[:8]}"
+            
+            # Create video call
+            video_call = VideoCall.objects.create(
+                appointment=appointment,
+                doctor=doctor,
+                patient=appointment.patient,
+                call_type=call_type,
+                scheduled_time=scheduled_time,
+                call_id=call_id,
+                notes=notes,
+                status='scheduled'
+            )
+            
+            # Create notification for patient
+            Notification.objects.create(
+                user=appointment.patient,
+                notification_type='video_call',
+                title=f'{call_type.title()} Call Scheduled with Dr. {doctor.user.get_full_name()}',
+                message=f'Your {call_type} call is scheduled for {scheduled_time.strftime("%B %d, %Y at %I:%M %p")}',
+                related_id=appointment.id,
+                is_read=False
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'call_id': call_id,
+                'scheduled_time': scheduled_time.strftime('%B %d, %Y at %I:%M %p')
+            })
+        
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    context = {
+        'appointment': appointment,
+        'min_date': timezone.now().strftime('%Y-%m-%d'),
+        'default_time': (timezone.now() + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M')
+    }
+    return render(request, 'doctor/communication/schedule_video_call.html', context)
+
+@login_required
+def video_call_room_doctor(request, call_id):
+    """Doctor joins video call room"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return redirect('home')
+    
+    video_call = get_object_or_404(VideoCall, call_id=call_id, doctor=doctor)
+    
+    # Update call status if starting
+    if request.GET.get('join') == 'true' and video_call.status == 'scheduled':
+        video_call.status = 'ongoing'
+        video_call.actual_start_time = timezone.now()
+        video_call.save()
+    
+    context = {
+        'video_call': video_call,
+        'appointment': video_call.appointment,
+        'user_type': 'doctor',
+        'user_name': doctor.user.get_full_name(),
+        'user_id': request.user.id,
+        'peer_id': f"doctor_{request.user.id}",
+        'patient_name': video_call.patient.get_full_name(),
+        'patient_peer_id': f"patient_{video_call.patient.id}",
+        'agora_app_id': settings.AGORA_APP_ID if hasattr(settings, 'AGORA_APP_ID') else None
+    }
+    return render(request, 'doctor/communication/video_call_room.html', context)
+
+@login_required
+@require_POST
+def start_video_call(request, call_id):
+    """Doctor starts a video call"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Doctor not found'})
+    
+    video_call = get_object_or_404(VideoCall, call_id=call_id, doctor=doctor)
+    
+    if video_call.status == 'scheduled':
+        video_call.status = 'ongoing'
+        video_call.actual_start_time = timezone.now()
+        video_call.save()
+        
+        # Create notification for patient
+        Notification.objects.create(
+            user=video_call.patient,
+            notification_type='video_call',
+            title='Video Call Started',
+            message=f'Dr. {doctor.user.get_full_name()} has started the video call',
+            related_id=video_call.appointment.id,
+            is_read=False
+        )
+        
+        return JsonResponse({'success': True, 'status': 'ongoing'})
+    
+    return JsonResponse({'success': False, 'error': 'Cannot start call'})
+
+@login_required
+@require_POST
+def end_video_call_doctor(request, call_id):
+    """Doctor ends a video call"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Doctor not found'})
+    
+    video_call = get_object_or_404(VideoCall, call_id=call_id, doctor=doctor)
+    
+    if video_call.status == 'ongoing':
+        video_call.status = 'completed'
+        video_call.actual_end_time = timezone.now()
+        
+        # Calculate duration in minutes
+        if video_call.actual_start_time:
+            duration = (video_call.actual_end_time - video_call.actual_start_time).seconds // 60
+            video_call.duration = duration
+        
+        video_call.save()
+        
+        return JsonResponse({'success': True, 'duration': video_call.duration})
+    
+    return JsonResponse({'success': False, 'error': 'Call not in progress'})
+
+@login_required
+@require_POST
+def cancel_video_call(request, call_id):
+    """Doctor cancels a scheduled video call"""
+    try:
+        # Changed from doctor to doctor_profile
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Doctor not found'})
+    
+    video_call = get_object_or_404(VideoCall, call_id=call_id, doctor=doctor)
+    
+    if video_call.status == 'scheduled':
+        video_call.status = 'cancelled'
+        video_call.save()
+        
+        # Create notification for patient
+        Notification.objects.create(
+            user=video_call.patient,
+            notification_type='video_call',
+            title='Video Call Cancelled',
+            message=f'Dr. {doctor.user.get_full_name()} has cancelled the scheduled video call',
+            related_id=video_call.appointment.id,
+            is_read=False
+        )
+        
+        return JsonResponse({'success': True})
+    
+    return JsonResponse({'success': False, 'error': 'Cannot cancel call'})
+
+# Notifications
+@login_required
+@require_GET
+def get_doctor_notifications(request):
+    """Get doctor's notifications (AJAX)"""
+    try:
+        # Changed from doctor to doctor_profile (optional, as we're using request.user)
+        doctor = request.user.doctor_profile
+    except Doctor.DoesNotExist:
+        # User might not be a doctor, but still allow getting notifications
+        pass
+    
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).order_by('-created_at')[:20]
+    
+    unread_count = Notification.objects.filter(
+        user=request.user,
+        is_read=False
+    ).count()
+    
+    notifications_data = []
+    for notif in notifications:
+        notifications_data.append({
+            'id': notif.id,
+            'type': notif.notification_type,
+            'title': notif.title,
+            'message': notif.message,
+            'is_read': notif.is_read,
+            'created_at': notif.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'time_ago': timesince(notif.created_at)
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'notifications': notifications_data,
+        'unread_count': unread_count
+    })
+
+@login_required
+@require_POST
+def mark_notification_read_doctor(request, notification_id):
+    """Mark notification as read"""
+    try:
+        notification = Notification.objects.get(id=notification_id, user=request.user)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'success': True})
+    except Notification.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Notification not found'})
+
+@login_required
+@require_POST
+def mark_all_notifications_read(request):
+    """Mark all notifications as read"""
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({'success': True})
+
+# Utility function for time since
+def timesince(dt, default="just now"):
+    """
+    Returns string representing "time since" e.g.
+    3 days ago, 5 hours ago etc.
+    """
+    now = timezone.now()
+    diff = now - dt
+    
+    periods = (
+        (diff.days // 365, "year", "years"),
+        (diff.days // 30, "month", "months"),
+        (diff.days // 7, "week", "weeks"),
+        (diff.days, "day", "days"),
+        (diff.seconds // 3600, "hour", "hours"),
+        (diff.seconds // 60, "minute", "minutes"),
+        (diff.seconds, "second", "seconds"),
+    )
+    
+    for period, singular, plural in periods:
+        if period:
+            return f"{period} {singular if period == 1 else plural} ago"
+    
+    return default
+
+
+
+
+
+
+
+# Utility function for time since
+def timesince(dt, default="just now"):
+    """
+    Returns string representing "time since" e.g.
+    3 days ago, 5 hours ago etc.
+    """
+    now = timezone.now()
+    diff = now - dt
+    
+    periods = (
+        (diff.days // 365, "year", "years"),
+        (diff.days // 30, "month", "months"),
+        (diff.days // 7, "week", "weeks"),
+        (diff.days, "day", "days"),
+        (diff.seconds // 3600, "hour", "hours"),
+        (diff.seconds // 60, "minute", "minutes"),
+        (diff.seconds, "second", "seconds"),
+    )
+    
+    for period, singular, plural in periods:
+        if period:
+            return f"{period} {singular if period == 1 else plural} ago"
+    
+    return default
