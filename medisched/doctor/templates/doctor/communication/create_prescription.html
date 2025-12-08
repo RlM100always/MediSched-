@@ -1,285 +1,263 @@
 {% extends 'doctor/base.html' %}
 {% load static %}
 
-{% block title %}Create Prescription - Doctor Portal{% endblock %}
+{% block title %}Create Prescription - MediSched{% endblock %}
 {% block page_title %}Create Prescription{% endblock %}
 
-{% block breadcrumb %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb bg-transparent p-0">
-        <li class="breadcrumb-item"><a href="{% url 'doctor:dashboard' %}">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'doctor:appointments' %}">Appointments</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'doctor:chat_detail' appointment.id %}">Chat</a></li>
-        <li class="breadcrumb-item active">Create Prescription</li>
-    </ol>
-</nav>
+{% block extra_css %}
+<style>
+    .medicine-item, .test-item {
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+    }
+    .remove-btn {
+        margin-top: 10px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-md-12">
             <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Prescription for {{ appointment.patient.get_full_name }}</h5>
-                    <small class="text-muted">Appointment #{{ appointment.id }}</small>
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-prescription text-success me-2"></i>
+                        Create Prescription for {{ appointment.patient.get_full_name }}
+                    </h4>
+                    <p class="text-muted mb-0">Appointment #{{ appointment.id }}</p>
                 </div>
                 
-                <form id="prescriptionForm" method="POST">
-                    {% csrf_token %}
-                    <div class="card-body">
+                <div class="card-body">
+                    <form id="prescriptionForm">
+                        {% csrf_token %}
+                        
                         <!-- Diagnosis -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Diagnosis *</label>
-                            <textarea class="form-control" name="diagnosis" rows="4" 
+                            <h5 class="mb-3">
+                                <i class="fas fa-diagnosis text-info me-2"></i>
+                                Diagnosis
+                            </h5>
+                            <textarea name="diagnosis" class="form-control" rows="4" 
                                       placeholder="Enter diagnosis details..." required></textarea>
                         </div>
                         
-                        <!-- Medicines -->
+                        <!-- Medicines Section -->
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="mb-0 fw-bold">Medicines</h6>
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="addMedicine">
-                                    <i class="fas fa-plus me-1"></i>Add Medicine
+                                <h5 class="mb-0">
+                                    <i class="fas fa-pills text-primary me-2"></i>
+                                    Medicines
+                                </h5>
+                                <button type="button" class="btn btn-sm btn-primary" id="addMedicineBtn">
+                                    <i class="fas fa-plus me-1"></i> Add Medicine
                                 </button>
                             </div>
                             
                             <div id="medicinesContainer">
-                                <!-- Medicine row template -->
-                                <div class="medicine-row row g-3 mb-3">
-                                    <div class="col-md-4">
-                                        <input type="text" class="form-control" name="medicine_name[]" 
-                                               placeholder="Medicine Name" required>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <input type="text" class="form-control" name="medicine_dosage[]" 
-                                               placeholder="Dosage (e.g., 1-0-1)">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <input type="text" class="form-control" name="medicine_duration[]" 
-                                               placeholder="Duration (e.g., 7 days)">
-                                    </div>
-                                    <div class="col-md-2">
-                                        <input type="text" class="form-control" name="medicine_instructions[]" 
-                                               placeholder="Instructions">
+                                <!-- Medicines will be added here -->
+                                <div class="medicine-item">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-2">
+                                            <input type="text" name="medicine_name[]" class="form-control" 
+                                                   placeholder="Medicine Name" required>
+                                        </div>
+                                        <div class="col-md-2 mb-2">
+                                            <input type="text" name="medicine_dosage[]" class="form-control" 
+                                                   placeholder="Dosage (e.g., 500mg)">
+                                        </div>
+                                        <div class="col-md-2 mb-2">
+                                            <input type="text" name="medicine_duration[]" class="form-control" 
+                                                   placeholder="Duration (e.g., 7 days)">
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <input type="text" name="medicine_instructions[]" class="form-control" 
+                                                   placeholder="Instructions (e.g., After meal)">
+                                        </div>
+                                        <div class="col-md-1 mb-2">
+                                            <button type="button" class="btn btn-sm btn-danger remove-btn remove-medicine">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Suggested Tests -->
+                        <!-- Suggested Tests Section -->
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="mb-0 fw-bold">Suggested Tests</h6>
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="addTest">
-                                    <i class="fas fa-plus me-1"></i>Add Test
+                                <h5 class="mb-0">
+                                    <i class="fas fa-vial text-warning me-2"></i>
+                                    Suggested Tests
+                                </h5>
+                                <button type="button" class="btn btn-sm btn-warning" id="addTestBtn">
+                                    <i class="fas fa-plus me-1"></i> Add Test
                                 </button>
                             </div>
                             
                             <div id="testsContainer">
-                                <!-- Test row template -->
-                                <div class="test-row row g-3 mb-3">
-                                    <div class="col-md-8">
-                                        <input type="text" class="form-control" name="test_name[]" 
-                                               placeholder="Test Name">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <input type="text" class="form-control" name="test_instructions[]" 
-                                               placeholder="Instructions">
+                                <!-- Tests will be added here -->
+                                <div class="test-item">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <input type="text" name="test_name[]" class="form-control" 
+                                                   placeholder="Test Name">
+                                        </div>
+                                        <div class="col-md-5 mb-2">
+                                            <input type="text" name="test_instructions[]" class="form-control" 
+                                                   placeholder="Instructions">
+                                        </div>
+                                        <div class="col-md-1 mb-2">
+                                            <button type="button" class="btn btn-sm btn-danger remove-btn remove-test">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Advice -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Advice</label>
-                            <textarea class="form-control" name="advice" rows="3" 
-                                      placeholder="General advice for the patient..."></textarea>
+                        <!-- Advice and Follow-up -->
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-comment-medical text-secondary me-2"></i>
+                                    Medical Advice
+                                </h5>
+                                <textarea name="advice" class="form-control" rows="3" 
+                                          placeholder="Enter medical advice for the patient..."></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-calendar-check text-info me-2"></i>
+                                    Follow-up Date
+                                </h5>
+                                <input type="date" name="follow_up_date" class="form-control" 
+                                       min="{% now 'Y-m-d' %}">
+                            </div>
                         </div>
                         
-                        <!-- Follow-up Date -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Follow-up Date</label>
-                            <input type="date" class="form-control" name="follow_up_date" 
-                                   min="{% now 'Y-m-d' %}">
-                        </div>
-                    </div>
-                    
-                    <div class="card-footer bg-white">
-                        <div class="d-flex justify-content-end">
-                            <a href="{% url 'doctor:chat_detail' appointment.id %}" class="btn btn-light me-3">
-                                Cancel
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'doctor:chat_home' %}?appointment={{ appointment.id }}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Chat
                             </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save Prescription
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i> Save Prescription
                             </button>
                         </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Patient Information -->
-        <div class="col-lg-4">
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">Patient Information</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        {% if appointment.patient.profile_photo %}
-                        <img src="{{ appointment.patient.profile_photo.url }}" 
-                             alt="{{ appointment.patient.get_full_name }}" 
-                             class="rounded-circle me-3" 
-                             style="width: 60px; height: 60px; object-fit: cover;">
-                        {% else %}
-                        <div class="avatar-placeholder rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3"
-                             style="width: 60px; height: 60px; font-size: 24px;">
-                            {{ appointment.patient.get_full_name|default:appointment.patient.username|slice:":1"|upper }}
-                        </div>
-                        {% endif %}
-                        <div>
-                            <h6 class="mb-0">{{ appointment.patient.get_full_name|default:appointment.patient.username }}</h6>
-                            <small class="text-muted">{{ appointment.patient.email }}</small>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-2">
-                        <small class="text-muted d-block">Phone</small>
-                        <strong>{{ appointment.patient_phone|default:"Not provided" }}</strong>
-                    </div>
-                    
-                    {% if appointment.patient_age %}
-                    <div class="mb-2">
-                        <small class="text-muted d-block">Age</small>
-                        <strong>{{ appointment.patient_age }} years</strong>
-                    </div>
-                    {% endif %}
-                    
-                    {% if appointment.patient_gender %}
-                    <div class="mb-2">
-                        <small class="text-muted d-block">Gender</small>
-                        <strong>{{ appointment.patient_gender|title }}</strong>
-                    </div>
-                    {% endif %}
-                    
-                    {% if appointment.symptoms %}
-                    <div class="mt-3">
-                        <small class="text-muted d-block">Reported Symptoms</small>
-                        <p class="mb-0 small">{{ appointment.symptoms|truncatechars:100 }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">Quick Actions</h6>
-                </div>
-                <div class="card-body">
-                    <div class="list-group list-group-flush">
-                        <a href="{% url 'doctor:chat_detail' appointment.id %}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-comments me-2 text-primary"></i>
-                            Back to Chat
-                        </a>
-                        <a href="{% url 'doctor:schedule_video_call' appointment.id %}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-video me-2 text-success"></i>
-                            Schedule Video Call
-                        </a>
-                        <a href="{% url 'doctor:appointment_detail' appointment.id %}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-calendar-alt me-2 text-info"></i>
-                            View Appointment Details
-                        </a>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
+    const csrfToken = $('[name=csrfmiddlewaretoken]').val();
+    
     // Add medicine row
-    $('#addMedicine').click(function() {
-        const newRow = $(`
-            <div class="medicine-row row g-3 mb-3">
-                <div class="col-md-4">
-                    <input type="text" class="form-control" name="medicine_name[]" 
-                           placeholder="Medicine Name" required>
-                </div>
-                <div class="col-md-3">
-                    <input type="text" class="form-control" name="medicine_dosage[]" 
-                           placeholder="Dosage (e.g., 1-0-1)">
-                </div>
-                <div class="col-md-3">
-                    <input type="text" class="form-control" name="medicine_duration[]" 
-                           placeholder="Duration (e.g., 7 days)">
-                </div>
-                <div class="col-md-2">
-                    <div class="d-flex">
-                        <input type="text" class="form-control" name="medicine_instructions[]" 
-                               placeholder="Instructions">
-                        <button type="button" class="btn btn-light ms-2 remove-row">
-                            <i class="fas fa-times text-danger"></i>
+    $('#addMedicineBtn').click(function() {
+        const medicineHtml = `
+            <div class="medicine-item">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <input type="text" name="medicine_name[]" class="form-control" 
+                               placeholder="Medicine Name" required>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <input type="text" name="medicine_dosage[]" class="form-control" 
+                               placeholder="Dosage (e.g., 500mg)">
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <input type="text" name="medicine_duration[]" class="form-control" 
+                               placeholder="Duration (e.g., 7 days)">
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <input type="text" name="medicine_instructions[]" class="form-control" 
+                               placeholder="Instructions (e.g., After meal)">
+                    </div>
+                    <div class="col-md-1 mb-2">
+                        <button type="button" class="btn btn-sm btn-danger remove-btn remove-medicine">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
-            </div>
-        `);
-        $('#medicinesContainer').append(newRow);
+            </div>`;
+        $('#medicinesContainer').append(medicineHtml);
     });
     
     // Add test row
-    $('#addTest').click(function() {
-        const newRow = $(`
-            <div class="test-row row g-3 mb-3">
-                <div class="col-md-8">
-                    <input type="text" class="form-control" name="test_name[]" 
-                           placeholder="Test Name">
-                </div>
-                <div class="col-md-4">
-                    <div class="d-flex">
-                        <input type="text" class="form-control" name="test_instructions[]" 
+    $('#addTestBtn').click(function() {
+        const testHtml = `
+            <div class="test-item">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <input type="text" name="test_name[]" class="form-control" 
+                               placeholder="Test Name">
+                    </div>
+                    <div class="col-md-5 mb-2">
+                        <input type="text" name="test_instructions[]" class="form-control" 
                                placeholder="Instructions">
-                        <button type="button" class="btn btn-light ms-2 remove-row">
-                            <i class="fas fa-times text-danger"></i>
+                    </div>
+                    <div class="col-md-1 mb-2">
+                        <button type="button" class="btn btn-sm btn-danger remove-btn remove-test">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
-            </div>
-        `);
-        $('#testsContainer').append(newRow);
+            </div>`;
+        $('#testsContainer').append(testHtml);
     });
     
-    // Remove row
-    $(document).on('click', '.remove-row', function() {
-        $(this).closest('.row').remove();
+    // Remove medicine row
+    $(document).on('click', '.remove-medicine', function() {
+        if ($('.medicine-item').length > 1) {
+            $(this).closest('.medicine-item').remove();
+        }
     });
     
-    // Form submission
+    // Remove test row
+    $(document).on('click', '.remove-test', function() {
+        if ($('.test-item').length > 1) {
+            $(this).closest('.test-item').remove();
+        }
+    });
+    
+    // Submit form
     $('#prescriptionForm').submit(function(e) {
         e.preventDefault();
         
-        const formData = new FormData(this);
+        // Validate at least one medicine
+        if ($('input[name="medicine_name[]"]').filter(function() {
+            return $(this).val().trim() !== '';
+        }).length === 0) {
+            alert('Please add at least one medicine.');
+            return;
+        }
         
         $.ajax({
-            url: '{% url "doctor:create_prescription" appointment.id %}',
+            url: "{% url 'doctor:create_prescription' appointment.id %}",
             type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
+            data: $(this).serialize(),
             success: function(response) {
                 if (response.success) {
-                    // Redirect to chat with success message
-                    window.location.href = `{% url 'doctor:chat_detail' appointment.id %}?prescription_success=true`;
+                    alert('Prescription created successfully!');
+                    window.location.href = "{% url 'doctor:chat_home' %}?appointment={{ appointment.id }}";
                 } else {
                     alert('Error: ' + response.error);
                 }
             },
             error: function() {
-                alert('An error occurred. Please try again.');
+                alert('Error creating prescription. Please try again.');
             }
         });
     });

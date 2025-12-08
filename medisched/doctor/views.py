@@ -11,12 +11,14 @@ from decimal import Decimal
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.views.decorators.http import require_POST, require_GET
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt 
+from django.urls import reverse            
+
 
 import json
 from datetime import datetime, timedelta
 
-from appointment.models import Appointment
+from appointment.models import Appointment,PaymentTransaction,AppointmentNote
 from communication.models import Conversation, Message, Prescription, TestReport, VideoCall, Notification
 from doctor.models import Doctor
 import uuid
@@ -391,11 +393,6 @@ def doctor_logout_view(request):
 
 
 #appointment 
-
-
-
-# ============ DOCTOR APPOINTMENT VIEWS ============
-
 @login_required
 def doctor_appointments(request):
     """
@@ -406,6 +403,221 @@ def doctor_appointments(request):
         return HttpResponseForbidden("You are not authorized to view this page.")
     
     doctor = request.user.doctor_profile
+    now = timezone.now()
+    today = now.date()
+    
+    # Get filter parameters
+    status_filter = request.GET.get('status', 'all')
+    date_filter = request.GET.get('date', 'all')
+    search_query = request.GET.get('search', '')
+    start_date_str = request.GET.get('start_date', '')
+    end_date_str = request.GET.get('end_date', '')
+    consultation_type_filter = request.GET.get('consultation_type', 'all')
+    payment_status_filter = request.GET.get('payment_status', 'all')
+    
+    # Base queryset
+    appointments = Appointment.objects.filter(doctor=doctor)
+    
+    # Apply status filter
+    if status_filter != 'all':
+        appointments = appointments.filter(status=status_filter)
+    
+    # Apply date filters
+    if date_filter == 'today':
+        appointments = appointments.filter(appointment_date__date=today)
+    elif date_filter == 'upcoming':
+        appointments = appointments.filter(appointment_date__gte=now)
+    elif date_filter == 'past':
+        appointments = appointments.filter(appointment_date__lt=now)
+    elif date_filter == 'week':
+        week_start = today - timedelta(days=today.weekday())
+        week_end = week_start + timedelta(days=6)
+        appointments = appointments.filter(
+            appointment_date__date__gte=week_start,
+            appointment_date__date__lte=week_end
+        )
+    elif date_filter == 'month':
+        first_day_of_month = today.replace(day=1)
+        appointments = appointments.filter(appointment_date__date__gte=first_day_of_month)
+    
+    # Apply custom date range from input fields
+    if start_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            appointments = appointments.filter(appointment_date__date__gte=start_date)
+        except ValueError:
+            pass
+    
+    if end_date_str:
+        try:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            appointments = appointments.filter(appointment_date__date__lte=end_date)
+        except ValueError:
+            pass
+    
+    # Apply consultation type filter
+    if consultation_type_filter != 'all':
+        appointments = appointments.filter(consultation_type=consultation_type_filter)
+    
+    # Apply payment status filter
+    if payment_status_filter != 'all':
+        appointments = appointments.filter(payment_status=payment_status_filter)
+    
+    # Apply search filter
+    if search_query:
+        appointments = appointments.filter(
+            Q(patient__username__icontains=search_query) |
+            Q(patient__first_name__icontains=search_query) |
+            Q(patient__last_name__icontains=search_query) |
+            Q(patient_name__icontains=search_query) |
+            Q(patient_phone__icontains=search_query) |
+            Q(symptoms__icontains=search_query)
+        )
+    
+    # Order by appointment date (upcoming first)
+    appointments = appointments.order_by('appointment_date')
+    
+    # Pagination
+    paginator = Paginator(appointments, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # ====== CALCULATE STATISTICS ======
+    
+    # Get all appointments for this doctor
+    all_appointments = Appointment.objects.filter(doctor=doctor)
+    
+    # Get today's datetime range
+    today_start = timezone.make_aware(datetime.combine(today, datetime.min.time()))
+    today_end = timezone.make_aware(datetime.combine(today, datetime.max.time()))
+    
+    # Get today's appointments
+    today_appointments = all_appointments.filter(appointment_date__range=[today_start, today_end])
+    
+    # Get unique patients
+    total_patients = all_appointments.values('patient').distinct().count()
+    today_patients = today_appointments.values('patient').distinct().count()
+    
+    # ====== EARNINGS CALCULATION FROM PaymentTransaction ======
+    
+    # Get paid payment transactions for this doctor
+    paid_transactions = PaymentTransaction.objects.filter(
+        appointment__doctor=doctor,
+        status='paid'
+    ).select_related('appointment')
+    
+    # Total earnings from all paid transactions
+    total_earnings = paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Today's earnings (from appointments today with paid transactions)
+    today_paid_transactions = paid_transactions.filter(
+        created_at__range=[today_start, today_end]
+    )
+    earnings_today = today_paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Monthly earnings (current month)
+    month_start = today.replace(day=1)
+    month_start_dt = timezone.make_aware(datetime.combine(month_start, datetime.min.time()))
+    month_paid_transactions = paid_transactions.filter(
+        created_at__gte=month_start_dt
+    )
+    monthly_earnings = month_paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Weekly earnings (this week)
+    week_start = today - timedelta(days=today.weekday())
+    week_start_dt = timezone.make_aware(datetime.combine(week_start, datetime.min.time()))
+    week_paid_transactions = paid_transactions.filter(
+        created_at__gte=week_start_dt
+    )
+    weekly_earnings = week_paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Calculate averages
+    avg_today = Decimal('0.00')
+    if today_paid_transactions.count() > 0:
+        avg_today = earnings_today / today_paid_transactions.count()
+    
+    # ====== APPOINTMENT STATISTICS ======
+    
+    stats = {
+        'total': all_appointments.count(),
+        'pending': all_appointments.filter(status='pending').count(),
+        'confirmed': all_appointments.filter(status='confirmed').count(),
+        'completed': all_appointments.filter(status='completed').count(),
+        'cancelled': all_appointments.filter(status='cancelled').count(),
+        
+        'today': today_appointments.count(),
+        'today_patients': today_patients,
+        'pending_today': today_appointments.filter(status='pending').count(),
+        'completed_today': today_appointments.filter(status='completed').count(),
+        
+        # Earnings statistics
+        'earnings_today': earnings_today,
+        'weekly_earnings': weekly_earnings,
+        'monthly_earnings': monthly_earnings,
+        'total_earnings': total_earnings,
+        'avg_today': avg_today,
+        
+        'total_patients': total_patients,
+    }
+    
+    # Prepare date range for display
+    date_range = None
+    if start_date_str and end_date_str:
+        try:
+            start_date_display = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date_display = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            date_range = {
+                'start': start_date_display,
+                'end': end_date_display,
+            }
+        except ValueError:
+            pass
+    
+    context = {
+        'doctor': doctor,
+        'page_obj': page_obj,
+        'appointments': page_obj.object_list,
+        'stats': stats,
+        
+        # Filter values for template
+        'status_filter': status_filter,
+        'date_filter': date_filter,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
+        'search_query': search_query,
+        'consultation_type_filter': consultation_type_filter,
+        'payment_status_filter': payment_status_filter,
+        
+        'status_choices': dict(Appointment.APPOINTMENT_STATUS),
+        'today': today,
+        'date_range': date_range,
+    }
+    
+    return render(request, 'doctor/appointments_list.html', context)
+
+
+
+# ============ DOCTOR APPOINTMENT VIEWS ============
+@login_required
+def doctor_appointments(request):
+    """
+    View all appointments for the logged-in doctor
+    """
+    # Check if user is a doctor
+    if not hasattr(request.user, 'doctor_profile'):
+        return HttpResponseForbidden("You are not authorized to view this page.")
+    
+    doctor = request.user.doctor_profile
+    now = timezone.now()
+    today = now.date()
     
     # Get filter parameters
     status_filter = request.GET.get('status', 'all')
@@ -420,12 +632,21 @@ def doctor_appointments(request):
         appointments = appointments.filter(status=status_filter)
     
     if date_filter == 'today':
-        today = timezone.now().date()
         appointments = appointments.filter(appointment_date__date=today)
     elif date_filter == 'upcoming':
-        appointments = appointments.filter(appointment_date__gte=timezone.now())
+        appointments = appointments.filter(appointment_date__gte=now)
     elif date_filter == 'past':
-        appointments = appointments.filter(appointment_date__lt=timezone.now())
+        appointments = appointments.filter(appointment_date__lt=now)
+    elif date_filter == 'week':
+        week_start = today - timedelta(days=today.weekday())
+        week_end = week_start + timedelta(days=6)
+        appointments = appointments.filter(
+            appointment_date__date__gte=week_start,
+            appointment_date__date__lte=week_end
+        )
+    elif date_filter == 'month':
+        first_day_of_month = today.replace(day=1)
+        appointments = appointments.filter(appointment_date__date__gte=first_day_of_month)
     
     if search_query:
         appointments = appointments.filter(
@@ -444,24 +665,90 @@ def doctor_appointments(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Statistics
+    # ====== CALCULATE STATISTICS ======
+    
+    # Get all appointments for this doctor
+    all_appointments = Appointment.objects.filter(doctor=doctor)
+    
+    # Get today's datetime range
+    today_start = timezone.make_aware(datetime.combine(today, datetime.min.time()))
+    today_end = timezone.make_aware(datetime.combine(today, datetime.max.time()))
+    
+    # Get today's appointments
+    today_appointments = all_appointments.filter(appointment_date__range=[today_start, today_end])
+    
+    # Get unique patients
+    total_patients = all_appointments.values('patient').distinct().count()
+    today_patients = today_appointments.values('patient').distinct().count()
+    
+    # ====== EARNINGS CALCULATION FROM PaymentTransaction ======
+    
+    # Get paid payment transactions for this doctor
+    paid_transactions = PaymentTransaction.objects.filter(
+        appointment__doctor=doctor,
+        status='paid'
+    ).select_related('appointment')
+    
+    # Total earnings from all paid transactions
+    total_earnings = paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Today's earnings (from appointments today with paid transactions)
+    today_paid_transactions = paid_transactions.filter(
+        created_at__range=[today_start, today_end]
+    )
+    earnings_today = today_paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Monthly earnings (current month)
+    month_start = today.replace(day=1)
+    month_start_dt = timezone.make_aware(datetime.combine(month_start, datetime.min.time()))
+    month_paid_transactions = paid_transactions.filter(
+        created_at__gte=month_start_dt
+    )
+    monthly_earnings = month_paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Weekly earnings (this week)
+    week_start = today - timedelta(days=today.weekday())
+    week_start_dt = timezone.make_aware(datetime.combine(week_start, datetime.min.time()))
+    week_paid_transactions = paid_transactions.filter(
+        created_at__gte=week_start_dt
+    )
+    weekly_earnings = week_paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Calculate averages
+    avg_today = Decimal('0.00')
+    if today_paid_transactions.count() > 0:
+        avg_today = earnings_today / today_paid_transactions.count()
+    
+    # ====== APPOINTMENT STATISTICS ======
+    
     stats = {
-        'total': appointments.count(),
-        'pending': appointments.filter(status='pending').count(),
-        'confirmed': appointments.filter(status='confirmed').count(),
-        'completed': appointments.filter(status='completed').count(),
-        'cancelled': appointments.filter(status='cancelled').count(),
-        'today': Appointment.objects.filter(
-            doctor=doctor,
-            appointment_date__date=timezone.now().date()
-        ).count(),
-        'monthly_earnings': Appointment.objects.filter(
-            doctor=doctor,
-            appointment_date__month=timezone.now().month,
-            appointment_date__year=timezone.now().year,
-            status='completed',
-            payment_status='paid'
-        ).aggregate(total=Sum('consultation_fee'))['total'] or 0,
+        'total': all_appointments.count(),
+        'pending': all_appointments.filter(status='pending').count(),
+        'confirmed': all_appointments.filter(status='confirmed').count(),
+        'completed': all_appointments.filter(status='completed').count(),
+        'cancelled': all_appointments.filter(status='cancelled').count(),
+        
+        'today': today_appointments.count(),
+        'today_patients': today_patients,
+        'pending_today': today_appointments.filter(status='pending').count(),
+        'completed_today': today_appointments.filter(status='completed').count(),
+        
+        # Earnings statistics
+        'earnings_today': earnings_today,
+        'weekly_earnings': weekly_earnings,
+        'monthly_earnings': monthly_earnings,
+        'total_earnings': total_earnings,
+        'avg_today': avg_today,
+        
+        'total_patients': total_patients,
     }
     
     context = {
@@ -473,10 +760,286 @@ def doctor_appointments(request):
         'date_filter': date_filter,
         'search_query': search_query,
         'status_choices': dict(Appointment.APPOINTMENT_STATUS),
+        'today': today,
     }
     
     return render(request, 'doctor/appointments_list.html', context)
 
+
+# ====== ADD THESE NEW VIEWS FOR MARK AS COMPLETE AND CANCEL ======
+@login_required
+def doctor_appointments(request):
+    """
+    View all appointments for the logged-in doctor
+    """
+    # Check if user is a doctor
+    if not hasattr(request.user, 'doctor_profile'):
+        return HttpResponseForbidden("You are not authorized to view this page.")
+    
+    doctor = request.user.doctor_profile
+    now = timezone.now()
+    today = now.date()
+    
+    # Get filter parameters
+    status_filter = request.GET.get('status', 'all')
+    date_filter = request.GET.get('date', 'all')
+    search_query = request.GET.get('search', '')
+    start_date_str = request.GET.get('start_date', '')
+    end_date_str = request.GET.get('end_date', '')
+    consultation_type_filter = request.GET.get('consultation_type', 'all')
+    payment_status_filter = request.GET.get('payment_status', 'all')
+    
+    # Base queryset
+    appointments = Appointment.objects.filter(doctor=doctor)
+    
+    # Apply status filter
+    if status_filter != 'all':
+        appointments = appointments.filter(status=status_filter)
+    
+    # Apply date filters - FIXED
+    if date_filter == 'today':
+        appointments = appointments.filter(appointment_date__date=today)
+    elif date_filter == 'upcoming':
+        appointments = appointments.filter(appointment_date__gte=now)
+    elif date_filter == 'past':
+        appointments = appointments.filter(appointment_date__lt=now)
+    elif date_filter == 'week':
+        week_start = today - timedelta(days=today.weekday())
+        week_end = week_start + timedelta(days=6)
+        appointments = appointments.filter(
+            appointment_date__date__gte=week_start,
+            appointment_date__date__lte=week_end
+        )
+    elif date_filter == 'month':
+        first_day_of_month = today.replace(day=1)
+        last_day_of_month = today.replace(day=28) + timedelta(days=4)
+        last_day_of_month = last_day_of_month - timedelta(days=last_day_of_month.day)
+        appointments = appointments.filter(
+            appointment_date__date__gte=first_day_of_month,
+            appointment_date__date__lte=last_day_of_month
+        )
+    elif date_filter == 'custom':
+        # Custom date range will be handled by start_date and end_date parameters
+        pass
+    
+    # Apply custom date range from input fields
+    if start_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            appointments = appointments.filter(appointment_date__date__gte=start_date)
+        except ValueError:
+            pass
+    
+    if end_date_str:
+        try:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            appointments = appointments.filter(appointment_date__date__lte=end_date)
+        except ValueError:
+            pass
+    
+    # Apply consultation type filter
+    if consultation_type_filter != 'all':
+        appointments = appointments.filter(consultation_type=consultation_type_filter)
+    
+    # Apply payment status filter
+    if payment_status_filter != 'all':
+        appointments = appointments.filter(payment_status=payment_status_filter)
+    
+    # Apply search filter
+    if search_query:
+        appointments = appointments.filter(
+            Q(patient__username__icontains=search_query) |
+            Q(patient__first_name__icontains=search_query) |
+            Q(patient__last_name__icontains=search_query) |
+            Q(patient_name__icontains=search_query) |
+            Q(patient_phone__icontains=search_query) |
+            Q(symptoms__icontains=search_query)
+        )
+    
+    # Order by appointment date (upcoming first)
+    appointments = appointments.order_by('appointment_date')
+    
+    # Pagination
+    paginator = Paginator(appointments, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # ====== CALCULATE STATISTICS ======
+    
+    # Get all appointments for this doctor
+    all_appointments = Appointment.objects.filter(doctor=doctor)
+    
+    # Get today's datetime range
+    today_start = timezone.make_aware(datetime.combine(today, datetime.min.time()))
+    today_end = timezone.make_aware(datetime.combine(today, datetime.max.time()))
+    
+    # Get today's appointments
+    today_appointments = all_appointments.filter(appointment_date__range=[today_start, today_end])
+    
+    # Get unique patients
+    total_patients = all_appointments.values('patient').distinct().count()
+    today_patients = today_appointments.values('patient').distinct().count()
+    
+    # ====== EARNINGS CALCULATION FROM PaymentTransaction ======
+    
+    # Get paid payment transactions for this doctor
+    paid_transactions = PaymentTransaction.objects.filter(
+        appointment__doctor=doctor,
+        status='paid'
+    ).select_related('appointment')
+    
+    # Total earnings from all paid transactions
+    total_earnings = paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Today's earnings (from appointments today with paid transactions)
+    today_paid_transactions = paid_transactions.filter(
+        created_at__range=[today_start, today_end]
+    )
+    earnings_today = today_paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Monthly earnings (current month)
+    month_start = today.replace(day=1)
+    month_start_dt = timezone.make_aware(datetime.combine(month_start, datetime.min.time()))
+    month_paid_transactions = paid_transactions.filter(
+        created_at__gte=month_start_dt
+    )
+    monthly_earnings = month_paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Weekly earnings (this week)
+    week_start = today - timedelta(days=today.weekday())
+    week_start_dt = timezone.make_aware(datetime.combine(week_start, datetime.min.time()))
+    week_paid_transactions = paid_transactions.filter(
+        created_at__gte=week_start_dt
+    )
+    weekly_earnings = week_paid_transactions.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0.00')
+    
+    # Calculate averages
+    avg_today = Decimal('0.00')
+    if today_paid_transactions.count() > 0:
+        avg_today = earnings_today / today_paid_transactions.count()
+    
+    # ====== APPOINTMENT STATISTICS ======
+    
+    stats = {
+        'total': all_appointments.count(),
+        'pending': all_appointments.filter(status='pending').count(),
+        'confirmed': all_appointments.filter(status='confirmed').count(),
+        'completed': all_appointments.filter(status='completed').count(),
+        'cancelled': all_appointments.filter(status='cancelled').count(),
+        
+        'today': today_appointments.count(),
+        'today_patients': today_patients,
+        'pending_today': today_appointments.filter(status='pending').count(),
+        'completed_today': today_appointments.filter(status='completed').count(),
+        
+        # Earnings statistics
+        'earnings_today': earnings_today,
+        'weekly_earnings': weekly_earnings,
+        'monthly_earnings': monthly_earnings,
+        'total_earnings': total_earnings,
+        'avg_today': avg_today,
+        
+        'total_patients': total_patients,
+    }
+    
+    # Prepare date range for display
+    date_range = None
+    if start_date_str and end_date_str:
+        try:
+            start_date_display = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date_display = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            date_range = {
+                'start': start_date_display,
+                'end': end_date_display,
+            }
+        except ValueError:
+            pass
+    
+    context = {
+        'doctor': doctor,
+        'page_obj': page_obj,
+        'appointments': page_obj.object_list,
+        'stats': stats,
+        
+        # Filter values for template
+        'status_filter': status_filter,
+        'date_filter': date_filter,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
+        'search_query': search_query,
+        'consultation_type_filter': consultation_type_filter or 'all',
+        'payment_status_filter': payment_status_filter or 'all',
+        
+        'status_choices': dict(Appointment.APPOINTMENT_STATUS),
+        'today': today,
+        'date_range': date_range,
+    }
+    
+    return render(request, 'doctor/appointments_list.html', context)
+@login_required
+@require_POST
+def mark_appointment_complete(request, appointment_id):
+    """
+    View to mark an appointment as complete
+    """
+    # Get the appointment
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    # Check if user has permission (doctor of this appointment or admin)
+    if not (request.user == appointment.doctor.user or request.user.is_staff):
+        messages.error(request, "You don't have permission to mark this appointment as complete.")
+        return redirect('doctor:appointment_detail', appointment_id=appointment.id)
+    
+    # Validate appointment can be marked as complete
+    if appointment.status == 'completed':
+        messages.warning(request, "This appointment is already marked as complete.")
+        return redirect('doctor:appointment_detail', appointment_id=appointment.id)
+    
+    if appointment.status == 'cancelled':
+        messages.error(request, "Cannot mark a cancelled appointment as complete.")
+        return redirect('doctor:appointment_detail', appointment_id=appointment.id)
+    
+    # Check payment status
+    if appointment.payment_status not in ['paid', 'refunded']:
+        messages.error(request, "Cannot mark appointment as complete without successful payment.")
+        return redirect('doctor:appointment_detail', appointment_id=appointment.id)
+    
+    # Update appointment status
+    appointment.status = 'completed'
+    appointment.completed_at = timezone.now()
+    appointment.completed_by_doctor = True
+    
+    # If actual end time not set, set it
+    if not appointment.actual_end_time:
+        appointment.actual_end_time = timezone.now()
+    
+    # Calculate duration if start time exists
+    if appointment.actual_start_time and not appointment.consultation_duration:
+        duration = (appointment.actual_end_time - appointment.actual_start_time).seconds // 60
+        appointment.consultation_duration = duration
+    
+    appointment.save()
+    
+    # Add a system note
+    AppointmentNote.objects.create(
+        appointment=appointment,
+        note_type='system',
+        content=f'Appointment marked as complete by {request.user.get_full_name() or request.user.username}',
+        created_by=request.user
+    )
+    
+    messages.success(request, "Appointment has been marked as complete successfully!")
+    
+    # Redirect back to appointment detail or list
+    return redirect('doctor:appointment_detail', appointment_id=appointment.id)
 
 @login_required
 def appointment_detail(request, appointment_id):
@@ -507,8 +1070,8 @@ def appointment_detail(request, appointment_id):
     
     return render(request, 'doctor/appointment_detail.html', context)
 
-
 @login_required
+@require_POST
 def update_appointment_status(request, appointment_id):
     """
     Update appointment status (AJAX endpoint)
@@ -516,40 +1079,53 @@ def update_appointment_status(request, appointment_id):
     if not hasattr(request.user, 'doctor_profile'):
         return JsonResponse({'success': False, 'error': 'Unauthorized'})
     
-    if request.method == 'POST':
-        doctor = request.user.doctor_profile
-        
-        try:
-            appointment = Appointment.objects.get(id=appointment_id, doctor=doctor)
-        except Appointment.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Appointment not found'})
-        
-        new_status = request.POST.get('status')
-        
-        if new_status in dict(Appointment.APPOINTMENT_STATUS).keys():
-            old_status = appointment.status
-            appointment.status = new_status
-            
-            # Additional logic based on status change
-            if new_status == 'completed' and old_status != 'completed':
-                appointment.completed_at = timezone.now()
-            elif new_status == 'cancelled' and old_status != 'cancelled':
-                appointment.cancelled_at = timezone.now()
-            
-            appointment.save()
-            
-            # Create notification or log here if needed
-            
-            return JsonResponse({
-                'success': True,
-                'message': f'Appointment status updated to {new_status}',
-                'status': new_status,
-                'status_display': dict(Appointment.APPOINTMENT_STATUS)[new_status]
-            })
-        else:
-            return JsonResponse({'success': False, 'error': 'Invalid status'})
+    doctor = request.user.doctor_profile
     
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+    try:
+        appointment = Appointment.objects.get(id=appointment_id, doctor=doctor)
+    except Appointment.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Appointment not found'})
+    
+    new_status = request.POST.get('status')
+    
+    # Valid status check
+    valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled']
+    if new_status not in valid_statuses:
+        return JsonResponse({'success': False, 'error': 'Invalid status'})
+    
+    # Store old status
+    old_status = appointment.status
+    
+    # Update appointment
+    appointment.status = new_status
+    
+    # Additional logic based on status change
+    if new_status == 'completed' and old_status != 'completed':
+        appointment.completed_at = timezone.now()
+    elif new_status == 'cancelled' and old_status != 'cancelled':
+        appointment.cancelled_at = timezone.now()
+    
+    appointment.save()
+    
+    # Create notification for patient
+    if new_status in ['completed', 'cancelled']:
+        Notification.objects.create(
+            user=appointment.patient,
+            notification_type='appointment',
+            title=f'Appointment {new_status.title()}',
+            message=f'Dr. {doctor.user.get_full_name()} has marked your appointment as {new_status}',
+            related_id=appointment.id,
+            is_read=False
+        )
+    
+    return JsonResponse({
+        'success': True,
+        'message': f'Appointment status updated to {new_status}',
+        'status': new_status,
+        'status_display': dict(Appointment.APPOINTMENT_STATUS).get(new_status, new_status),
+        'appointment_id': appointment.id
+    })
+
 
 
 @login_required
@@ -798,72 +1374,216 @@ def export_appointments(request):
 
 
 # Chat & Messaging Views
+# Chat & Messaging Views
+
 @login_required
 def doctor_chat_home(request):
-    """Doctor's chat dashboard showing all conversations"""
+    """
+    Display chat home for doctor with all patient conversations
+    """
     try:
-        # Changed from doctor to doctor_profile
         doctor = request.user.doctor_profile
-    except Doctor.DoesNotExist:
-        return redirect('home')
+    except:
+        return redirect('doctor:dashboard')
     
-    # Get all appointments with active conversations
-    appointments = Appointment.objects.filter(
-        doctor=doctor,
-        status__in=['confirmed', 'completed']
-    ).select_related('patient', 'conversation').order_by('-created_at')
+    # Get all conversations for this doctor
+    # Use 'messages' instead of 'message_set' (correct related_name from model)
+    conversations_queryset = Conversation.objects.filter(
+        doctor=doctor
+    ).select_related(
+        'appointment__patient',
+        'appointment'
+    ).prefetch_related(
+        'messages'  # ✅ CORRECT: Use 'messages' not 'message_set'
+    ).order_by('-updated_at')
     
-    # Get unread message counts for each conversation
+    # Build conversations with metadata
     conversations = []
-    for appointment in appointments:
+    total_unread = 0
+    
+    for conv in conversations_queryset:
+        appointment = conv.appointment
+        
+        # Count unread messages from patient
+        unread_count = conv.messages.filter(
+            is_read=False,
+            sender=appointment.patient
+        ).count()
+        
+        # Get last message
+        last_message = conv.messages.order_by('-created_at').first()
+        
+        conversations.append({
+            'appointment': appointment,
+            'patient': appointment.patient,
+            'conversation': conv,
+            'unread_count': unread_count,
+            'last_message': last_message,
+        })
+        
+        total_unread += unread_count
+    
+    # Get current appointment from query parameter
+    appointment_id = request.GET.get('appointment')
+    current_appointment = None
+    messages = []
+    
+    if appointment_id:
         try:
-            conversation = appointment.conversation
-            unread_count = Message.objects.filter(
-                conversation=conversation,
-                is_read=False
-            ).exclude(sender=request.user).count()
-            
-            # Get last message
-            last_message = Message.objects.filter(
-                conversation=conversation
-            ).order_by('-created_at').first()
-            
-            conversations.append({
-                'appointment': appointment,
-                'conversation': conversation,
-                'unread_count': unread_count,
-                'last_message': last_message,
-                'patient': appointment.patient
-            })
-        except Conversation.DoesNotExist:
-            # Create conversation if doesn't exist
-            conversation = Conversation.objects.create(
-                appointment=appointment,
-                patient=appointment.patient,
-                doctor=doctor,
-                is_active=True
+            current_appointment = Appointment.objects.get(
+                id=appointment_id,
+                doctor=doctor
             )
-            conversations.append({
-                'appointment': appointment,
-                'conversation': conversation,
-                'unread_count': 0,
-                'last_message': None,
-                'patient': appointment.patient
-            })
+            
+            # Get or create conversation
+            conversation, created = Conversation.objects.get_or_create(
+                appointment=current_appointment,
+                defaults={
+                    'doctor': doctor,
+                    'patient': current_appointment.patient,
+                    'is_active': True
+                }
+            )
+            
+            # Get all messages
+            messages = conversation.messages.select_related(
+                'sender'
+            ).order_by('created_at')
+            
+            # Mark patient messages as read
+            conversation.messages.filter(
+                is_read=False,
+                sender=current_appointment.patient
+            ).update(is_read=True)
+            
+        except Appointment.DoesNotExist:
+            pass
+    
+    # Calculate stats
+    today = timezone.now().date()
+    today_start = timezone.make_aware(datetime.combine(today, datetime.min.time()))
+    today_end = timezone.make_aware(datetime.combine(today, datetime.max.time()))
+    
+    today_appointments_count = Appointment.objects.filter(
+        doctor=doctor,
+        appointment_date__gte=today_start,
+        appointment_date__lte=today_end
+    ).exclude(status='cancelled').count()
     
     context = {
         'conversations': conversations,
-        'active_tab': 'chat'
+        'current_appointment': current_appointment,
+        'messages': messages,
+        'total_unread': total_unread,
+        'today_calls': today_appointments_count,
+        'today_appointments': today_appointments_count,
     }
+    
     return render(request, 'doctor/communication/chat_home.html', context)
+
+
+@login_required
+def send_message(request, appointment_id):
+    """
+    Send a message in a conversation
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'})
+    
+    try:
+        doctor = request.user.doctor_profile
+        appointment = Appointment.objects.get(id=appointment_id, doctor=doctor)
+    except (Appointment.DoesNotExist, AttributeError):
+        return JsonResponse({'success': False, 'error': 'Appointment not found'})
+    
+    # Get or create conversation
+    conversation, created = Conversation.objects.get_or_create(
+        appointment=appointment,
+        defaults={
+            'doctor': doctor,
+            'patient': appointment.patient,
+            'is_active': True
+        }
+    )
+    
+    content = request.POST.get('content', '').strip()
+    message_type = request.POST.get('message_type', 'text')
+    
+    try:
+        message = Message.objects.create(
+            conversation=conversation,
+            sender=request.user,
+            content=content,
+            message_type=message_type
+        )
+        
+        # Handle file uploads
+        if message_type == 'image' and 'image' in request.FILES:
+            message.image = request.FILES['image']
+            message.save()
+        
+        elif message_type == 'file' and 'file' in request.FILES:
+            message.file = request.FILES['file']
+            message.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Message sent successfully',
+            'message_id': message.id
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+
+@login_required
+def get_messages(request, appointment_id):
+    """
+    Get all messages for an appointment (API endpoint)
+    """
+    try:
+        doctor = request.user.doctor_profile
+        appointment = Appointment.objects.get(id=appointment_id, doctor=doctor)
+    except (Appointment.DoesNotExist, AttributeError):
+        return JsonResponse({'success': False, 'error': 'Appointment not found'})
+    
+    try:
+        conversation = Conversation.objects.get(appointment=appointment)
+    except Conversation.DoesNotExist:
+        return JsonResponse({'success': True, 'messages': []})
+    
+    # Use 'messages' instead of 'message_set'
+    messages_qs = conversation.messages.select_related('sender').order_by('created_at')
+    
+    messages_data = []
+    for msg in messages_qs:
+        messages_data.append({
+            'id': msg.id,
+            'sender_name': msg.sender.get_full_name() or msg.sender.username,
+            'sender_type': 'doctor' if msg.sender == request.user else 'patient',
+            'content': msg.content,
+            'message_type': msg.message_type,
+            'time': msg.created_at.strftime('%I:%M %p'),
+            'is_read': msg.is_read,
+            'image_url': msg.image.url if msg.image else None,
+            'file_url': msg.file.url if msg.file else None,
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'messages': messages_data
+    })
+
 
 @login_required
 def doctor_chat_detail(request, appointment_id):
     """Doctor's chat interface for a specific appointment"""
     try:
-        # Changed from doctor to doctor_profile
         doctor = request.user.doctor_profile
-    except Doctor.DoesNotExist:
+    except:
         return redirect('home')
     
     appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
@@ -872,149 +1592,49 @@ def doctor_chat_detail(request, appointment_id):
     conversation, created = Conversation.objects.get_or_create(
         appointment=appointment,
         defaults={
-            'patient': appointment.patient,
             'doctor': doctor,
+            'patient': appointment.patient,
             'is_active': True
         }
     )
     
     # Mark all messages as read
-    Message.objects.filter(
-        conversation=conversation,
+    conversation.messages.filter(
         is_read=False
     ).exclude(sender=request.user).update(is_read=True)
     
-    # Get all messages
-    messages = Message.objects.filter(conversation=conversation).order_by('created_at')
+    # Get all messages - use 'messages' not 'message_set'
+    messages_list = conversation.messages.select_related('sender').order_by('created_at')
     
-    # Get prescriptions for this appointment
-    prescriptions = Prescription.objects.filter(appointment=appointment).order_by('-created_at')
+    # Get related data
+    prescriptions = Prescription.objects.filter(
+        appointment=appointment
+    ).order_by('-created_at')
     
-    # Get test reports for this appointment
-    test_reports = TestReport.objects.filter(appointment=appointment).order_by('-created_at')
+    test_reports = TestReport.objects.filter(
+        appointment=appointment
+    ).order_by('-created_at')
+    
+    video_calls = VideoCall.objects.filter(
+        appointment=appointment
+    ).order_by('-scheduled_time')
     
     context = {
         'appointment': appointment,
         'conversation': conversation,
-        'messages': messages,
+        'messages': messages_list,
         'prescriptions': prescriptions,
         'test_reports': test_reports,
+        'video_calls': video_calls,
+        'patient': appointment.patient,
+        'doctor': doctor,
         'active_tab': 'chat'
     }
     return render(request, 'doctor/communication/chat_detail.html', context)
 
-@login_required
-@require_POST
-def send_message(request, appointment_id):
-    """Send a message in chat"""
-    try:
-        # Changed from doctor to doctor_profile
-        doctor = request.user.doctor_profile
-    except Doctor.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Doctor not found'})
-    
-    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
-    
-    # Get or create conversation
-    conversation, created = Conversation.objects.get_or_create(
-        appointment=appointment,
-        defaults={
-            'patient': appointment.patient,
-            'doctor': doctor,
-            'is_active': True
-        }
-    )
-    
-    message_type = request.POST.get('message_type', 'text')
-    content = request.POST.get('content', '')
-    file = request.FILES.get('file')
-    image = request.FILES.get('image')
-    
-    if not content and not file and not image:
-        return JsonResponse({'success': False, 'error': 'Message cannot be empty'})
-    
-    # Create message
-    message = Message.objects.create(
-        conversation=conversation,
-        sender=request.user,
-        message_type=message_type,
-        content=content,
-        file=file,
-        image=image,
-        is_read=True  # Doctor's own message is marked as read
-    )
-    
-    # Create notification for patient
-    Notification.objects.create(
-        user=appointment.patient,
-        notification_type='message',
-        title=f'New Message from Dr. {doctor.user.get_full_name()}',
-        message=content[:100] if content else f'New {message_type} message',
-        related_id=appointment.id,
-        is_read=False
-    )
-    
-    # Update conversation timestamp
-    conversation.save()
-    
-    return JsonResponse({
-        'success': True,
-        'message_id': message.id,
-        'sender_name': request.user.get_full_name(),
-        'sender_type': 'doctor',
-        'content': content,
-        'message_type': message_type,
-        'created_at': message.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-        'file_url': message.file.url if message.file else None,
-        'image_url': message.image.url if message.image else None
-    })
 
-@login_required
-@require_GET
-def get_messages(request, appointment_id):
-    """Get messages for a conversation (AJAX)"""
-    try:
-        # Changed from doctor to doctor_profile
-        doctor = request.user.doctor_profile
-    except Doctor.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Doctor not found'})
-    
-    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
-    
-    try:
-        conversation = Conversation.objects.get(appointment=appointment)
-        messages = Message.objects.filter(conversation=conversation).order_by('created_at')
-        
-        # Mark messages as read
-        Message.objects.filter(
-            conversation=conversation,
-            is_read=False
-        ).exclude(sender=request.user).update(is_read=True)
-        
-        messages_data = []
-        for msg in messages:
-            messages_data.append({
-                'id': msg.id,
-                'sender_id': msg.sender.id,
-                'sender_name': msg.sender.get_full_name(),
-                'sender_type': 'doctor' if hasattr(msg.sender, 'doctor_profile') else 'patient',
-                'message_type': msg.message_type,
-                'content': msg.content,
-                'file_url': msg.file.url if msg.file else None,
-                'image_url': msg.image.url if msg.image else None,
-                'is_read': msg.is_read,
-                'created_at': msg.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                'time': msg.created_at.strftime('%I:%M %p')
-            })
-        
-        return JsonResponse({
-            'success': True,
-            'messages': messages_data,
-            'patient_name': appointment.patient.get_full_name(),
-            'appointment_status': appointment.status
-        })
-    except Conversation.DoesNotExist:
-        return JsonResponse({'success': True, 'messages': [], 'appointment_status': appointment.status})
+
+
 
 # Prescription Management
 @login_required
@@ -1155,6 +1775,10 @@ def review_test_report(request, report_id):
         'appointment': test_report.appointment
     }
     return render(request, 'doctor/communication/review_test_report.html', context)
+
+
+
+
 
 # Video Call Management
 @login_required

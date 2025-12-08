@@ -1,4 +1,3 @@
-<!--chat_detail.html -->
 {% extends 'communication/chat_home.html' %}
 
 {% block chat_content %}
@@ -39,25 +38,59 @@
                 </div>
             </div>
             <div class="d-flex gap-2">
-                <!-- Action Buttons -->
-                {% if request.user.is_doctor %}
-                <a href="{% url 'communication:create_prescription' appointment.id %}" 
-                   class="btn btn-success btn-sm">
-                    <i class="fas fa-prescription"></i> Prescription
-                </a>
-                {% endif %}
                 
-                {% if not request.user.is_doctor %}
+                
                 <a href="{% url 'communication:upload_test_report' appointment.id %}" 
                    class="btn btn-info btn-sm">
                     <i class="fas fa-file-medical"></i> Test Report
                 </a>
-                {% endif %}
+                 <!-- No active call - Start new -->
+                        <a href="{% url 'communication:video_call_room' appointment.id %}" 
+                           class="btn btn-warning btn-sm" id="video-call-btn">
+                            <i class="fas fa-video"></i> Video Call
+                        </a>
                 
-                <a href="{% url 'communication:schedule_video_call' appointment.id %}" 
+                  <!-- SIMPLIFIED Video Call Button -->
+<div class="video-call-section">
+    {% with active_call=active_calls.first %}
+        <div class="d-flex gap-2 align-items-center">
+            <!-- Always show Start Call button for both -->
+            <a href="{% url 'communication:immediate_video_call' appointment.id %}" 
+               class="btn btn-success btn-sm">
+                <i class="fas fa-video"></i> Start Call Now
+            </a>
+            
+            <!-- Or Schedule button -->
+            <a href="{% url 'communication:schedule_video_call' appointment.id %}" 
+               class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-calendar"></i> Schedule
+            </a>
+            
+            <!-- Show join option if there's an active call -->
+            {% if active_call and active_call.status == 'ongoing' %}
+                <a href="{% url 'communication:video_call_room' active_call.call_id %}" 
                    class="btn btn-warning btn-sm">
-                    <i class="fas fa-video"></i> Video Call
+                    <i class="fas fa-play"></i> Join Active Call
                 </a>
+            {% endif %}
+        </div>
+        
+        <!-- Show call info if exists -->
+        {% if active_call %}
+            <small class="text-muted d-block mt-1">
+                <i class="fas fa-clock"></i>
+                {% if active_call.status == 'ongoing' %}
+                    Call in progress (started {{ active_call.actual_start_time|timesince }} ago)
+                {% elif active_call.status == 'scheduled' %}
+                    Scheduled for {{ active_call.scheduled_time|date:"M d, H:i" }}
+                    {% if active_call.scheduled_time <= now %}
+                        - <a href="{% url 'communication:video_call_room' active_call.call_id %}" class="text-primary">Join now</a>
+                    {% endif %}
+                {% endif %}
+            </small>
+        {% endif %}
+    {% endwith %}
+</div>
             </div>
         </div>
     </div>
@@ -231,43 +264,78 @@
                     {% endif %}
                 </div>
                 
-                <!-- Video Calls -->
+                <!-- Video Calls History -->
                 <div>
-                    <h6><i class="fas fa-video text-warning me-2"></i> Scheduled Calls</h6>
+                    <h6><i class="fas fa-video text-warning me-2"></i> Video Calls</h6>
                     {% if video_calls %}
                         {% for call in video_calls %}
                         <div class="card mb-2">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="mb-1">{{ call.get_call_type_display }}</h6>
+                                        <h6 class="mb-1">
+                                            {{ call.get_call_type_display }} 
+                                            {% if call.status == 'ongoing' %}
+                                                <span class="badge bg-success animate-pulse">Live</span>
+                                            {% endif %}
+                                        </h6>
                                         <p class="mb-1">
-                                            <i class="fas fa-calendar"></i> 
+                                            <i class="fas fa-calendar me-1"></i> 
                                             {{ call.scheduled_time|date:"M d, Y H:i" }}
                                         </p>
-                                        <span class="badge bg-{% if call.status == 'scheduled' %}primary{% elif call.status == 'completed' %}success{% elif call.status == 'ongoing' %}warning{% else %}secondary{% endif %}">
+                                        <span class="badge 
+                                            {% if call.status == 'scheduled' %}bg-primary
+                                            {% elif call.status == 'completed' %}bg-success
+                                            {% elif call.status == 'ongoing' %}bg-warning
+                                            {% elif call.status == 'cancelled' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}">
                                             {{ call.get_status_display }}
                                         </span>
+                                        {% if call.duration %}
+                                            <span class="badge bg-info ms-1">
+                                                {{ call.duration }} min
+                                            </span>
+                                        {% endif %}
                                     </div>
                                     <div>
-                                        {% if call.status == 'scheduled' and call.scheduled_time > now %}
-                                        <a href="{% url 'communication:video_call_room' call.call_id %}" 
-                                           class="btn btn-sm btn-warning">
-                                            <i class="fas fa-video"></i> Join Call
-                                        </a>
-                                        {% elif call.status == 'ongoing' %}
-                                        <a href="{% url 'communication:video_call_room' call.call_id %}" 
-                                           class="btn btn-sm btn-success">
-                                            <i class="fas fa-play"></i> Join Now
-                                        </a>
+                                        {% if call.status == 'ongoing' %}
+                                            <a href="{% url 'communication:video_call_room' call.call_id %}" 
+                                               class="btn btn-sm btn-success">
+                                                <i class="fas fa-play me-1"></i> Join Now
+                                            </a>
+                                        {% elif call.status == 'scheduled' %}
+                                            <a href="{% url 'communication:start_video_call' appointment.id %}" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-video me-1"></i> Start
+                                            </a>
+                                        {% elif call.status == 'completed' %}
+                                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                <i class="fas fa-check me-1"></i> Completed
+                                            </button>
+                                        {% elif call.status == 'cancelled' %}
+                                            <button class="btn btn-sm btn-outline-danger" disabled>
+                                                <i class="fas fa-times me-1"></i> Cancelled
+                                            </button>
                                         {% endif %}
                                     </div>
                                 </div>
+                                
+                                {% if call.notes %}
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-sticky-note me-1"></i>
+                                        {{ call.notes }}
+                                    </small>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted">No scheduled calls.</p>
+                        <div class="text-center py-3">
+                            <i class="fas fa-video-slash fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No video calls scheduled yet</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
@@ -279,34 +347,163 @@
 // Auto-scroll to bottom of chat
 function scrollToBottom() {
     const chatMessages = document.getElementById('chat-messages');
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 }
 
-// Auto-refresh messages every 5 seconds
+// Update countdown timer
+function updateCallCountdown() {
+    const countdownElement = document.getElementById('call-countdown');
+    if (countdownElement) {
+        const scheduledTime = new Date(countdownElement.dataset.scheduled);
+        const now = new Date();
+        const diffMs = scheduledTime - now;
+        
+        if (diffMs <= 0) {
+            countdownElement.textContent = 'Start Now';
+            // Refresh page to update button state
+            setTimeout(() => location.reload(), 30000); // Check every 30 seconds
+        } else {
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const remainingMins = diffMins % 60;
+            
+            if (diffHours > 0) {
+                countdownElement.textContent = `${diffHours}h ${remainingMins}m`;
+            } else {
+                countdownElement.textContent = `${remainingMins}m`;
+            }
+        }
+    }
+}
+
+// Check for active video calls
+function checkVideoCallStatus() {
+    fetch(`/communication/api/check-call-status/{{ appointment.id }}/`)
+        .then(response => response.json())
+        .then(data => {
+            const videoCallBtn = document.getElementById('video-call-btn');
+            if (videoCallBtn && data.has_active_call) {
+                // Update button if needed
+                if (videoCallBtn.textContent.includes('Video Call') || 
+                    videoCallBtn.textContent.includes('Start Early') ||
+                    videoCallBtn.textContent.includes('countdown')) {
+                    
+                    videoCallBtn.href = `/communication/video-call/${data.call_id}/`;
+                    videoCallBtn.className = videoCallBtn.className.replace('btn-outline-', 'btn-');
+                    videoCallBtn.className = videoCallBtn.className.replace('btn-warning', 'btn-success');
+                    videoCallBtn.className = videoCallBtn.className.replace('btn-primary', 'btn-success');
+                    videoCallBtn.innerHTML = '<i class="fas fa-video"></i> Join Call';
+                }
+            }
+        })
+        .catch(error => console.error('Error checking call status:', error));
+}
+
+// Auto-refresh messages
 function refreshMessages() {
     fetch(`/communication/api/messages/{{ appointment.id }}/`)
         .then(response => response.json())
         .then(data => {
-            // Update messages (simplified - in real app, use Vue/React)
+            // You would need to implement message updating logic here
             console.log('Messages updated:', data.messages.length);
         });
 }
-
-// Initial scroll
-window.onload = scrollToBottom;
-
-// Refresh every 5 seconds
-setInterval(refreshMessages, 5000);
 
 // Handle file input display
 document.querySelectorAll('input[type="file"]').forEach(input => {
     input.addEventListener('change', function(e) {
         const fileName = this.files[0]?.name;
         if (fileName) {
-            // You can show file name somewhere
             console.log('Selected file:', fileName);
         }
     });
 });
+
+// Initialize
+window.onload = function() {
+    scrollToBottom();
+    updateCallCountdown();
+    
+    // Update countdown every minute
+    setInterval(updateCallCountdown, 60000);
+    
+    // Check call status every 30 seconds
+    setInterval(checkVideoCallStatus, 30000);
+    
+    // Refresh messages every 10 seconds
+    setInterval(refreshMessages, 10000);
+};
 </script>
+
+<style>
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.chat-area {
+    height: 400px;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.message {
+    margin-bottom: 15px;
+    max-width: 70%;
+}
+
+.message-sent {
+    margin-left: auto;
+    background-color: #007bff;
+    color: white;
+    border-radius: 15px 15px 0 15px;
+    padding: 10px 15px;
+}
+
+.message-received {
+    margin-right: auto;
+    background-color: #f8f9fa;
+    color: #212529;
+    border-radius: 15px 15px 15px 0;
+    padding: 10px 15px;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    text-align: right;
+    margin-top: 5px;
+}
+
+.chat-input {
+    border-top: 1px solid #dee2e6;
+    padding: 15px;
+}
+
+.btn-action {
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.btn-action input[type="file"] {
+    display: none;
+}
+
+.btn-send {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+}
+</style>
 {% endblock %}

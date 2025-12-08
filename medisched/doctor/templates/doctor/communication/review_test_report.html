@@ -1,245 +1,209 @@
 {% extends 'doctor/base.html' %}
 {% load static %}
 
-{% block title %}Review Test Report - Doctor Portal{% endblock %}
+{% block title %}Review Test Report - MediSched{% endblock %}
 {% block page_title %}Review Test Report{% endblock %}
-
-{% block breadcrumb %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb bg-transparent p-0">
-        <li class="breadcrumb-item"><a href="{% url 'doctor:dashboard' %}">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'doctor:chat_detail' test_report.appointment.id %}">Chat</a></li>
-        <li class="breadcrumb-item active">Review Test Report</li>
-    </ol>
-</nav>
-{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row">
-        <!-- Test Report Details -->
-        <div class="col-lg-8">
-            <form id="reviewForm" method="POST">
-                {% csrf_token %}
-                <div class="card">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">Test Report: {{ test_report.test_name }}</h5>
-                        <small class="text-muted">Uploaded by patient on {{ test_report.created_at|date:"F d, Y" }}</small>
-                    </div>
-                    
-                    <div class="card-body">
-                        <!-- Report File -->
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-primary mb-3">
-                                <i class="fas fa-file-medical me-2"></i>Report File
-                            </h6>
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-file-pdf fa-3x text-danger me-3"></i>
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-1">{{ test_report.test_name }} Report</h6>
-                                            <p class="mb-1 small text-muted">
-                                                {% if test_report.lab_name %}
-                                                Lab: {{ test_report.lab_name }}
-                                                {% endif %}
-                                                {% if test_report.test_date %}
-                                                | Date: {{ test_report.test_date|date:"F d, Y" }}
-                                                {% endif %}
-                                            </p>
-                                            <a href="{{ test_report.report_file.url }}" 
-                                               target="_blank" 
-                                               class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-download me-1"></i>Download Report
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Patient's Findings -->
-                        {% if test_report.findings %}
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-primary mb-3">
-                                <i class="fas fa-search me-2"></i>Patient's Notes
-                            </h6>
-                            <div class="card">
-                                <div class="card-body">
-                                    {{ test_report.findings|linebreaks }}
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Doctor's Review -->
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-primary mb-3">
-                                <i class="fas fa-user-md me-2"></i>Doctor's Review
-                            </h6>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Your Notes & Analysis</label>
-                                <textarea class="form-control" name="doctor_notes" rows="6" 
-                                          placeholder="Enter your analysis, interpretation, and recommendations based on this test report...">
-                                    {{ test_report.doctor_notes|default:"" }}
-                                </textarea>
-                                <small class="text-muted">This will be visible to the patient.</small>
-                            </div>
-                        </div>
-                        
-                        <!-- Status Update -->
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-primary mb-3">
-                                <i class="fas fa-check-circle me-2"></i>Update Status
-                            </h6>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label class="form-label">Report Status</label>
-                                    <select class="form-select" name="status" required>
-                                        <option value="submitted" {% if test_report.status == 'submitted' %}selected{% endif %}>
-                                            Submitted (Pending Review)
-                                        </option>
-                                        <option value="reviewed" {% if test_report.status == 'reviewed' %}selected{% endif %}>
-                                            Reviewed by Doctor
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card-footer bg-white">
-                        <div class="d-flex justify-content-end">
-                            <a href="{% url 'doctor:chat_detail' test_report.appointment.id %}" class="btn btn-light me-3">
-                                Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save Review
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-        
-        <!-- Patient & Appointment Info -->
-        <div class="col-lg-4">
-            <!-- Patient Info -->
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">Patient Information</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        {% if test_report.patient.profile_photo %}
-                        <img src="{{ test_report.patient.profile_photo.url }}" 
-                             alt="{{ test_report.patient.get_full_name }}" 
-                             class="rounded-circle me-3" 
-                             style="width: 50px; height: 50px; object-fit: cover;">
-                        {% else %}
-                        <div class="avatar-placeholder rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3"
-                             style="width: 50px; height: 50px; font-size: 20px;">
-                            {{ test_report.patient.get_full_name|default:test_report.patient.username|slice:":1"|upper }}
-                        </div>
-                        {% endif %}
-                        <div>
-                            <h6 class="mb-0">{{ test_report.patient.get_full_name|default:test_report.patient.username }}</h6>
-                            <small class="text-muted">{{ test_report.patient.email }}</small>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-2">
-                        <small class="text-muted d-block">Appointment</small>
-                        <strong>#{{ test_report.appointment.id }}</strong>
-                    </div>
-                    
-                    {% if test_report.appointment.patient_age %}
-                    <div class="mb-2">
-                        <small class="text-muted d-block">Age</small>
-                        <strong>{{ test_report.appointment.patient_age }} years</strong>
-                    </div>
-                    {% endif %}
-                    
-                    {% if test_report.appointment.patient_gender %}
-                    <div class="mb-3">
-                        <small class="text-muted d-block">Gender</small>
-                        <strong>{{ test_report.appointment.patient_gender|title }}</strong>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <!-- Test Report Summary -->
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">Test Report Summary</h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <small class="text-muted d-block">Test Name</small>
-                        <strong>{{ test_report.test_name }}</strong>
-                    </div>
-                    
-                    {% if test_report.test_date %}
-                    <div class="mb-3">
-                        <small class="text-muted d-block">Test Date</small>
-                        <strong>{{ test_report.test_date|date:"F d, Y" }}</strong>
-                    </div>
-                    {% endif %}
-                    
-                    {% if test_report.lab_name %}
-                    <div class="mb-3">
-                        <small class="text-muted d-block">Laboratory</small>
-                        <strong>{{ test_report.lab_name }}</strong>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="mb-3">
-                        <small class="text-muted d-block">Current Status</small>
-                        <span class="badge 
-                            {% if test_report.status == 'reviewed' %}bg-success
-                            {% elif test_report.status == 'submitted' %}bg-warning
-                            {% else %}bg-secondary{% endif %}">
-                            {{ test_report.status|title }}
-                        </span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <small class="text-muted d-block">Uploaded</small>
-                        <strong>{{ test_report.created_at|date:"F d, Y" }}</strong>
-                    </div>
-                    
-                    {% if test_report.updated_at %}
-                    <div class="mb-0">
-                        <small class="text-muted d-block">Last Updated</small>
-                        <strong>{{ test_report.updated_at|date:"F d, Y" }}</strong>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
+        <div class="col-md-12">
             <div class="card">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">Quick Actions</h6>
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-0">
+                                <i class="fas fa-file-medical text-info me-2"></i>
+                                Review Test Report
+                            </h4>
+                            <p class="text-muted mb-0">
+                                For {{ test_report.patient.get_full_name }} | 
+                                Appointment #{{ test_report.appointment.id }}
+                            </p>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{% url 'doctor:chat_home' %}?appointment={{ test_report.appointment.id }}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Chat
+                            </a>
+                        </div>
+                    </div>
                 </div>
+                
                 <div class="card-body">
-                    <div class="list-group list-group-flush">
-                        <a href="{% url 'doctor:chat_detail' test_report.appointment.id %}" 
-                           class="list-group-item list-group-item-action">
-                            <i class="fas fa-comments me-2 text-primary"></i>
-                            Back to Chat
-                        </a>
-                        <a href="{% url 'doctor:create_prescription' test_report.appointment.id %}" 
-                           class="list-group-item list-group-item-action">
-                            <i class="fas fa-prescription me-2 text-success"></i>
-                            Create Prescription
-                        </a>
-                        <a href="{% url 'doctor:appointment_detail' test_report.appointment.id %}" 
-                           class="list-group-item list-group-item-action">
-                            <i class="fas fa-calendar-alt me-2 text-info"></i>
-                            View Appointment
-                        </a>
+                    <!-- Test Report Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>Report Information
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Test Name:</strong> {{ test_report.test_name }}</p>
+                                    <p><strong>Report Date:</strong> {{ test_report.report_date|date:"F d, Y" }}</p>
+                                    <p><strong>Status:</strong> 
+                                        <span class="badge bg-{{ test_report.status == 'reviewed'|yesno:'success,warning' }}">
+                                            {{ test_report.status|title }}
+                                        </span>
+                                    </p>
+                                    <p><strong>Uploaded By:</strong> {{ test_report.uploaded_by.get_full_name }}</p>
+                                    <p><strong>Uploaded On:</strong> {{ test_report.uploaded_at|date:"F d, Y H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-file-pdf me-2"></i>Report File
+                                    </h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    {% if test_report.report_file %}
+                                    <div class="mb-3">
+                                        <i class="fas fa-file-pdf fa-4x text-danger"></i>
+                                    </div>
+                                    <a href="{{ test_report.report_file.url }}" 
+                                       class="btn btn-danger" download>
+                                        <i class="fas fa-download me-1"></i> Download Report
+                                    </a>
+                                    <a href="{{ test_report.report_file.url }}" 
+                                       class="btn btn-outline-danger" target="_blank">
+                                        <i class="fas fa-eye me-1"></i> View Report
+                                    </a>
+                                    {% else %}
+                                    <p class="text-muted">No report file available</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Test Results -->
+                    {% if test_report.results %}
+                    <div class="mb-4">
+                        <h5 class="text-primary">
+                            <i class="fas fa-chart-line me-2"></i>Test Results
+                        </h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-primary">
+                                            <tr>
+                                                <th>Parameter</th>
+                                                <th>Result</th>
+                                                <th>Normal Range</th>
+                                                <th>Unit</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for result in test_report.results %}
+                                            <tr>
+                                                <td>{{ result.parameter }}</td>
+                                                <td>{{ result.result }}</td>
+                                                <td>{{ result.normal_range }}</td>
+                                                <td>{{ result.unit }}</td>
+                                                <td>
+                                                    {% if result.status == 'normal' %}
+                                                    <span class="badge bg-success">Normal</span>
+                                                    {% elif result.status == 'high' %}
+                                                    <span class="badge bg-warning">High</span>
+                                                    {% elif result.status == 'low' %}
+                                                    <span class="badge bg-danger">Low</span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary">{{ result.status }}</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Doctor's Review Form -->
+                    <div class="mb-4">
+                        <h5 class="text-success">
+                            <i class="fas fa-user-md me-2"></i>Doctor's Review
+                        </h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="reviewForm">
+                                    {% csrf_token %}
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-stethoscope me-1"></i>Doctor's Notes
+                                        </label>
+                                        <textarea name="doctor_notes" class="form-control" rows="6" 
+                                                  placeholder="Enter your professional assessment and recommendations based on the test results..."
+                                                  {% if test_report.status == 'reviewed' and test_report.doctor_notes %}readonly{% endif %}>
+                                            {{ test_report.doctor_notes|default:'' }}
+                                        </textarea>
+                                        {% if test_report.doctor_notes %}
+                                        <div class="form-text">
+                                            Reviewed on: {{ test_report.updated_at|date:"F d, Y H:i" }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if test_report.status != 'reviewed' %}
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check-circle me-1"></i> Submit Review
+                                        </button>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        This report has already been reviewed.
+                                    </div>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recommendations -->
+                    {% if test_report.recommendations %}
+                    <div class="mb-4">
+                        <h5 class="text-warning">
+                            <i class="fas fa-lightbulb me-2"></i>Recommendations
+                        </h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    {% for rec in test_report.recommendations %}
+                                    <li class="list-group-item">
+                                        <i class="fas fa-chevron-right text-warning me-2"></i>
+                                        {{ rec }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Next Steps -->
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>Next Steps
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Review the test results thoroughly</li>
+                            <li>Provide clear notes and recommendations</li>
+                            <li>Notify the patient about the reviewed report</li>
+                            <li>Schedule follow-up if necessary</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -247,27 +211,34 @@
     </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
+    const csrfToken = $('[name=csrfmiddlewaretoken]').val();
+    const reportId = {{ test_report.id }};
+    
+    // Submit review form
     $('#reviewForm').submit(function(e) {
         e.preventDefault();
         
-        const formData = new FormData(this);
+        if (!confirm('Are you sure you want to submit your review? This action cannot be undone.')) {
+            return;
+        }
         
         $.ajax({
-            url: window.location.href,
+            url: "{% url 'doctor:review_test_report' test_report.id %}",
             type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
+            data: $(this).serialize(),
             success: function(response) {
                 if (response.success) {
                     alert('Test report reviewed successfully!');
-                    window.location.href = '{% url "doctor:chat_detail" test_report.appointment.id %}';
+                    window.location.reload();
+                } else {
+                    alert('Error: Could not submit review.');
                 }
             },
             error: function() {
-                alert('An error occurred. Please try again.');
+                alert('Error submitting review. Please try again.');
             }
         });
     });

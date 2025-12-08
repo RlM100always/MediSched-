@@ -25,10 +25,17 @@ urlpatterns = [
     path('ajax/load-upazilas/', views.ajax_load_upazilas, name='ajax_load_upazilas'),
     
     # Appointments Management
+    # Appointments Management
     path('appointments/', views.doctor_appointments, name='appointments'),
+    path('appointment/<int:appointment_id>/mark-complete/', 
+         views.mark_appointment_complete, 
+         name='mark_appointment_complete'),
     path('appointments/<int:appointment_id>/', views.appointment_detail, name='appointment_detail'),
-    path('appointments/<int:appointment_id>/update-status/', 
-         views.update_appointment_status, name='update_appointment_status'),
+
+    path('appointments/<int:appointment_id>/update-status/', views.update_appointment_status, name='update_appointment_status'),
+   
+
+
     
     # Analytics
     path('appointments/analytics/', views.appointment_analytics, name='appointment_analytics'),

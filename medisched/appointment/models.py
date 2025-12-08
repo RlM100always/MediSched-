@@ -3,6 +3,7 @@ from django.conf import settings
 from doctor.models import Doctor, DoctorAppointmentFee
 from decimal import Decimal
 import uuid
+from django.utils import timezone
 
 class Appointment(models.Model):
     APPOINTMENT_STATUS = (
@@ -46,6 +47,23 @@ class Appointment(models.Model):
     appointment_date = models.DateTimeField(null=True, blank=True)
     preferred_time = models.CharField(max_length=50, blank=True)
     
+    # Completion tracking
+    completed_at = models.DateTimeField(null=True, blank=True, verbose_name='Marked as completed on')
+    completed_by_doctor = models.BooleanField(default=False, verbose_name='Marked as completed by doctor')
+    cancellation_reason = models.TextField(blank=True, verbose_name='Reason for cancellation')
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    
+    # Duration tracking
+    actual_start_time = models.DateTimeField(null=True, blank=True, verbose_name='Actual consultation start time')
+    actual_end_time = models.DateTimeField(null=True, blank=True, verbose_name='Actual consultation end time')
+    consultation_duration = models.PositiveIntegerField(default=0, verbose_name='Consultation duration (minutes)')
+    
+    # Doctor notes
+    doctor_notes = models.TextField(blank=True, verbose_name='Doctor notes after consultation')
+    follow_up_required = models.BooleanField(default=False)
+    follow_up_date = models.DateTimeField(null=True, blank=True)
+    follow_up_notes = models.TextField(blank=True)
+    
     # Payment details
     consultation_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     vat_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -71,31 +89,49 @@ class Appointment(models.Model):
     
     def __str__(self):
         return f"Appointment #{self.id} - {self.patient.username}"
+
+
+
+class AppointmentRescheduleHistory(models.Model):
+    """
+    Track appointment rescheduling history
+    """
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='reschedule_history')
+    old_date = models.DateTimeField()
+    new_date = models.DateTimeField()
+    reason = models.TextField(blank=True)
+    rescheduled_by = models.CharField(max_length=20, choices=[('doctor', 'Doctor'), ('patient', 'Patient'), ('system', 'System')])
+    rescheduled_at = models.DateTimeField(auto_now_add=True)
     
-    def save(self, *args, **kwargs):
-        # Calculate VAT (5%)
-        if self.consultation_fee and not self.vat_amount:
-            self.vat_amount = self.consultation_fee * Decimal('0.05')
-        
-        # Ensure all values are Decimal
-        self.platform_fee = Decimal('29.00')
-        
-        # Calculate total amount - convert everything to Decimal
-        self.total_amount = (
-            Decimal(str(self.consultation_fee)) + 
-            Decimal(str(self.vat_amount)) + 
-            Decimal(str(self.platform_fee))
-        )
-        
-        # Set patient name if not provided
-        if not self.patient_name and self.patient:
-            self.patient_name = self.patient.get_full_name() or self.patient.username
-        
-        # Generate transaction ID if not exists
-        if not self.transaction_id:
-            self.transaction_id = f"TXN{str(uuid.uuid4())[:8].upper()}"
-        
-        super().save(*args, **kwargs)
+    def __str__(self):
+        return f"Reschedule #{self.id} - Appointment {self.appointment.id}"
+    
+    class Meta:
+        verbose_name_plural = "Appointment reschedule history"
+        ordering = ['-rescheduled_at']
+
+
+class AppointmentNote(models.Model):
+    """
+    Additional notes for appointments
+    """
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='notes')
+    note_type = models.CharField(max_length=20, choices=[
+        ('doctor', 'Doctor Note'),
+        ('patient', 'Patient Note'),
+        ('system', 'System Note'),
+        ('follow_up', 'Follow-up Note')
+    ])
+    content = models.TextField()
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Note #{self.id} for Appointment {self.appointment.id}"
+    
+    class Meta:
+        ordering = ['-created_at']
 
 
 class PaymentTransaction(models.Model):

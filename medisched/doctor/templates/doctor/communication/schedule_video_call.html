@@ -53,7 +53,7 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Call Type *</label>
                                 <select class="form-select" name="call_type" required>
-                                    <option value="video">Video Call</option>
+                                    <option value="video" selected>Video Call</option>
                                     <option value="audio">Audio Call</option>
                                 </select>
                             </div>
@@ -83,17 +83,6 @@
                             <label class="form-label fw-bold">Notes (Optional)</label>
                             <textarea class="form-control" name="notes" rows="4" 
                                       placeholder="Add any notes or instructions for the patient..."></textarea>
-                            <small class="text-muted">This will be included in the notification sent to the patient.</small>
-                        </div>
-                        
-                        <!-- Reminder -->
-                        <div class="mb-4">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="send_reminder" checked>
-                                <label class="form-check-label">
-                                    Send reminder notification 1 hour before the call
-                                </label>
-                            </div>
                         </div>
                         
                         <!-- Preview -->
@@ -103,7 +92,6 @@
                             </h6>
                             <ul class="mb-0">
                                 <li>Patient will receive a notification about the scheduled call</li>
-                                <li>A calendar event will be created for both you and the patient</li>
                                 <li>You can start the call from your Video Calls dashboard</li>
                                 <li>Patient can join the call from their appointment page</li>
                             </ul>
@@ -128,9 +116,9 @@
 
 <script>
 $(document).ready(function() {
-    // Set minimum datetime to current time + 1 hour
+    // Set minimum datetime to current time + 30 minutes
     const now = new Date();
-    const minDateTime = new Date(now.getTime() + 60 * 60 * 1000); // Add 1 hour
+    const minDateTime = new Date(now.getTime() + 30 * 60 * 1000);
     const minDate = minDateTime.toISOString().slice(0, 16);
     
     $('input[name="scheduled_time"]').attr('min', minDate);

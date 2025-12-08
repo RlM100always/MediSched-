@@ -29,6 +29,8 @@ ALLOWED_HOSTS = ["*", ".onrender.com"]
 
 
 AGORA_APP_ID = "4e38e5e2e4204f3b971924b443c7ecc5"
+AGORA_APP_CERTIFICATE = "7c069aa727ff4f1abc704caf93d893f3" 
+
 
 
 # Application definition
