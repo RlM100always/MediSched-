@@ -1,0 +1,612 @@
+{% extends 'adminapp/base_admin.html' %}
+{% load static %}
+
+{% block title %}Create New Doctor - MediSched Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Start of new CSS from admin_dashboard.html */
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+
+    .dashboard-header h2 {
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .dashboard-header p {
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+
+    /* Form Section Headers */
+    .section-header {
+        margin: 2.5rem 0 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .section-header h3 {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    .section-header .badge {
+        background: var(--primary-color);
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    /* Quick Stats (adapted for form validation) */
+    .quick-stats {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* Action Buttons (adapted for form buttons) */
+    .action-btn {
+        border: 2px solid;
+        border-radius: 0.75rem;
+        padding: 1.25rem 1rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        min-height: 140px;
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .action-btn.btn-outline-primary {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background: rgba(45, 156, 219, 0.05);
+    }
+
+    .action-btn.btn-outline-primary:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    /* Animation for sections */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* End of CSS from admin_dashboard.html */
+
+    /* New form-specific styles to fix issues */
+    .form-section {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        animation: fadeInUp 0.5s ease-out forwards;
+        opacity: 0;
+    }
+
+    .form-section:nth-child(1) { animation-delay: 0.1s; }
+    .form-section:nth-child(2) { animation-delay: 0.2s; }
+    .form-section:nth-child(3) { animation-delay: 0.3s; }
+    .form-section:nth-child(4) { animation-delay: 0.4s; }
+    .form-section:nth-child(5) { animation-delay: 0.5s; }
+    .form-section:nth-child(6) { animation-delay: 0.6s; }
+    .form-section:nth-child(7) { animation-delay: 0.7s; }
+    .form-section:nth-child(8) { animation-delay: 0.8s; }
+
+    /* Fix for multi-select fields */
+    .multi-select-container {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .multi-select-container label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+
+    /* Style for select boxes to prevent overflow */
+    select[multiple] {
+        min-height: 150px;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        width: 100%;
+    }
+
+    select[multiple]:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.1);
+    }
+
+    /* Experience field styling */
+    .experience-field {
+        background: #f8fafc;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .form-section {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .dashboard-header h2 {
+            font-size: 1.75rem;
+        }
+
+        .section-header h3 {
+            font-size: 1.35rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .form-section {
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h2><i class="fas fa-user-md me-2"></i>Create New Doctor</h2>
+    <p>Add a new doctor to the MediSched system</p>
+</div>
+
+<!-- Messages -->
+{% if messages %}
+<div class="mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" id="doctorForm">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="form-section" style="--animation-order: 1;">
+                        <div class="section-header">
+                            <h3><i class="fas fa-user me-2"></i>Basic Information</h3>
+                            <span class="badge">Required</span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">First Name *</label>
+                                <input type="text" class="form-control form-control-lg" name="first_name" required 
+                                       placeholder="Enter first name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Last Name *</label>
+                                <input type="text" class="form-control form-control-lg" name="last_name" required 
+                                       placeholder="Enter last name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email *</label>
+                                <input type="email" class="form-control form-control-lg" name="email" required 
+                                       placeholder="doctor@example.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Phone Number</label>
+                                <input type="tel" class="form-control form-control-lg" name="phone" 
+                                       placeholder="+880XXXXXXXXXX">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Password *</label>
+                                <input type="password" class="form-control form-control-lg" name="password" required 
+                                       placeholder="Create secure password">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Profile Image</label>
+                                <input type="file" class="form-control form-control-lg" name="profile_image" accept="image/*">
+                                <small class="text-muted">Optional. JPG, PNG up to 2MB</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Professional Information -->
+                    <div class="form-section" style="--animation-order: 2;">
+                        <div class="section-header">
+                            <h3><i class="fas fa-briefcase me-2"></i>Professional Information</h3>
+                            <span class="badge">Professional Details</span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">BMDC Number</label>
+                                <input type="text" class="form-control" name="bmdc_number" 
+                                       placeholder="e.g., A-12345">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Qualification</label>
+                                <input type="text" class="form-control" name="qualification" 
+                                       placeholder="MBBS, FCPS, MD, etc.">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Total Experience (Years)</label>
+                                <input type="number" class="form-control" name="total_experience" value="0" min="0" 
+                                       placeholder="0">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Rating</label>
+                                <input type="number" class="form-control" name="rating" value="0.0" step="0.1" min="0" max="5" 
+                                       placeholder="0.0">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">About Doctor</label>
+                                <textarea class="form-control" name="about" rows="4" 
+                                          placeholder="Brief professional bio, specializations, achievements..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location Information - UPDATED: All options loaded initially -->
+                    <div class="form-section" style="--animation-order: 3;">
+                        <div class="section-header">
+                            <h3><i class="fas fa-map-marker-alt me-2"></i>Location Information</h3>
+                            <span class="badge">Practice Location</span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Division *</label>
+                                <select class="form-control" name="division" id="divisionSelect" required>
+                                    <option value="">Select Division</option>
+                                    {% for division in divisions %}
+                                    <option value="{{ division.id }}">{{ division.division_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">District *</label>
+                                <select class="form-control" name="district" id="districtSelect" required>
+                                    <option value="">Select District</option>
+                                    {% for district in districts %}
+                                    <option value="{{ district.id }}" data-division="{{ district.division.id }}">
+                                        {{ district.district_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Upazila</label>
+                                <select class="form-control" name="upazila" id="upazilaSelect">
+                                    <option value="">Select Upazila</option>
+                                    {% for upazila in upazilas %}
+                                    <option value="{{ upazila.id }}" data-district="{{ upazila.district.id }}">
+                                        {{ upazila.upazila_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Specializations -->
+                    <div class="form-section" style="--animation-order: 4;">
+                        <div class="section-header">
+                            <h3><i class="fas fa-stethoscope me-2"></i>Specializations</h3>
+                            <span class="badge">Multi-select</span>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="multi-select-container">
+                                    <label class="form-label fw-semibold">Departments</label>
+                                    <select class="form-control" name="departments" multiple size="8">
+                                        {% for department in departments %}
+                                        <option value="{{ department.id }}">{{ department.department_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="fas fa-info-circle"></i> Hold Ctrl/Cmd to select multiple departments
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="multi-select-container">
+                                    <label class="form-label fw-semibold">Symptoms</label>
+                                    <select class="form-control" name="symptoms" multiple size="8">
+                                        {% for symptom in symptoms %}
+                                        <option value="{{ symptom.id }}">{{ symptom.symptom_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="fas fa-info-circle"></i> Hold Ctrl/Cmd to select multiple symptoms
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Work Experience -->
+                    <div class="form-section" style="--animation-order: 5;">
+                        <div class="section-header">
+                            <h3><i class="fas fa-hospital me-2"></i>Work Experience</h3>
+                            <span class="badge">Optional</span>
+                        </div>
+                        <div id="experienceContainer">
+                            <div class="experience-field">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" name="hospital_name" 
+                                               placeholder="Hospital Name">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="text" class="form-control" name="designation" 
+                                               placeholder="Designation">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="text" class="form-control" name="experience_department" 
+                                               placeholder="Department">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-outline-primary w-100 h-100" 
+                                                onclick="addExperienceField()">
+                                            <i class="fas fa-plus"></i> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-lightbulb"></i> Add multiple hospital experiences if needed
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Fees -->
+                    <div class="form-section" style="--animation-order: 6;">
+                        <div class="section-header">
+                            <h3><i class="fas fa-money-bill-wave me-2"></i>Appointment Fees</h3>
+                            <span class="badge">BDT</span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">General Consultation Fee (BDT)</label>
+                                <input type="number" class="form-control" name="general_fee" min="0" step="0.01" 
+                                       placeholder="500.00">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Special Consultation Fee (BDT)</label>
+                                <input type="number" class="form-control" name="special_fee" min="0" step="0.01" 
+                                       placeholder="1000.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verification Status -->
+                    <div class="form-section" style="--animation-order: 7;">
+                        <div class="section-header">
+                            <h3><i class="fas fa-check-circle me-2"></i>Verification Status</h3>
+                            <span class="badge">Admin Control</span>
+                        </div>
+                        <div class="form-check form-switch form-check-lg">
+                            <input class="form-check-input" type="checkbox" name="is_verified" id="isVerified" 
+                                   role="switch">
+                            <label class="form-check-label fw-semibold" for="isVerified">
+                                <i class="fas fa-shield-check me-2"></i>Mark as Verified Doctor
+                            </label>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> Verified doctors appear with a badge and are prioritized in search results
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="form-section" style="--animation-order: 8;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'doctor_list' %}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                            </a>
+                            <div class="d-flex gap-3">
+                                <button type="reset" class="btn btn-outline-danger btn-lg px-4">
+                                    <i class="fas fa-redo me-2"></i>Reset Form
+                                </button>
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-save me-2"></i>Create Doctor
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Experience field management
+    let experienceCount = 1;
+    
+    function addExperienceField() {
+        const container = document.getElementById('experienceContainer');
+        const newField = document.createElement('div');
+        newField.className = 'experience-field mt-3';
+        newField.innerHTML = `
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="hospital_name" 
+                           placeholder="Hospital Name">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="designation" 
+                           placeholder="Designation">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="experience_department" 
+                           placeholder="Department">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-outline-danger w-100 h-100" 
+                            onclick="this.closest('.experience-field').remove()">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+        `;
+        container.appendChild(newField);
+        experienceCount++;
+    }
+
+    // District and Upazila filtering - Pure JavaScript (NO AJAX)
+    document.addEventListener('DOMContentLoaded', function() {
+        const divisionSelect = document.getElementById('divisionSelect');
+        const districtSelect = document.getElementById('districtSelect');
+        const upazilaSelect = document.getElementById('upazilaSelect');
+        
+        // Store all options for filtering
+        const allDistrictOptions = Array.from(districtSelect.querySelectorAll('option'));
+        const allUpazilaOptions = Array.from(upazilaSelect.querySelectorAll('option'));
+        
+        // Filter districts when division changes
+        divisionSelect.addEventListener('change', function() {
+            const selectedDivisionId = this.value;
+            
+            // Clear current districts (keep first option)
+            districtSelect.innerHTML = '<option value="">Select District</option>';
+            
+            // Clear upazilas
+            upazilaSelect.innerHTML = '<option value="">Select Upazila</option>';
+            
+            if (selectedDivisionId) {
+                // Filter districts based on selected division
+                const filteredDistricts = allDistrictOptions.filter(district => {
+                    return district.getAttribute('data-division') === selectedDivisionId;
+                });
+                
+                // Add filtered districts
+                filteredDistricts.forEach(district => {
+                    districtSelect.appendChild(district.cloneNode(true));
+                });
+            }
+        });
+        
+        // Filter upazilas when district changes
+        districtSelect.addEventListener('change', function() {
+            const selectedDistrictId = this.value;
+            
+            // Clear current upazilas (keep first option)
+            upazilaSelect.innerHTML = '<option value="">Select Upazila</option>';
+            
+            if (selectedDistrictId) {
+                // Filter upazilas based on selected district
+                const filteredUpazilas = allUpazilaOptions.filter(upazila => {
+                    return upazila.getAttribute('data-district') === selectedDistrictId;
+                });
+                
+                // Add filtered upazilas
+                filteredUpazilas.forEach(upazila => {
+                    upazilaSelect.appendChild(upazila.cloneNode(true));
+                });
+            }
+        });
+    });
+
+    // Form validation
+    document.getElementById('doctorForm').addEventListener('submit', function(e) {
+        const email = this.querySelector('input[name="email"]').value;
+        const password = this.querySelector('input[name="password"]').value;
+        const firstname = this.querySelector('input[name="first_name"]').value;
+        const lastname = this.querySelector('input[name="last_name"]').value;
+        const division = this.querySelector('select[name="division"]').value;
+        const district = this.querySelector('select[name="district"]').value;
+        
+        // Basic validation
+        if (!firstname || !lastname || !email || !password) {
+            e.preventDefault();
+            alert('Please fill all required fields marked with *');
+            return false;
+        }
+        
+        if (!division) {
+            e.preventDefault();
+            alert('Please select a Division');
+            return false;
+        }
+        
+        if (!district) {
+            e.preventDefault();
+            alert('Please select a District');
+            return false;
+        }
+        
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+            e.preventDefault();
+            alert('Please enter a valid email address');
+            return false;
+        }
+        
+        if (password.length < 6) {
+            e.preventDefault();
+            alert('Password must be at least 6 characters long');
+            return false;
+        }
+        
+        // Show processing message
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating...';
+        submitBtn.disabled = true;
+    });
+    
+    // Initialize animations
+    document.addEventListener('DOMContentLoaded', function() {
+        const sections = document.querySelectorAll('.form-section');
+        sections.forEach((section, index) => {
+            section.style.setProperty('--animation-order', index);
+        });
+    });
+</script>
+{% endblock %}

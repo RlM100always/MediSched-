@@ -45,6 +45,17 @@ path('symptoms/delete/<int:id>/', views.delete_symptom, name='delete_symptom'),
     path('logout/', views.user_logout, name='logout'),
 
 
+
+    # Doctor URLs
+    path('doctors/', views.doctor_list, name='doctor_list'),
+    path('doctors/create/', views.doctor_create, name='doctor_create'),
+    path('doctors/<int:pk>/', views.doctor_detail, name='doctor_detail'),
+    path('doctors/<int:pk>/edit/', views.doctor_edit, name='doctor_edit'),
+    path('doctors/<int:pk>/delete/', views.doctor_delete, name='doctor_delete'),
+    path('doctors/verify/<int:pk>/', views.doctor_verify, name='doctor_verify'),
+    path('doctors/unverify/<int:pk>/', views.doctor_unverify, name='doctor_unverify'),
+
+
 ]
 
 
