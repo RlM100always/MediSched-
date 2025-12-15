@@ -35,6 +35,7 @@
 
         html {
             scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
         }
 
         body {
@@ -46,8 +47,8 @@
             padding: 0;
             overflow-x: hidden;
             width: 100%;
-            -webkit-text-size-adjust: 100%;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* ===== NAVBAR STYLES ===== */
@@ -65,7 +66,6 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
-            transition: var(--transition);
         }
 
         /* Logo */
@@ -77,17 +77,13 @@
             color: var(--dark-color);
             font-weight: 800;
             font-size: 22px;
-            transition: var(--transition);
             z-index: 1002;
+            flex-shrink: 0;
         }
 
         .logo i {
             color: var(--primary-color);
             font-size: 26px;
-        }
-
-        .logo:hover {
-            color: var(--primary-color);
         }
 
         /* Navigation Menu - Desktop */
@@ -111,7 +107,6 @@
             font-size: 15px;
             padding: 8px 0;
             position: relative;
-            transition: var(--transition);
         }
 
         .nav-menu a::after {
@@ -139,6 +134,7 @@
             align-items: center;
             gap: 15px;
             z-index: 1002;
+            flex-shrink: 0;
         }
 
         /* Buttons */
@@ -151,13 +147,11 @@
             font-weight: 600;
             font-size: 14px;
             text-decoration: none;
-            transition: var(--transition);
             cursor: pointer;
             border: none;
             min-width: 90px;
             justify-content: center;
             white-space: nowrap;
-            touch-action: manipulation;
         }
 
         .btn-primary {
@@ -166,25 +160,13 @@
             border: 2px solid transparent;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(45, 156, 219, 0.3);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
         .btn-secondary {
             background: white;
             color: var(--primary-color);
             border: 2px solid var(--primary-color);
         }
 
-        .btn-secondary:hover {
-            background: rgba(45, 156, 219, 0.1);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(45, 156, 219, 0.2);
-        }
-
-        /* Hamburger Menu */
+        /* Hamburger Menu - ALWAYS VISIBLE FOR TESTING */
         .hamburger {
             display: none;
             flex-direction: column;
@@ -192,11 +174,10 @@
             cursor: pointer;
             padding: 10px;
             z-index: 1003;
-            position: relative;
             background: none;
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             justify-content: center;
             align-items: center;
         }
@@ -223,15 +204,8 @@
             background: linear-gradient(135deg, var(--primary-color) 0%, #1a7db8 100%);
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s ease;
             border: 2px solid transparent;
-            touch-action: manipulation;
-        }
-
-        .profile-trigger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(45, 156, 219, 0.3);
-            border-color: rgba(255, 255, 255, 0.3);
+            min-height: 44px;
         }
 
         .profile-avatar {
@@ -296,7 +270,6 @@
             z-index: 1100;
             overflow: hidden;
             max-height: calc(100vh - 100px);
-            overflow-y: auto;
         }
 
         .profile-dropdown.active .dropdown-menu {
@@ -350,7 +323,6 @@
             font-weight: 700;
             color: #2d3748;
             margin-bottom: 3px;
-            word-break: break-word;
         }
 
         .dropdown-user-details p {
@@ -359,7 +331,6 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            word-break: break-word;
         }
 
         .role-badge {
@@ -385,28 +356,25 @@
             padding: 14px 20px;
             color: #4a5568;
             text-decoration: none;
-            transition: all 0.2s ease;
             font-size: 14px;
             font-weight: 500;
             width: 100%;
-            box-sizing: border-box;
-            touch-action: manipulation;
+            min-height: 44px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
         }
 
         .dropdown-item:hover {
-            background: linear-gradient(90deg, rgba(45, 156, 219, 0.05) 0%, transparent 100%);
+            background: rgba(45, 156, 219, 0.05);
             color: var(--primary-color);
-            padding-left: 25px;
         }
 
         .dropdown-item i {
             width: 20px;
             font-size: 16px;
-            opacity: 0.7;
-        }
-
-        .dropdown-item:hover i {
-            opacity: 1;
         }
 
         .dropdown-divider {
@@ -420,7 +388,7 @@
         }
 
         .dropdown-item.logout:hover {
-            background: linear-gradient(90deg, rgba(229, 62, 62, 0.05) 0%, transparent 100%);
+            background: rgba(229, 62, 62, 0.05);
             color: #c53030;
         }
 
@@ -445,10 +413,6 @@
                 gap: 30px;
             }
             
-            .nav-menu a {
-                font-size: 15px;
-            }
-            
             .btn {
                 padding: 12px 24px;
                 font-size: 15px;
@@ -457,14 +421,6 @@
             
             .profile-trigger {
                 padding: 8px 15px;
-            }
-            
-            .profile-name {
-                font-size: 14px;
-            }
-            
-            .profile-role {
-                font-size: 11px;
             }
             
             .profile-avatar {
@@ -519,27 +475,22 @@
             }
         }
 
-        /* MOBILE STYLES - FIXED HAMBURGER MENU */
+        /* MOBILE STYLES (767px and below) */
         @media (max-width: 767px) {
             body {
-                padding-top: 70px !important;
+                padding-top: 70px;
                 overflow-x: hidden;
             }
             
             .navbar {
                 height: 70px;
                 padding: 0 15px;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                background: white;
             }
             
             /* Hide regular menu, show hamburger */
             .nav-menu {
                 position: fixed;
-                top: 70px !important;
+                top: 70px;
                 left: 0;
                 width: 100%;
                 height: calc(100vh - 70px);
@@ -550,41 +501,21 @@
                 padding: 20px 0;
                 gap: 0;
                 transform: translateX(-100%);
-                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                transition: transform 0.3s ease;
                 z-index: 999;
                 overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
                 margin: 0;
-                visibility: hidden;
-                opacity: 0;
+                display: flex;
             }
             
             .nav-menu.active {
                 transform: translateX(0);
-                visibility: visible;
-                opacity: 1;
             }
             
             .nav-menu li {
                 width: 100%;
                 text-align: center;
-                opacity: 0;
-                transform: translateY(20px);
-                transition: all 0.3s ease;
             }
-            
-            .nav-menu.active li {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            
-            .nav-menu.active li:nth-child(1) { transition-delay: 0.1s; }
-            .nav-menu.active li:nth-child(2) { transition-delay: 0.15s; }
-            .nav-menu.active li:nth-child(3) { transition-delay: 0.2s; }
-            .nav-menu.active li:nth-child(4) { transition-delay: 0.25s; }
-            .nav-menu.active li:nth-child(5) { transition-delay: 0.3s; }
-            .nav-menu.active li:nth-child(6) { transition-delay: 0.35s; }
-            .nav-menu.active li:nth-child(7) { transition-delay: 0.4s; }
             
             .nav-menu a {
                 display: block;
@@ -594,19 +525,14 @@
                 border-bottom: 1px solid rgba(0, 0, 0, 0.05);
                 color: var(--dark-color);
                 width: 100%;
+                min-height: 44px;
             }
             
             .nav-menu a::after {
                 display: none;
             }
             
-            .nav-menu a:hover,
-            .nav-menu a:active {
-                background: rgba(45, 156, 219, 0.08);
-                color: var(--primary-color);
-            }
-            
-            /* Show hamburger */
+            /* SHOW HAMBURGER - THIS IS CRITICAL */
             .hamburger {
                 display: flex;
             }
@@ -643,13 +569,11 @@
             
             /* Dropdown menu for mobile */
             .dropdown-menu {
-                position: fixed !important;
-                top: 70px !important;
-                left: 10px !important;
-                right: 10px !important;
-                width: calc(100% - 20px) !important;
-                max-width: none !important;
-                min-width: auto !important;
+                position: fixed;
+                top: 70px;
+                left: 10px;
+                right: 10px;
+                width: calc(100% - 20px);
                 max-height: calc(100vh - 80px);
             }
             
@@ -677,11 +601,6 @@
                 text-align: center;
             }
             
-            .dropdown-user-details p {
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-            
             /* Adjust buttons for mobile */
             .btn {
                 padding: 8px 14px;
@@ -693,23 +612,15 @@
                 display: inline-block;
             }
             
-            .btn i {
-                font-size: 12px;
-            }
-            
             main {
                 margin-top: 70px;
                 min-height: calc(100vh - 70px);
                 padding: 15px;
-                width: 100%;
             }
             
             /* Prevent body scroll when menu is open */
             body.menu-open {
                 overflow: hidden;
-                position: fixed;
-                width: 100%;
-                height: 100%;
             }
         }
 
@@ -754,25 +665,20 @@
             }
             
             .nav-menu {
-                top: 65px !important;
+                top: 65px;
                 height: calc(100vh - 65px);
             }
             
             .dropdown-menu {
-                top: 65px !important;
-                border-radius: 12px;
-                left: 8px !important;
-                right: 8px !important;
-                width: calc(100% - 16px) !important;
+                top: 65px;
+                left: 8px;
+                right: 8px;
+                width: calc(100% - 16px);
             }
             
             .dropdown-item {
                 padding: 12px 15px;
                 font-size: 13px;
-            }
-            
-            .dropdown-item i {
-                font-size: 14px;
             }
             
             main {
@@ -782,7 +688,7 @@
             }
             
             body {
-                padding-top: 65px !important;
+                padding-top: 65px;
             }
         }
 
@@ -832,12 +738,12 @@
             }
             
             .nav-menu {
-                top: 60px !important;
+                top: 60px;
                 height: calc(100vh - 60px);
             }
             
             .dropdown-menu {
-                top: 60px !important;
+                top: 60px;
             }
             
             main {
@@ -847,114 +753,7 @@
             }
             
             body {
-                padding-top: 60px !important;
-            }
-            
-            /* Fix for very small screens */
-            .profile-dropdown {
-                margin-right: 5px;
-            }
-            
-            .hamburger {
-                padding: 8px;
-                width: 35px;
-                height: 35px;
-            }
-            
-            .hamburger span {
-                width: 20px;
-                height: 2px;
-            }
-        }
-
-        /* ===== UTILITY STYLES ===== */
-        
-        /* Fix for iOS Safari */
-        @supports (-webkit-touch-callout: none) {
-            .navbar {
-                -webkit-backface-visibility: hidden;
-            }
-            
-            .dropdown-menu {
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            body {
-                -webkit-overflow-scrolling: touch;
-            }
-        }
-
-        /* Touch device improvements */
-        @media (hover: none) and (pointer: coarse) {
-            .profile-trigger:hover {
-                transform: none;
-            }
-            
-            .dropdown-item:hover {
-                background: rgba(45, 156, 219, 0.05);
-                padding-left: 20px;
-            }
-            
-            .dropdown-item:active {
-                background: rgba(45, 156, 219, 0.1);
-            }
-            
-            .btn-primary:hover,
-            .btn-secondary:hover {
-                transform: none;
-            }
-            
-            .btn-primary:active,
-            .btn-secondary:active {
-                transform: scale(0.98);
-                opacity: 0.9;
-            }
-            
-            /* Make touch targets larger */
-            .nav-menu a,
-            .dropdown-item,
-            .btn,
-            .profile-trigger {
-                min-height: 44px;
-                min-width: 44px;
-            }
-        }
-
-        /* High contrast mode */
-        @media (prefers-contrast: high) {
-            .btn-primary,
-            .profile-trigger {
-                border: 2px solid white;
-            }
-            
-            .dropdown-menu {
-                border: 2px solid var(--dark-color);
-            }
-        }
-
-        /* Reduced motion */
-        @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-
-        /* Print styles */
-        @media print {
-            .navbar,
-            .profile-dropdown,
-            .nav-buttons {
-                display: none !important;
-            }
-            
-            body,
-            main {
-                margin: 0;
-                padding: 0;
+                padding-top: 60px;
             }
         }
     </style>
@@ -971,116 +770,118 @@
         </a>
 
         <ul class="nav-menu" id="navMenu">
-            <li><a href="{% url 'home:index' %}#home" onclick="handleMenuClick()">Home</a></li>
-            <li><a href="{% url 'home:index' %}#about" onclick="handleMenuClick()">About</a></li>
-            <li><a href="{% url 'home:index' %}#services" onclick="handleMenuClick()">Services</a></li>
-            <li><a href="{% url 'home:all_doctors' %}#doctors" onclick="handleMenuClick()">Doctors</a></li>
-            <li><a href="{% url 'home:index' %}#appointments" onclick="handleMenuClick()">Appointments</a></li>
-            <li><a href="{% url 'home:index' %}#contact" onclick="handleMenuClick()">Contact</a></li>
-            <li><a href="/adminapp/" onclick="handleMenuClick()">Admin</a></li>
+            <li><a href="{% url 'home:index' %}#home">Home</a></li>
+            <li><a href="{% url 'home:index' %}#about">About</a></li>
+            <li><a href="{% url 'home:index' %}#services">Services</a></li>
+            <li><a href="{% url 'home:all_doctors' %}">Doctors</a></li>
+            <li><a href="{% url 'home:index' %}#appointments">Appointments</a></li>
+            <li><a href="{% url 'home:index' %}#contact">Contact</a></li>
+            <li><a href="/adminapp/">Admin</a></li>
         </ul>
 
-<div class="nav-buttons">
-    {% if user.is_authenticated %}
-        <!-- Profile Dropdown -->
-        <div class="profile-dropdown" id="profileDropdown">
-            <div class="profile-trigger" onclick="toggleProfileDropdown(event)">
-                <div class="profile-avatar">
-                    {{ user.first_name.0|default:user.username.0|upper }}
-                </div>
-                <div class="profile-info">
-                    <span class="profile-name">
-                        {{ user.first_name|default:user.username|truncatechars:15 }}
-                    </span>
-                    <span class="profile-role">{{ user.role }}</span>
-                </div>
-                <i class="fas fa-chevron-down profile-arrow"></i>
-            </div>
-
-            <div class="dropdown-menu">
-                <div class="dropdown-header">
-                    <div class="dropdown-user-info">
-                        <div class="dropdown-avatar">
+        <div class="nav-buttons">
+            {% if user.is_authenticated %}
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-trigger" onclick="toggleDropdown()">
+                        <div class="profile-avatar">
                             {{ user.first_name.0|default:user.username.0|upper }}
                         </div>
-                        <div class="dropdown-user-details">
-                            <h4>{{ user.get_full_name|default:user.username }}</h4>
-                            <p>
-                                <i class="fas fa-envelope"></i>
-                                {{ user.email|truncatechars:20 }}
-                            </p>
-                            <span class="role-badge">{{ user.role }}</span>
+                        <div class="profile-info">
+                            <span class="profile-name">
+                                {{ user.first_name|default:user.username|truncatechars:15 }}
+                            </span>
+                            <span class="profile-role">{{ user.role }}</span>
+                        </div>
+                        <i class="fas fa-chevron-down profile-arrow"></i>
+                    </div>
+
+                    <div class="dropdown-menu">
+                        <div class="dropdown-header">
+                            <div class="dropdown-user-info">
+                                <div class="dropdown-avatar">
+                                    {{ user.first_name.0|default:user.username.0|upper }}
+                                </div>
+                                <div class="dropdown-user-details">
+                                    <h4>{{ user.get_full_name|default:user.username }}</h4>
+                                    <p>
+                                        <i class="fas fa-envelope"></i>
+                                        {{ user.email|truncatechars:20 }}
+                                    </p>
+                                    <span class="role-badge">{{ user.role }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-items">
+                            {% if user.role == 'patient' %}
+                                <a href="/users/patient/dashboard/" class="dropdown-item">
+                                    <i class="fas fa-th-large"></i>
+                                    <span>Dashboard</span>
+                                </a>
+
+                                <a href="{% url 'appointment:list' %}" class="dropdown-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>My Appointments</span>
+                                </a>
+
+                                <a href="{% url 'home:index' %}#home" class="dropdown-item">
+                                    <i class="fas fa-home"></i>
+                                    <span>Home</span>
+                                </a>
+                            {% endif %}
+
+                            <div class="dropdown-divider"></div>
+
+                            <a href="{% url 'home:index' %}#about" class="dropdown-item">
+                                <i class="fas fa-info-circle"></i>
+                                <span>About</span>
+                            </a>
+
+                            <a href="{% url 'home:index' %}#services" class="dropdown-item">
+                                <i class="fas fa-briefcase-medical"></i>
+                                <span>Services</span>
+                            </a>
+
+                            <a href="{% url 'home:all_doctors' %}" class="dropdown-item">
+                                <i class="fas fa-search"></i>
+                                <span>Search Doctor</span>
+                            </a>
+
+                            <a href="{% url 'home:index' %}#contact" class="dropdown-item">
+                                <i class="fas fa-phone"></i>
+                                <span>Contact</span>
+                            </a>
+
+                            <form method="POST" action="{% url 'users:logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item logout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Logout</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
 
-                <div class="dropdown-items">
-                    {% if user.role == 'patient' %}
-                        <a href="/users/patient/dashboard/" class="dropdown-item" onclick="handleMenuClick()">
-                            <i class="fas fa-th-large"></i>
-                            <span>Dashboard</span>
-                        </a>
+            {% else %}
+                <a href="{% url 'users:signup' %}" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Sign Up</span>
+                </a>
 
-                        <a href="{% url 'appointment:list' %}" class="dropdown-item" onclick="handleMenuClick()">
-                            <i class="fas fa-calendar-check"></i>
-                            <span>My Appointments</span>
-                        </a>
-
-                        <a href="{% url 'home:index' %}#home" class="dropdown-item" onclick="handleMenuClick()">
-                            <i class="fas fa-home"></i>
-                            <span>Home</span>
-                        </a>
-                    {% endif %}
-
-                    <div class="dropdown-divider"></div>
-
-                    <a href="{% url 'home:index' %}#about" class="dropdown-item" onclick="handleMenuClick()">
-                        <i class="fas fa-info-circle"></i>
-                        <span>About</span>
-                    </a>
-
-                    <a href="{% url 'home:index' %}#services" class="dropdown-item" onclick="handleMenuClick()">
-                        <i class="fas fa-briefcase-medical"></i>
-                        <span>Services</span>
-                    </a>
-
-                    <a href="{% url 'home:all_doctors' %}#doctors" class="dropdown-item" onclick="handleMenuClick()">
-                        <i class="fas fa-search"></i>
-                        <span>Search Doctor</span>
-                    </a>
-
-                    <a href="{% url 'home:index' %}#contact" class="dropdown-item" onclick="handleMenuClick()">
-                        <i class="fas fa-phone"></i>
-                        <span>Contact</span>
-                    </a>
-
-                    <form method="POST" action="#">
-                        {% csrf_token %}
-                        <button type="submit" class="dropdown-item logout" onclick="handleMenuClick()">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
+                <a href="{% url 'users:signin' %}" class="btn btn-secondary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login</span>
+                </a>
+            {% endif %}
         </div>
 
-    {% else %}
-        <a href="{% url 'users:signup' %}" class="btn btn-primary">
-            <i class="fas fa-user-plus"></i>
-            <span>Sign Up</span>
-        </a>
-
-        <!-- ✅ Correct Login Icon -->
-        <a href="{% url 'users:signin' %}" class="btn btn-secondary">
-            <i class="fas fa-sign-in-alt"></i>
-            <span>Login</span>
-        </a>
-    {% endif %}
-</div>
-
-
-      
+        <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </nav>
 
     <!-- Page Content -->
@@ -1096,146 +897,67 @@
     <!-- JS File -->
     <script src="{% static 'home/js/main.js' %}"></script>
     
-    <!-- Enhanced Responsive Navigation Script -->
+    <!-- SIMPLIFIED JavaScript - This will definitely work -->
     <script>
         // ===== MOBILE MENU TOGGLE =====
-        function toggleMobileMenu() {
-            console.log('Toggle mobile menu clicked');
-            
+        function toggleMenu() {
+            console.log('Hamburger clicked!');
             const navMenu = document.getElementById('navMenu');
             const hamburger = document.getElementById('hamburger');
-            const body = document.body;
-            const navbar = document.getElementById('navbar');
             
-            // Toggle active classes
             navMenu.classList.toggle('active');
             hamburger.classList.toggle('active');
-            body.classList.toggle('menu-open');
             
-            // Update aria-expanded attribute
-            const isExpanded = hamburger.classList.contains('active');
-            hamburger.setAttribute('aria-expanded', isExpanded);
+            // Toggle body class to prevent scrolling
+            document.body.classList.toggle('menu-open');
             
-            // Close profile dropdown if open
+            // Close dropdown if open
             const dropdown = document.getElementById('profileDropdown');
             if (dropdown && dropdown.classList.contains('active')) {
                 dropdown.classList.remove('active');
             }
-            
-            console.log('Menu state:', navMenu.classList.contains('active') ? 'open' : 'closed');
-        }
-        
-        function handleMenuClick() {
-            if (window.innerWidth <= 767) {
-                closeMobileMenu();
-            }
-        }
-        
-        function closeMobileMenu() {
-            const navMenu = document.getElementById('navMenu');
-            const hamburger = document.getElementById('hamburger');
-            const body = document.body;
-            
-            navMenu.classList.remove('active');
-            hamburger.classList.remove('active');
-            body.classList.remove('menu-open');
-            hamburger.setAttribute('aria-expanded', 'false');
         }
 
         // ===== PROFILE DROPDOWN =====
-        function toggleProfileDropdown(event) {
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            
+        function toggleDropdown() {
+            console.log('Profile dropdown clicked!');
             const dropdown = document.getElementById('profileDropdown');
-            const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+            dropdown.classList.toggle('active');
             
             // Close mobile menu if open
             const navMenu = document.getElementById('navMenu');
             const hamburger = document.getElementById('hamburger');
             if (navMenu.classList.contains('active')) {
-                closeMobileMenu();
-            }
-            
-            // Toggle dropdown
-            dropdown.classList.toggle('active');
-            
-            // If dropdown is now active, adjust position
-            if (dropdown.classList.contains('active')) {
-                // Force reflow to ensure transitions work
-                dropdownMenu.style.display = 'block';
-                
-                // For mobile, position properly
-                if (window.innerWidth <= 767) {
-                    const navbarHeight = document.querySelector('.navbar').offsetHeight;
-                    dropdownMenu.style.top = navbarHeight + 'px';
-                    dropdownMenu.style.left = '10px';
-                    dropdownMenu.style.right = '10px';
-                    dropdownMenu.style.width = 'calc(100% - 20px)';
-                    
-                    // Prevent body scroll when dropdown is open on mobile
-                    document.body.classList.add('menu-open');
-                }
-            } else {
-                // Re-enable body scroll
+                navMenu.classList.remove('active');
+                hamburger.classList.remove('active');
                 document.body.classList.remove('menu-open');
             }
         }
 
-        // ===== CLOSE DROPDOWN WHEN CLICKING OUTSIDE =====
+        // ===== CLOSE MENUS WHEN CLICKING OUTSIDE =====
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('profileDropdown');
             const navMenu = document.getElementById('navMenu');
             const hamburger = document.getElementById('hamburger');
             
-            // Close profile dropdown if clicking outside
-            if (dropdown && !dropdown.contains(event.target) && !event.target.closest('.dropdown-menu')) {
+            // Close dropdown if clicking outside
+            if (dropdown && !dropdown.contains(event.target)) {
                 dropdown.classList.remove('active');
-                document.body.classList.remove('menu-open');
             }
             
-            // Close mobile menu if clicking outside on mobile
+            // Close mobile menu if clicking outside (on mobile only)
             if (window.innerWidth <= 767 && 
                 navMenu.classList.contains('active') &&
-                !event.target.closest('.navbar') &&
-                !event.target.closest('.nav-menu')) {
-                closeMobileMenu();
-            }
-        });
-
-        // ===== CLOSE DROPDOWN ON ESCAPE KEY =====
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                const dropdown = document.getElementById('profileDropdown');
-                const navMenu = document.getElementById('navMenu');
-                
-                if (dropdown && dropdown.classList.contains('active')) {
-                    dropdown.classList.remove('active');
-                    document.body.classList.remove('menu-open');
-                }
-                
-                if (navMenu.classList.contains('active')) {
-                    closeMobileMenu();
-                }
+                !event.target.closest('.navbar')) {
+                navMenu.classList.remove('active');
+                hamburger.classList.remove('active');
+                document.body.classList.remove('menu-open');
             }
         });
 
         // ===== HANDLE WINDOW RESIZE =====
-        let resizeTimer;
         window.addEventListener('resize', function() {
-            // Close all menus on resize
-            closeAllMenus();
-            
-            // Debounce resize events
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(function() {
-                adjustLayoutForScreenSize();
-            }, 250);
-        });
-
-        function closeAllMenus() {
+            // Close menus on resize
             const dropdown = document.getElementById('profileDropdown');
             const navMenu = document.getElementById('navMenu');
             const hamburger = document.getElementById('hamburger');
@@ -1247,166 +969,68 @@
             if (navMenu.classList.contains('active')) {
                 navMenu.classList.remove('active');
                 hamburger.classList.remove('active');
+                document.body.classList.remove('menu-open');
             }
-            
-            document.body.classList.remove('menu-open');
-        }
+        });
 
-        function adjustLayoutForScreenSize() {
+        // ===== SMOOTH SCROLLING FOR ANCHOR LINKS =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set body padding based on navbar height
             const navbar = document.querySelector('.navbar');
             const main = document.querySelector('main');
-            
-            // Adjust body padding based on navbar height
             const navbarHeight = navbar.offsetHeight;
-            document.body.style.paddingTop = navbarHeight + 'px';
             
-            // Update main margin
+            document.body.style.paddingTop = navbarHeight + 'px';
             main.style.marginTop = navbarHeight + 'px';
             main.style.minHeight = `calc(100vh - ${navbarHeight}px)`;
             
-            // Fix for mobile viewport
-            if (window.innerWidth <= 767) {
-                document.body.style.overflowX = 'hidden';
-                document.documentElement.style.overflowX = 'hidden';
-            } else {
-                document.body.style.overflowX = '';
-                document.documentElement.style.overflowX = '';
-            }
-        }
-
-        // ===== HANDLE TOUCH EVENTS FOR MOBILE =====
-        document.addEventListener('touchstart', function(event) {
-            const dropdown = document.getElementById('profileDropdown');
-            const navMenu = document.getElementById('navMenu');
-            
-            // Check if touch is outside dropdown
-            if (dropdown && dropdown.classList.contains('active')) {
-                const dropdownMenu = dropdown.querySelector('.dropdown-menu');
-                if (!dropdown.contains(event.target) && 
-                    !dropdownMenu.contains(event.target)) {
-                    dropdown.classList.remove('active');
-                    document.body.classList.remove('menu-open');
-                }
-            }
-            
-            // Check if touch is outside mobile menu
-            if (navMenu.classList.contains('active') &&
-                !event.target.closest('.navbar') &&
-                !event.target.closest('.nav-menu')) {
-                closeMobileMenu();
-            }
-        });
-
-        // ===== INITIALIZE ON LOAD =====
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM Content Loaded');
-            
-            // Initialize layout
-            adjustLayoutForScreenSize();
-            
-            // Ensure dropdown menu starts hidden
-            const dropdownMenu = document.querySelector('.dropdown-menu');
-            if (dropdownMenu) {
-                dropdownMenu.style.display = 'none';
-            }
-            
-            // Add smooth scrolling for anchor links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href*="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function(e) {
-                    const targetId = this.getAttribute('href');
-                    if (targetId === '#' || targetId.startsWith('#!')) return;
+                    const href = this.getAttribute('href');
                     
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        e.preventDefault();
+                    // Check if it's an anchor link (not just #)
+                    if (href.includes('#') && href !== '#') {
+                        const targetId = href.split('#')[1];
+                        const targetElement = document.getElementById(targetId);
                         
-                        // Close menus
-                        closeAllMenus();
-                        
-                        // Smooth scroll to target
-                        const navbar = document.querySelector('.navbar');
-                        const navbarHeight = navbar.offsetHeight;
-                        
-                        window.scrollTo({
-                            top: targetElement.offsetTop - navbarHeight,
-                            behavior: 'smooth'
-                        });
+                        if (targetElement) {
+                            e.preventDefault();
+                            
+                            // Close mobile menu if open
+                            if (window.innerWidth <= 767) {
+                                const navMenu = document.getElementById('navMenu');
+                                const hamburger = document.getElementById('hamburger');
+                                if (navMenu.classList.contains('active')) {
+                                    navMenu.classList.remove('active');
+                                    hamburger.classList.remove('active');
+                                    document.body.classList.remove('menu-open');
+                                }
+                            }
+                            
+                            // Close dropdown if open
+                            const dropdown = document.getElementById('profileDropdown');
+                            if (dropdown && dropdown.classList.contains('active')) {
+                                dropdown.classList.remove('active');
+                            }
+                            
+                            // Scroll to target
+                            setTimeout(() => {
+                                window.scrollTo({
+                                    top: targetElement.offsetTop - navbarHeight,
+                                    behavior: 'smooth'
+                                });
+                            }, 300);
+                        }
                     }
                 });
             });
-            
-            // Fix for iOS Safari 100vh issue
-            function setVH() {
-                const vh = window.innerHeight * 0.01;
-                document.documentElement.style.setProperty('--vh', `${vh}px`);
-            }
-            
-            setVH();
-            window.addEventListener('resize', setVH);
-            
-            // Initialize hamburger button
-            const hamburger = document.getElementById('hamburger');
-            if (hamburger) {
-                hamburger.setAttribute('aria-expanded', 'false');
-                hamburger.setAttribute('aria-label', 'Menu');
-            }
         });
 
-        // ===== RECALCULATE ON PAGE LOAD COMPLETE =====
-        window.addEventListener('load', function() {
-            console.log('Page fully loaded');
-            
-            // Final layout adjustment
-            adjustLayoutForScreenSize();
-            
-            // Force reflow for mobile devices
-            if (window.innerWidth <= 767) {
-                document.body.style.overflowX = 'hidden';
-                document.documentElement.style.overflowX = 'hidden';
-            }
-        });
-
-        // ===== TOUCH DEVICE OPTIMIZATIONS =====
-        if ('ontouchstart' in window) {
-            // Add touch feedback for buttons
-            document.querySelectorAll('.btn, .profile-trigger, .dropdown-item, .nav-menu a').forEach(el => {
-                el.addEventListener('touchstart', function() {
-                    this.style.opacity = '0.8';
-                });
-                
-                el.addEventListener('touchend', function() {
-                    this.style.opacity = '';
-                });
-                
-                el.addEventListener('touchcancel', function() {
-                    this.style.opacity = '';
-                });
-            });
-            
-            // Prevent double tap zoom on buttons
-            document.querySelectorAll('button, .btn, .profile-trigger').forEach(el => {
-                el.addEventListener('touchstart', function(e) {
-                    if (e.touches.length > 1) {
-                        e.preventDefault();
-                    }
-                }, { passive: false });
-            });
-        }
-
-        // ===== FIX FOR MOBILE URL BAR =====
-        function updateVH() {
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-            
-            // Update main content height
-            const main = document.querySelector('main');
-            const navbarHeight = document.querySelector('.navbar').offsetHeight;
-            main.style.minHeight = `calc(var(--vh, 1vh) * 100 - ${navbarHeight}px)`;
-        }
-
-        updateVH();
-        window.addEventListener('resize', updateVH);
-        window.addEventListener('orientationchange', updateVH);
+        // ===== FOR TESTING - Log to console =====
+        console.log('Script loaded successfully!');
+        console.log('Window width:', window.innerWidth);
+        console.log('Is mobile?', window.innerWidth <= 767);
     </script>
     
     {% block extra_js %}{% endblock %}

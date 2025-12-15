@@ -72,3 +72,18 @@ def doctor_dashboard(request):
     if not request.user.is_doctor():
         return redirect("users:signin")
     return render(request, "doctor/dashboard.html")
+
+
+# -----------------------------
+# LOGOUT VIEW
+# -----------------------------
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required
+def logout_view(request):
+    if request.method == "POST":
+        logout(request)
+        messages.success(request, "You have been logged out successfully.")
+        return redirect("users:signin")
+
+    # Prevent logout via GET
+    return redirect("users:signin")
