@@ -1,0 +1,350 @@
+{% extends 'adminapp/base_admin.html' %}
+{% load static %}
+
+{% block title %}Appointment Statistics - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Appointment Statistics & Analytics</h1>
+        <div>
+            <a href="{% url 'appointment_list' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-list"></i> All Appointments
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <!-- Total Appointments -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Appointments</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_appointments }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Revenue</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">৳{{ total_revenue }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Appointments -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Today's Appointments ({{ today }})</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ today_appointments }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Revenue -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Today's Revenue</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">৳{{ today_revenue }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-coins fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly & Monthly Stats -->
+    <div class="row mb-4">
+        <!-- Weekly Stats -->
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Last 7 Days</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="h1 mb-0 font-weight-bold text-gray-800">{{ weekly_appointments }}</div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Appointments</div>
+                        <hr>
+                        <div class="h1 mb-0 font-weight-bold text-success">৳{{ weekly_revenue }}</div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase">Revenue</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Stats -->
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Last 30 Days</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="h1 mb-0 font-weight-bold text-gray-800">{{ monthly_appointments }}</div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Appointments</div>
+                        <hr>
+                        <div class="h1 mb-0 font-weight-bold text-success">৳{{ monthly_revenue }}</div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase">Revenue</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts & Detailed Stats -->
+    <div class="row">
+        <!-- Status Distribution -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Appointments by Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Count</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in status_counts %}
+                                <tr>
+                                    <td>
+                                        <span class="badge 
+                                            {% if item.status == 'pending' %}bg-warning
+                                            {% elif item.status == 'confirmed' %}bg-primary
+                                            {% elif item.status == 'completed' %}bg-success
+                                            {% elif item.status == 'cancelled' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}">
+                                            {% if item.status == 'pending' %}Pending
+                                            {% elif item.status == 'confirmed' %}Confirmed
+                                            {% elif item.status == 'completed' %}Completed
+                                            {% elif item.status == 'cancelled' %}Cancelled
+                                            {% else %}{{ item.status|title }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ item.count }}</td>
+                                    <td>
+                                        {% widthratio item.count total_appointments 100 %}%
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Status Distribution -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Appointments by Payment Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Payment Status</th>
+                                    <th>Count</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in payment_status_counts %}
+                                <tr>
+                                    <td>
+                                        <span class="badge 
+                                            {% if item.payment_status == 'paid' %}bg-success
+                                            {% elif item.payment_status == 'failed' %}bg-danger
+                                            {% elif item.payment_status == 'refunded' %}bg-info
+                                            {% else %}bg-warning{% endif %}">
+                                            {% if item.payment_status == 'pending' %}Pending
+                                            {% elif item.payment_status == 'paid' %}Paid
+                                            {% elif item.payment_status == 'failed' %}Failed
+                                            {% elif item.payment_status == 'refunded' %}Refunded
+                                            {% else %}{{ item.payment_status|title }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ item.count }}</td>
+                                    <td>
+                                        {% widthratio item.count total_appointments 100 %}%
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Appointments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Appointments</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Payment</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in recent_appointments %}
+                                <tr>
+                                    <td>#{{ appointment.id }}</td>
+                                    <td>{{ appointment.patient_name|default:appointment.patient.username }}</td>
+                                    <td>{{ appointment.doctor.user.get_full_name|default:appointment.doctor.user.username }}</td>
+                                    <td>
+                                        {% if appointment.appointment_date %}
+                                        {{ appointment.appointment_date|date:"M d, Y" }}<br>
+                                        <small>{{ appointment.appointment_date|time:"h:i A" }}</small>
+                                        {% else %}
+                                        <em>Not scheduled</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if appointment.status == 'pending' %}bg-warning
+                                            {% elif appointment.status == 'confirmed' %}bg-primary
+                                            {% elif appointment.status == 'completed' %}bg-success
+                                            {% elif appointment.status == 'cancelled' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ appointment.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if appointment.payment_status == 'paid' %}bg-success
+                                            {% elif appointment.payment_status == 'failed' %}bg-danger
+                                            {% elif appointment.payment_status == 'refunded' %}bg-info
+                                            {% else %}bg-warning{% endif %}">
+                                            {{ appointment.get_payment_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>৳{{ appointment.total_amount }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No recent appointments</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Doctors -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Top Doctors by Appointments</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Doctor Name</th>
+                                    <th>Specialization</th>
+                                    <th>Appointments</th>
+                                    <th>Total Revenue</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doctor in top_doctors %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ doctor.user.get_full_name|default:doctor.user.username }}</td>
+                                    <td>{{ doctor.specialization|default:"General" }}</td>
+                                    <td>{{ doctor.appointment_count }}</td>
+                                    <td>৳{{ doctor.total_revenue|default:0 }}</td>
+                                    <td>
+                                        <span class="badge {% if doctor.is_verified %}bg-success{% else %}bg-warning{% endif %}">
+                                            {% if doctor.is_verified %}Verified{% else %}Not Verified{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

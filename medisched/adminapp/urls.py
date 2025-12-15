@@ -54,6 +54,17 @@ path('symptoms/delete/<int:id>/', views.delete_symptom, name='delete_symptom'),
     path('doctors/<int:pk>/delete/', views.doctor_delete, name='doctor_delete'),
     path('doctors/verify/<int:pk>/', views.doctor_verify, name='doctor_verify'),
     path('doctors/unverify/<int:pk>/', views.doctor_unverify, name='doctor_unverify'),
+    
+    
+    # Appointment URLs
+    path('appointments/', views.appointment_list, name='appointment_list'),
+    path('appointments/<int:appointment_id>/', views.appointment_detail, name='appointment_detail'),
+    path('appointments/<int:appointment_id>/update-status/', views.appointment_update_status, name='appointment_update_status'),
+    path('appointments/<int:appointment_id>/update-payment/', views.appointment_update_payment, name='appointment_update_payment'),
+    path('appointments/<int:appointment_id>/add-note/', views.appointment_add_note, name='appointment_add_note'),
+    path('appointments/note/<int:note_id>/delete/', views.appointment_delete_note, name='appointment_delete_note'),
+    path('appointments/statistics/', views.appointment_statistics, name='appointment_statistics'),
+    path('appointments/export/', views.appointment_export, name='appointment_export'),
 
 
 ]

@@ -1,0 +1,273 @@
+{% extends 'adminapp/base_admin.html' %}
+{% load static %}
+
+{% block title %}Export Appointments - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Export Appointments</h1>
+        <div>
+            <a href="{% url 'appointment_list' %}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <!-- Export Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Export Settings</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="#">
+                        {% csrf_token %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Export Format</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format" id="format_csv" value="csv" checked>
+                                    <label class="form-check-label" for="format_csv">
+                                        CSV (Comma Separated Values)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format" id="format_excel" value="excel">
+                                    <label class="form-check-label" for="format_excel">
+                                        Excel (XLSX)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format" id="format_pdf" value="pdf">
+                                    <label class="form-check-label" for="format_pdf">
+                                        PDF
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date Range</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="date_range" id="range_all" value="all" checked>
+                                    <label class="form-check-label" for="range_all">
+                                        All Appointments
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="date_range" id="range_custom" value="custom">
+                                    <label class="form-check-label" for="range_custom">
+                                        Custom Range
+                                    </label>
+                                </div>
+                                <div class="row mt-2" id="customRange" style="display: none;">
+                                    <div class="col-md-6">
+                                        <input type="date" name="start_date" class="form-control form-control-sm" placeholder="Start Date">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="date" name="end_date" class="form-control form-control-sm" placeholder="End Date">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="form-label">Include Columns</label>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns" id="col_id" value="id" checked>
+                                            <label class="form-check-label" for="col_id">Appointment ID</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns" id="col_patient" value="patient" checked>
+                                            <label class="form-check-label" for="col_patient">Patient Info</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns" id="col_doctor" value="doctor" checked>
+                                            <label class="form-check-label" for="col_doctor">Doctor Info</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns" id="col_date" value="date" checked>
+                                            <label class="form-check-label" for="col_date">Date & Time</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns" id="col_status" value="status" checked>
+                                            <label class="form-check-label" for="col_status">Status</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns" id="col_payment" value="payment" checked>
+                                            <label class="form-check-label" for="col_payment">Payment Info</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns" id="col_amount" value="amount" checked>
+                                            <label class="form-check-label" for="col_amount">Amount</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns" id="col_notes" value="notes">
+                                            <label class="form-check-label" for="col_notes">Notes</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="columns" id="col_symptoms" value="symptoms">
+                                            <label class="form-check-label" for="col_symptoms">Symptoms</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="form-label">Filter by Status</label>
+                                <select name="status_filter" class="form-control">
+                                    <option value="all">All Statuses</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="form-label">Filter by Payment Status</label>
+                                <select name="payment_filter" class="form-control">
+                                    <option value="all">All Payment Statuses</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="failed">Failed</option>
+                                    <option value="refunded">Refunded</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" onclick="selectAllColumns(true)">
+                                <i class="fas fa-check-square"></i> Select All
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="selectAllColumns(false)">
+                                <i class="fas fa-square"></i> Deselect All
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Export Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Instructions -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Export Instructions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> How to Export</h6>
+                        <ol class="mb-0">
+                            <li>Select the export format</li>
+                            <li>Choose date range (optional)</li>
+                            <li>Select columns to include</li>
+                            <li>Apply filters if needed</li>
+                            <li>Click "Export Data"</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle"></i> Important Notes</h6>
+                        <ul class="mb-0">
+                            <li>Large exports may take some time</li>
+                            <li>PDF exports are limited to 1000 records</li>
+                            <li>CSV is recommended for large datasets</li>
+                            <li>Exports include only approved data</li>
+                        </ul>
+                    </div>
+
+                    <!-- Quick Export Buttons -->
+                    <div class="mt-4">
+                        <h6>Quick Export</h6>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary">
+                                <i class="fas fa-calendar-day"></i> Today's Appointments
+                            </button>
+                            <button type="button" class="btn btn-outline-success">
+                                <i class="fas fa-check-circle"></i> Completed Appointments
+                            </button>
+                            <button type="button" class="btn btn-outline-info">
+                                <i class="fas fa-money-bill-wave"></i> Paid Appointments
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Exports -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Exports</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">Today, 10:30 AM</small><br>
+                                <span>appointments_today.csv</span>
+                            </div>
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">Yesterday, 3:45 PM</small><br>
+                                <span>monthly_report.xlsx</span>
+                            </div>
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Show/hide custom date range
+    document.querySelectorAll('input[name="date_range"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                document.getElementById('customRange').style.display = 'block';
+            } else {
+                document.getElementById('customRange').style.display = 'none';
+            }
+        });
+    });
+
+    // Select/Deselect all columns
+    function selectAllColumns(select) {
+        document.querySelectorAll('input[name="columns"]').forEach(function(checkbox) {
+            checkbox.checked = select;
+        });
+    }
+
+    // Quick export handlers
+    document.querySelectorAll('.btn-outline-primary, .btn-outline-success, .btn-outline-info').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            alert('Quick export feature will be implemented soon!');
+        });
+    });
+</script>
+{% endblock %}

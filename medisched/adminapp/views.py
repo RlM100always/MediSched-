@@ -535,3 +535,303 @@ def doctor_unverify(request, pk):
 
 
 
+
+
+
+
+
+# adminapp/views.py - Add these appointment views
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.db.models import Q, Count, Sum
+from django.core.paginator import Paginator
+from django.utils import timezone
+from datetime import datetime, timedelta
+import json
+
+from appointment.models import Appointment, AppointmentRescheduleHistory, AppointmentNote
+from users.models import CustomUser
+from doctor.models import Doctor
+
+def is_admin(user):
+    return user.is_staff
+
+# Appointment List View
+def appointment_list(request):
+    # Get filter parameters
+    status = request.GET.get('status', '')
+    consultation_type = request.GET.get('consultation_type', '')
+    payment_status = request.GET.get('payment_status', '')
+    doctor_id = request.GET.get('doctor', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    
+    # Start with all appointments
+    appointments = Appointment.objects.all().select_related(
+        'patient', 'doctor', 'doctor__user'
+    ).order_by('-created_at')
+    
+    # Apply filters
+    if status:
+        appointments = appointments.filter(status=status)
+    if consultation_type:
+        appointments = appointments.filter(consultation_type=consultation_type)
+    if payment_status:
+        appointments = appointments.filter(payment_status=payment_status)
+    if doctor_id:
+        appointments = appointments.filter(doctor_id=doctor_id)
+    if date_from:
+        try:
+            date_from_obj = datetime.strptime(date_from, '%Y-%m-%d')
+            appointments = appointments.filter(appointment_date__gte=date_from_obj)
+        except:
+            pass
+    if date_to:
+        try:
+            date_to_obj = datetime.strptime(date_to, '%Y-%m-%d')
+            date_to_obj = date_to_obj.replace(hour=23, minute=59, second=59)
+            appointments = appointments.filter(appointment_date__lte=date_to_obj)
+        except:
+            pass
+    
+    # Get all doctors for filter dropdown
+    doctors = Doctor.objects.filter(is_verified=True)
+    
+    # Get statistics
+    total_appointments = appointments.count()
+    pending_appointments = appointments.filter(status='pending').count()
+    confirmed_appointments = appointments.filter(status='confirmed').count()
+    completed_appointments = appointments.filter(status='completed').count()
+    cancelled_appointments = appointments.filter(status='cancelled').count()
+    
+    # Pagination
+    paginator = Paginator(appointments, 20)  # 20 appointments per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'appointments': page_obj,
+        'doctors': doctors,
+        'status': status,
+        'consultation_type': consultation_type,
+        'payment_status': payment_status,
+        'doctor_id': doctor_id,
+        'date_from': date_from,
+        'date_to': date_to,
+        'total_appointments': total_appointments,
+        'pending_appointments': pending_appointments,
+        'confirmed_appointments': confirmed_appointments,
+        'completed_appointments': completed_appointments,
+        'cancelled_appointments': cancelled_appointments,
+    }
+    return render(request, 'adminapp/appointment/list.html', context)
+
+# # Appointment Detail View
+# @login_required
+# @user_passes_test(is_admin)
+def appointment_detail(request, appointment_id):
+    appointment = get_object_or_404(Appointment.objects.select_related(
+        'patient', 'doctor', 'doctor__user'
+    ), id=appointment_id)
+    
+    # Get related data
+    reschedule_history = AppointmentRescheduleHistory.objects.filter(
+        appointment=appointment
+    ).order_by('-rescheduled_at')
+    
+    notes = AppointmentNote.objects.filter(appointment=appointment).order_by('-created_at')
+    
+    context = {
+        'appointment': appointment,
+        'reschedule_history': reschedule_history,
+        'notes': notes,
+    }
+    return render(request, 'adminapp/appointment/detail.html', context)
+
+
+def appointment_update_status(request, appointment_id):
+    if request.method == 'POST':
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        new_status = request.POST.get('status')
+        cancellation_reason = request.POST.get('cancellation_reason', '')
+        
+        if new_status in ['confirmed', 'completed', 'cancelled']:
+            old_status = appointment.status
+            appointment.status = new_status
+            
+            if new_status == 'cancelled':
+                appointment.cancellation_reason = cancellation_reason
+                appointment.cancelled_at = timezone.now()
+                
+                # If appointment is cancelled, optionally refund payment
+                if appointment.payment_status == 'paid':
+                    appointment.payment_status = 'refunded'
+            elif new_status == 'completed':
+                appointment.completed_at = timezone.now()
+            
+            appointment.save()
+            
+            # Add system note about status change
+            AppointmentNote.objects.create(
+                appointment=appointment,
+                note_type='system',
+                content=f'Status changed from {old_status} to {new_status} by admin.',
+                created_by=request.user
+            )
+            
+            messages.success(request, f'Appointment status updated to {new_status}.')
+        else:
+            messages.error(request, 'Invalid status selected.')
+    
+    return redirect('appointment_detail', appointment_id=appointment_id)
+
+# # Update Payment Status
+# @login_required
+# @user_passes_test(is_admin)
+def appointment_update_payment(request, appointment_id):
+    if request.method == 'POST':
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        new_payment_status = request.POST.get('payment_status')
+        
+        if new_payment_status in ['pending', 'paid', 'failed', 'refunded']:
+            old_payment_status = appointment.payment_status
+            appointment.payment_status = new_payment_status
+            appointment.save()
+            
+            # Add system note about payment status change
+            AppointmentNote.objects.create(
+                appointment=appointment,
+                note_type='system',
+                content=f'Payment status changed from {old_payment_status} to {new_payment_status} by admin.',
+                created_by=request.user
+            )
+            
+            messages.success(request, f'Payment status updated to {new_payment_status}.')
+        else:
+            messages.error(request, 'Invalid payment status selected.')
+    
+    return redirect('appointment_detail', appointment_id=appointment_id)
+
+# # Add Appointment Note
+# @login_required
+# @user_passes_test(is_admin)
+def appointment_add_note(request, appointment_id):
+    if request.method == 'POST':
+        appointment = get_object_or_404(Appointment, id=appointment_id)
+        note_content = request.POST.get('note_content', '').strip()
+        
+        if note_content:
+            AppointmentNote.objects.create(
+                appointment=appointment,
+                note_type='system',
+                content=note_content,
+                created_by=request.user
+            )
+            messages.success(request, 'Note added successfully.')
+        else:
+            messages.error(request, 'Note content cannot be empty.')
+    
+    return redirect('appointment_detail', appointment_id=appointment_id)
+
+# # Delete Appointment Note
+# @login_required
+@user_passes_test(is_admin)
+def appointment_delete_note(request, note_id):
+    note = get_object_or_404(AppointmentNote, id=note_id)
+    appointment_id = note.appointment.id
+    
+    if request.method == 'POST':
+        note.delete()
+        messages.success(request, 'Note deleted successfully.')
+    
+    return redirect('appointment_detail', appointment_id=appointment_id)
+
+# # Appointment Statistics/Dashboard
+# @login_required
+# @user_passes_test(is_admin)
+def appointment_statistics(request):
+    # Date range for statistics
+    today = timezone.now().date()
+    week_ago = today - timedelta(days=7)
+    month_ago = today - timedelta(days=30)
+    
+    # Overall statistics
+    total_appointments = Appointment.objects.count()
+    total_revenue = Appointment.objects.filter(payment_status='paid').aggregate(
+        total=Sum('total_amount')
+    )['total'] or 0
+    
+    # Today's statistics
+    today_appointments = Appointment.objects.filter(
+        created_at__date=today
+    ).count()
+    today_revenue = Appointment.objects.filter(
+        created_at__date=today,
+        payment_status='paid'
+    ).aggregate(total=Sum('total_amount'))['total'] or 0
+    
+    # Weekly statistics
+    weekly_appointments = Appointment.objects.filter(
+        created_at__date__gte=week_ago
+    ).count()
+    weekly_revenue = Appointment.objects.filter(
+        created_at__date__gte=week_ago,
+        payment_status='paid'
+    ).aggregate(total=Sum('total_amount'))['total'] or 0
+    
+    # Monthly statistics
+    monthly_appointments = Appointment.objects.filter(
+        created_at__date__gte=month_ago
+    ).count()
+    monthly_revenue = Appointment.objects.filter(
+        created_at__date__gte=month_ago,
+        payment_status='paid'
+    ).aggregate(total=Sum('total_amount'))['total'] or 0
+    
+    # Status distribution
+    status_counts = Appointment.objects.values('status').annotate(
+        count=Count('id')
+    ).order_by('status')
+    
+    # Payment status distribution
+    payment_status_counts = Appointment.objects.values('payment_status').annotate(
+        count=Count('id')
+    ).order_by('payment_status')
+    
+    # Recent appointments
+    recent_appointments = Appointment.objects.select_related(
+        'patient', 'doctor'
+    ).order_by('-created_at')[:10]
+    
+    # Top doctors by appointments
+    top_doctors = Doctor.objects.annotate(
+        appointment_count=Count('appointments'),
+        total_revenue=Sum('appointments__total_amount',
+                         filter=Q(appointments__payment_status='paid'))
+    ).order_by('-appointment_count')[:10]
+    
+    context = {
+        'today': today,
+        'total_appointments': total_appointments,
+        'total_revenue': total_revenue,
+        'today_appointments': today_appointments,
+        'today_revenue': today_revenue,
+        'weekly_appointments': weekly_appointments,
+        'weekly_revenue': weekly_revenue,
+        'monthly_appointments': monthly_appointments,
+        'monthly_revenue': monthly_revenue,
+        'status_counts': status_counts,
+        'payment_status_counts': payment_status_counts,
+        'recent_appointments': recent_appointments,
+        'top_doctors': top_doctors,
+    }
+    return render(request, 'adminapp/appointment/statistics.html', context)
+
+# # Export Appointments
+# @login_required
+# @user_passes_test(is_admin)
+def appointment_export(request):
+    # For now, just show the export page
+    # You can implement CSV/Excel export here
+    return render(request, 'adminapp/appointment/export.html')
