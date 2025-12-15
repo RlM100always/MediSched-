@@ -10,6 +10,17 @@ from doctor.models import Doctor, DoctorSpecializationDepartment  # Add Doctor i
 from django.shortcuts import render, get_object_or_404
 from adminapp.models import Department
 from doctor.models import DoctorSpecializationDepartment
+# home/views.py
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Q, Avg, Count
+from adminapp.models import Department, Symptom
+from doctor.models import (
+    Doctor,
+    DoctorExperience,
+    DoctorSpecializationDepartment,
+    DoctorSpecializationSymptom,
+    DoctorAppointmentFee
+)
 
 # ... rest of the code ...
 
@@ -59,21 +70,39 @@ def department_detail(request, dept_id):
 
 
 
+def symptom_detail(request, symptom_id):
+    """Show all doctors related to a specific symptom"""
+
+    # Get symptom
+    symptom = get_object_or_404(Symptom, id=symptom_id)
+
+    # Get doctors specialized for this symptom
+    specializations = DoctorSpecializationSymptom.objects.filter(
+        symptom=symptom
+    ).select_related(
+        'doctor',
+        'doctor__user',
+        'doctor__division',
+        'doctor__district',
+        'doctor__upazila'
+    ).prefetch_related(
+        'doctor__specialized_departments__department',
+        'doctor__appointment_fees'
+    )
+
+    doctors = [spec.doctor for spec in specializations]
+
+    context = {
+        'symptom': symptom,
+        'doctors': doctors,
+        'doctor_count': len(doctors),
+    }
+
+    return render(request, 'home/symptom_detail.html', context)
 
 
 
-# home/views.py
-from django.views.decorators.csrf import csrf_protect
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Q, Avg, Count
-from adminapp.models import Department, Symptom
-from doctor.models import (
-    Doctor,
-    DoctorExperience,
-    DoctorSpecializationDepartment,
-    DoctorSpecializationSymptom,
-    DoctorAppointmentFee
-)
+
 
 @csrf_protect
 def home(request):
@@ -98,25 +127,7 @@ def home(request):
     return render(request, 'home/index.html', context)
 
 
-def department_detail(request, dept_id):
-    """Show all doctors in a specific department"""
-    # Get the department
-    department = get_object_or_404(Department, id=dept_id)
-    
-    # Get all doctors specialized in this department
-    specializations = DoctorSpecializationDepartment.objects.filter(
-        department=department
-    ).select_related('doctor', 'doctor__user')
-    
-    doctors = [spec.doctor for spec in specializations]
-    
-    context = {
-        'department': department,
-        'doctors': doctors,
-        'doctor_count': len(doctors),
-    }
-    
-    return render(request, 'home/department_detail.html', context)
+
 
 
 def doctor_detail(request, doctor_id):

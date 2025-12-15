@@ -136,104 +136,6 @@
     </div>
 </section>
 
-<!-- Featured Doctors Section -->
-<section class="doctors" id="doctors">
-    <div class="section-header fade-in">
-        <h2>Featured Doctors</h2>
-        <p>Consult with our verified and experienced healthcare professionals</p>
-    </div>
-    
-    <div class="doctors-grid">
-        {% for doctor in featured_doctors %}
-        <div class="doctor-card fade-in">
-            <div class="doctor-image">
-                {% if doctor.profile_image %}
-                    <img src="{{ doctor.profile_image.url }}" alt="Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}">
-                {% else %}
-                    <div class="doctor-placeholder">
-                        <i class="fas fa-user-md"></i>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="doctor-info">
-                <h3>
-                    {% if doctor.user.get_full_name %}
-                        Dr. {{ doctor.user.get_full_name }}
-                    {% else %}
-                        Dr. {{ doctor.user.username|title }}
-                    {% endif %}
-                </h3>
-                
-                <!-- Specialization -->
-                {% with doctor.specialized_departments.first as specialization %}
-                    {% if specialization %}
-                        <p class="doctor-specialty">
-                            <i class="fas fa-stethoscope"></i> 
-                            {{ specialization.department.department_name }}
-                        </p>
-                    {% else %}
-                        <p class="doctor-specialty">
-                            <i class="fas fa-stethoscope"></i> 
-                            General Practitioner
-                        </p>
-                    {% endif %}
-                {% endwith %}
-                
-                <!-- Rating -->
-                {% if doctor.rating %}
-                <div class="doctor-rating">
-                    {% with rating=doctor.rating|floatformat:1 %}
-                    {% for i in "12345"|make_list %}
-                        {% if forloop.counter <= rating|add:"0" %}
-                            <i class="fas fa-star"></i>
-                        {% elif forloop.counter|add:"0" <= rating|add:"0.5" and rating|add:"0" < forloop.counter|add:"0" %}
-                            <i class="fas fa-star-half-alt"></i>
-                        {% else %}
-                            <i class="far fa-star"></i>
-                        {% endif %}
-                    {% endfor %}
-                    <span class="rating-value">{{ rating }}</span>
-                    {% endwith %}
-                    
-                    {% if doctor.total_reviews %}
-                    <span class="review-count">
-                        ({{ doctor.total_reviews }} review{{ doctor.total_reviews|pluralize }})
-                    </span>
-                    {% endif %}
-                </div>
-                {% endif %}
-                
-                <!-- Experience & Qualification -->
-                <div class="doctor-details">
-                    {% if doctor.total_experience %}
-                    <p class="doctor-experience">
-                        <i class="fas fa-briefcase"></i> 
-                        {{ doctor.total_experience }} years experience
-                    </p>
-                    {% endif %}
-                    
-                    {% if doctor.qualification %}
-                    <p class="doctor-qualification">
-                        <i class="fas fa-graduation-cap"></i> 
-                        {{ doctor.qualification|truncatewords:5 }}
-                    </p>
-                    {% endif %}
-                </div>
-                
-                <a href="#" class="btn btn-primary btn-book">
-                    <i class="fas fa-calendar-plus"></i> Book Appointment
-                </a>
-            </div>
-        </div>
-        {% empty %}
-        <div class="no-doctors">
-            <i class="fas fa-user-md"></i>
-            <h3>No featured doctors available at the moment</h3>
-            <p>Check back soon for our verified healthcare professionals!</p>
-        </div>
-        {% endfor %}
-    </div>
-</section>
 
 
 
@@ -243,30 +145,7 @@
 
 
 
-  <!-- Rating (if you add ratings later) -->
-  <!-- Rating section - Updated to work with decimal ratings -->
-{% if doctor.rating %}
-<div class="doctor-rating" style="color: #fbbf24; margin: 10px 0;">
-    {% with rating=doctor.rating|floatformat:1 %}
-    {% for i in "12345"|make_list %}
-        {% if forloop.counter <= rating|add:"0" %}
-            <i class="fas fa-star"></i>
-        {% elif forloop.counter|add:"0" <= rating|add:"0.5" and rating|add:"0" < forloop.counter|add:"0" %}
-            <i class="fas fa-star-half-alt"></i>
-        {% else %}
-            <i class="fas fa-star-o"></i>
-        {% endif %}
-    {% endfor %}
-    <span style="color: #666; margin-left: 5px;">({{ rating }})</span>
-    {% endwith %}
-    
-    {% if doctor.total_reviews %}
-    <span style="color: #666; font-size: 0.9rem; margin-left: 5px;">
-        {{ doctor.total_reviews }} review{{ doctor.total_reviews|pluralize }}
-    </span>
-    {% endif %}
-</div>
-{% endif %}
+
                 
                 
 
@@ -280,58 +159,99 @@
 
 <!-- Featured Departments and Symptomps -->
 <!-- Departments Section -->
-<!-- Departments Section -->
-<section class="departments-section" style="padding: 4rem 5%;">
-    <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
-        <h2 style="font-size: 2.5rem; font-weight: 800; color: #111827; margin-bottom: 0.5rem;">Departments</h2>
-        <p style="font-size: 1.125rem; color: #6B7280;">Explore our main medical departments</p>
+<section class="departments-section" style="padding: 4rem 5%; background-color: #f9fafb;">
+    <div class="section-header" style="text-align: center; margin-bottom: 4rem;">
+        <h2 style="font-size: 3rem; font-weight: 800; color: #1f2937; margin-bottom: 0.75rem; position: relative;">
+            Our Medical <span style="color: #2D9CDB;">Departments</span>
+        </h2>
+        <p style="font-size: 1.25rem; color: #6b7280; max-width: 600px; margin: 0 auto;">
+            Explore our main medical departments, each led by experienced specialists.
+        </p>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; max-width: 1200px; margin: 0 auto;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto;">
         {% for dept in departments %}
-        <a href="{% url 'home:department_detail' dept.id %}" style="text-decoration: none; color: inherit;">
-            <div style="background: white; border-radius: 15px; padding: 25px; text-align: center; transition: all 0.3s ease; box-shadow: 0 6px 18px rgba(0,0,0,0.08); height: 100%;">
-                {% if dept.department_image %}
-                <img src="{{ dept.department_image.url }}" alt="{{ dept.department_name }}" 
-                     style="width: 150px; height: 100px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                {% else %}
-                <div style="width: 150px; height: 100px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-hospital" style="font-size: 35px; color: white;"></i>
+        <a href="{% url 'home:department_detail' dept.id %}" 
+           style="text-decoration: none; color: inherit; display: block; height: 100%;">
+            <div class="department-card" 
+                 style="background: #ffffff; border-radius: 12px; padding: 30px; text-align: center; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+                
+                <div style="margin-bottom: 20px;">
+                    {% if dept.department_image %}
+                    <img src="{{ dept.department_image.url }}" alt="{{ dept.department_name }}" 
+                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin: 0 auto; border: 4px solid #f9fafb; box-shadow: 0 4px 10px rgba(5, 150, 105, 0.2);">
+                    {% else %}
+                    <div style="width: 80px; height: 80px; background: white; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4);">
+                        <i class="fas fa-hospital-alt" style="font-size: 30px; color: white;"></i>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
-                <h3 style="font-size: 1.1rem; color: #111827; font-weight: 700; margin-bottom: 8px;">{{ dept.department_name }}</h3>
-                <span style="font-size: 0.9rem; color: #2563EB; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
-                    View Doctors <i class="fas fa-arrow-right"></i>
-                </span>
+                
+                <div>
+                    <h3 style="font-size: 1.3rem; color: #1f2937; font-weight: 700; margin-bottom: 10px;">{{ dept.department_name }}</h3>
+                    <span style="font-size: 0.95rem; color: #2D9CDB; font-weight: 600; display: inline-flex; align-items: center; gap: 7px;">
+                        View Doctors <i class="fas fa-arrow-right" style="transition: transform 0.3s ease;"></i>
+                    </span>
+                </div>
             </div>
         </a>
+        <style>
+            .department-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+                border-color: #2D9CDB;
+            }
+            .department-card:hover .fa-arrow-right {
+                transform: translateX(5px);
+            }
+        </style>
         {% empty %}
-        <p style="grid-column: 1 / -1; text-align: center; color: #666;">No departments available.</p>
+        <p style="grid-column: 1 / -1; text-align: center; color: #9ca3af; font-style: italic;">No departments available at the moment. Please check back later.</p>
         {% endfor %}
     </div>
 </section>
 
-<!-- Symptoms Section -->
-<section class="symptoms-section" style="padding: 4rem 5%;">
-    <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
-        <h2 style="font-size: 2.5rem; font-weight: 800; color: #111827; margin-bottom: 0.5rem;">Symptoms</h2>
-        <p style="font-size: 1.125rem; color: #6B7280;">Check out common symptoms for various conditions</p>
+<section class="symptoms-section" style="padding: 4rem 5%; background-color: #ffffff;">
+    <div class="section-header" style="text-align: center; margin-bottom: 4rem;">
+        <h2 style="font-size: 3rem; font-weight: 800; color: #1f2937; margin-bottom: 0.75rem;">
+            Common <span style="color: #3b82f6;">Symptoms</span>
+        </h2>
+        <p style="font-size: 1.25rem; color: #6b7280; max-width: 600px; margin: 0 auto;">
+            Check out common symptoms for various conditions and find the right specialist.
+        </p>
     </div>
 
-    <div class="card-container-symp" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 24px; justify-items: center; margin-top: 2rem;">
+    <div class="card-container-symp" 
+         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto;">
+        
         {% for symp in symptoms %}
-        <div>
-            {% if symp.symptom_image %}
-            <img src="{{ symp.symptom_image.url }}" alt="{{ symp.symptom_name }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; margin-bottom: 8px; border: 2px solid #fff; transition: transform 0.3s ease;">
-            {% endif %}
-            <h3 style="font-size: 14px; font-weight: 700; margin: 0;">{{ symp.symptom_name }}</h3>
-        </div>
+        
+        <a href="{% url 'home:symptom_detail' symp.id %}" style="text-decoration: none; color: inherit;">
+            <div class="symptom-item" 
+                 style="text-align: center; padding: 10px; transition: transform 0.3s ease; cursor: pointer;">
+                
+                {% if symp.symptom_image %}
+                <img src="{{ symp.symptom_image.url }}" alt="{{ symp.symptom_name }}" 
+                     style="width: 110px; height: 110px; object-fit: cover; border-radius: 50%; margin-bottom: 10px; border: 4px solid #eff6ff; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.15); transition: all 0.3s ease;">
+                {% endif %}
+                
+                <h3 style="font-size: 1rem; font-weight: 700; color: #374151; margin: 0;">{{ symp.symptom_name }}</h3>
+            </div>
+        </a>
+        <style>
+            .symptom-item:hover {
+                transform: translateY(-5px);
+            }
+            .symptom-item:hover img {
+                border-color: #3b82f6;
+                box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
+            }
+        </style>
         {% empty %}
-        <p>No symptoms available.</p>
+        <p style="grid-column: 1 / -1; text-align: center; color: #9ca3af; font-style: italic;">No common symptoms listed yet.</p>
         {% endfor %}
-    </div>
+        </div>
 </section>
-
 
 
 
