@@ -1,0 +1,463 @@
+{% extends 'doctor/doctor_sidebar.html' %}
+{% load static %}
+
+{% block title %}Create Prescription | MediSched{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-0">Create Prescription</h1>
+            <p class="text-muted mb-0">For Appointment #{{ appointment.id }} - {{ appointment.patient_name }}</p>
+        </div>
+        <div>
+            <a href="{% url 'doctor:appointment_detail' appointment.id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Appointment
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" id="prescriptionForm">
+                        {% csrf_token %}
+                        
+                        <!-- Patient Information -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="info-card p-3 bg-light rounded">
+                                    <h6 class="mb-2"><i class="fas fa-user-injured"></i> Patient Information</h6>
+                                    <p class="mb-1"><strong>Name:</strong> {{ appointment.patient_name }}</p>
+                                    <p class="mb-1"><strong>Age:</strong> {{ appointment.patient_age }} years</p>
+                                    <p class="mb-0"><strong>Gender:</strong> {{ appointment.patient_gender|title }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-card p-3 bg-light rounded">
+                                    <h6 class="mb-2"><i class="fas fa-calendar-check"></i> Appointment Details</h6>
+                                    <p class="mb-1"><strong>Date:</strong> {{ appointment.appointment_date|date:"F d, Y" }}</p>
+                                    <p class="mb-1"><strong>Time:</strong> {{ appointment.appointment_date|time:"h:i A" }}</p>
+                                    <p class="mb-0"><strong>Type:</strong> {{ appointment.get_consultation_type_display }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Diagnosis -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Diagnosis *</label>
+                            <textarea name="diagnosis" class="form-control" rows="4" 
+                                      placeholder="Enter diagnosis details..." required></textarea>
+                            <small class="text-muted">Describe the medical condition or findings</small>
+                        </div>
+
+                        <!-- Advice -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Advice & Instructions</label>
+                            <textarea name="advice" class="form-control" rows="3" 
+                                      placeholder="Enter advice for the patient..."></textarea>
+                            <small class="text-muted">General advice, lifestyle changes, or follow-up instructions</small>
+                        </div>
+
+                        <!-- Medicines Section -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fas fa-pills text-primary"></i> Medicines</h5>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addMedicine">
+                                    <i class="fas fa-plus"></i> Add Medicine
+                                </button>
+                            </div>
+                            
+                            <div id="medicinesContainer">
+                                <!-- Default first medicine row -->
+                                <div class="medicine-row row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <input type="text" name="medicine_name[]" class="form-control" 
+                                               placeholder="Medicine name *" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="text" name="medicine_dosage[]" class="form-control" 
+                                               placeholder="Dosage (e.g., 500mg)">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="text" name="medicine_duration[]" class="form-control" 
+                                               placeholder="Duration (e.g., 7 days)">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="text" name="medicine_instructions[]" class="form-control" 
+                                               placeholder="Instructions (e.g., After meal)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Suggested Tests -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fas fa-flask text-success"></i> Suggested Tests</h5>
+                                <button type="button" class="btn btn-sm btn-outline-success" id="addTest">
+                                    <i class="fas fa-plus"></i> Add Test
+                                </button>
+                            </div>
+                            
+                            <div id="testsContainer">
+                                <!-- Default first test row -->
+                                <div class="test-row row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <input type="text" name="test_name[]" class="form-control" 
+                                               placeholder="Test name (e.g., CBC, X-Ray)">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="test_instructions[]" class="form-control" 
+                                               placeholder="Instructions (e.g., Fasting required)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Follow-up Date -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Follow-up Date</label>
+                            <input type="date" name="follow_up_date" class="form-control" 
+                                   min="{{ appointment.appointment_date|date:'Y-m-d' }}">
+                            <small class="text-muted">Optional - Set a follow-up appointment date</small>
+                        </div>
+
+                        <!-- Additional Notes -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Additional Notes</label>
+                            <textarea name="additional_notes" class="form-control" rows="3" 
+                                      placeholder="Any additional notes or observations..."></textarea>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" id="previewBtn">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                            <div>
+                                <button type="reset" class="btn btn-secondary">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Prescription
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Preview -->
+        <div class="col-lg-4">
+            <!-- Prescription Preview -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-prescription"></i> Prescription Preview</h5>
+                </div>
+                <div class="card-body">
+                    <div id="prescriptionPreview" class="prescription-preview">
+                        <!-- Header -->
+                        <div class="text-center mb-4 border-bottom pb-3">
+                            <h4 class="text-primary">MediSched Prescription</h4>
+                            <p class="mb-0 text-muted">Appointment #{{ appointment.id }}</p>
+                        </div>
+                        
+                        <!-- Patient Info -->
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Patient:</strong>
+                                <p id="previewPatient">{{ appointment.patient_name }}</p>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Date:</strong>
+                                <p>{{ appointment.appointment_date|date:"F d, Y" }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Diagnosis Preview -->
+                        <div class="mb-3">
+                            <strong>Diagnosis:</strong>
+                            <p id="previewDiagnosis" class="text-muted">No diagnosis entered</p>
+                        </div>
+                        
+                        <!-- Medicines Preview -->
+                        <div class="mb-3">
+                            <strong>Medicines:</strong>
+                            <div id="previewMedicines">
+                                <p class="text-muted">No medicines added</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="row">
+                                <div class="col-6">
+                                    <p class="mb-0"><strong>Doctor:</strong></p>
+                                    <p class="mb-0">Dr. {{ doctor.user.get_full_name }}</p>
+                                    <small class="text-muted">{{ doctor.qualification }}</small>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <p class="mb-0"><strong>BMDC:</strong> {{ doctor.bmdc_number }}</p>
+                                    <p class="mb-0"><strong>Signature:</strong></p>
+                                    <div class="signature-placeholder mt-2">
+                                        _______________________
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Print Button -->
+                    <div class="d-grid mt-3">
+                        <button class="btn btn-outline-primary" id="printPrescriptionBtn">
+                            <i class="fas fa-print"></i> Print Prescription
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Templates -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-copy"></i> Quick Templates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group-vertical w-100" role="group">
+                        <button type="button" class="btn btn-outline-info mb-2 template-btn" data-template="common-cold">
+                            <i class="fas fa-temperature-high"></i> Common Cold Template
+                        </button>
+                        <button type="button" class="btn btn-outline-info mb-2 template-btn" data-template="fever">
+                            <i class="fas fa-thermometer-half"></i> Fever Template
+                        </button>
+                        <button type="button" class="btn btn-outline-info mb-2 template-btn" data-template="stomach-pain">
+                            <i class="fas fa-stomach"></i> Stomach Pain Template
+                        </button>
+                        <button type="button" class="btn btn-outline-info template-btn" data-template="headache">
+                            <i class="fas fa-head-side-virus"></i> Headache Template
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Dynamic Forms -->
+<script>
+$(document).ready(function() {
+    let medicineCounter = 1;
+    let testCounter = 1;
+
+    // Add Medicine Row
+    $('#addMedicine').click(function() {
+        medicineCounter++;
+        const newRow = `
+            <div class="medicine-row row g-3 mb-3" id="medicineRow${medicineCounter}">
+                <div class="col-md-4">
+                    <input type="text" name="medicine_name[]" class="form-control" 
+                           placeholder="Medicine name *" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="medicine_dosage[]" class="form-control" 
+                           placeholder="Dosage">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="medicine_duration[]" class="form-control" 
+                           placeholder="Duration">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="medicine_instructions[]" class="form-control" 
+                           placeholder="Instructions">
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-sm btn-danger remove-row" 
+                            data-row="medicineRow${medicineCounter}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>`;
+        $('#medicinesContainer').append(newRow);
+    });
+
+    // Add Test Row
+    $('#addTest').click(function() {
+        testCounter++;
+        const newRow = `
+            <div class="test-row row g-3 mb-3" id="testRow${testCounter}">
+                <div class="col-md-5">
+                    <input type="text" name="test_name[]" class="form-control" 
+                           placeholder="Test name">
+                </div>
+                <div class="col-md-5">
+                    <input type="text" name="test_instructions[]" class="form-control" 
+                           placeholder="Instructions">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-sm btn-danger remove-row" 
+                            data-row="testRow${testCounter}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>`;
+        $('#testsContainer').append(newRow);
+    });
+
+    // Remove Row
+    $(document).on('click', '.remove-row', function() {
+        const rowId = $(this).data('row');
+        $('#' + rowId).remove();
+    });
+
+    // Preview Button
+    $('#previewBtn').click(function() {
+        // Update diagnosis preview
+        const diagnosis = $('textarea[name="diagnosis"]').val();
+        $('#previewDiagnosis').text(diagnosis || 'No diagnosis entered');
+        
+        // Update medicines preview
+        const medicinesContainer = $('#previewMedicines');
+        medicinesContainer.empty();
+        
+        $('input[name="medicine_name[]"]').each(function(index) {
+            const name = $(this).val();
+            const dosage = $('input[name="medicine_dosage[]"]').eq(index).val();
+            const duration = $('input[name="medicine_duration[]"]').eq(index).val();
+            const instructions = $('input[name="medicine_instructions[]"]').eq(index).val();
+            
+            if (name) {
+                let medicineText = `<strong>${name}</strong>`;
+                if (dosage) medicineText += ` - ${dosage}`;
+                if (duration) medicineText += ` for ${duration}`;
+                if (instructions) medicineText += ` (${instructions})`;
+                
+                medicinesContainer.append(`<p class="mb-1">${medicineText}</p>`);
+            }
+        });
+        
+        if (medicinesContainer.is(':empty')) {
+            medicinesContainer.append('<p class="text-muted">No medicines added</p>');
+        }
+        
+        // Scroll to preview
+        $('html, body').animate({
+            scrollTop: $('#prescriptionPreview').offset().top - 20
+        }, 500);
+    });
+
+    // Template Buttons
+    $('.template-btn').click(function() {
+        const template = $(this).data('template');
+        let diagnosis = '';
+        let advice = '';
+        
+        switch(template) {
+            case 'common-cold':
+                diagnosis = 'Acute upper respiratory infection (Common Cold)';
+                advice = 'Drink plenty of fluids, get adequate rest, and use saline nasal drops.';
+                break;
+            case 'fever':
+                diagnosis = 'Pyrexia of unknown origin';
+                advice = 'Maintain hydration, take tepid sponge baths, and monitor temperature.';
+                break;
+            case 'stomach-pain':
+                diagnosis = 'Acute gastritis';
+                advice = 'Avoid spicy and oily foods, eat small frequent meals.';
+                break;
+            case 'headache':
+                diagnosis = 'Tension-type headache';
+                advice = 'Reduce stress, ensure proper sleep, and avoid screen time.';
+                break;
+        }
+        
+        $('textarea[name="diagnosis"]').val(diagnosis);
+        $('textarea[name="advice"]').val(advice);
+        
+        // Trigger preview update
+        $('#previewBtn').click();
+    });
+
+    // Print Prescription
+    $('#printPrescriptionBtn').click(function() {
+        const printContent = document.getElementById('prescriptionPreview').innerHTML;
+        const originalContent = document.body.innerHTML;
+        
+        document.body.innerHTML = `
+            <div class="container mt-4">
+                <div class="text-center mb-4">
+                    <h3 class="text-primary">MediSched</h3>
+                    <h5>Prescription</h5>
+                </div>
+                ${printContent}
+                <div class="mt-4 text-center text-muted">
+                    <small>This is a computer-generated prescription. No signature required.</small>
+                </div>
+            </div>
+        `;
+        
+        window.print();
+        document.body.innerHTML = originalContent;
+        window.location.reload();
+    });
+
+    // Form Validation
+    $('#prescriptionForm').submit(function(e) {
+        // Check if at least one medicine has name
+        let hasMedicine = false;
+        $('input[name="medicine_name[]"]').each(function() {
+            if ($(this).val().trim()) {
+                hasMedicine = true;
+                return false; // break loop
+            }
+        });
+        
+        if (!hasMedicine) {
+            alert('Please add at least one medicine');
+            e.preventDefault();
+            return false;
+        }
+        
+        return true;
+    });
+});
+</script>
+
+<style>
+.info-card {
+    border-left: 4px solid #4e73df;
+}
+.medicine-row, .test-row {
+    animation: fadeIn 0.3s ease-in;
+}
+.prescription-preview {
+    background: white;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+}
+.signature-placeholder {
+    border-bottom: 2px dashed #6c757d;
+    width: 150px;
+    margin-left: auto;
+    text-align: center;
+    padding-top: 15px;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@media print {
+    .sidebar, .navbar, .btn, .card-header, .template-section {
+        display: none !important;
+    }
+    .prescription-preview {
+        border: none !important;
+        padding: 0 !important;
+    }
+}
+</style>
+{% endblock %}

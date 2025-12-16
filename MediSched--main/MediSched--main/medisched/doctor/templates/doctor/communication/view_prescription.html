@@ -1,0 +1,199 @@
+{% extends 'doctor/base.html' %}
+{% load static %}
+
+{% block title %}Prescription Details - MediSched{% endblock %}
+{% block page_title %}Prescription Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-0">
+                                <i class="fas fa-prescription text-success me-2"></i>
+                                Prescription Details
+                            </h4>
+                            <p class="text-muted mb-0">
+                                For {{ prescription.patient.get_full_name }} | 
+                                Appointment #{{ prescription.appointment.id }}
+                            </p>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{% url 'doctor:chat_home' %}?appointment={{ prescription.appointment.id }}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Chat
+                            </a>
+                            <a href="#" class="btn btn-primary" onclick="window.print()">
+                                <i class="fas fa-print me-1"></i> Print
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Prescription Header -->
+                    <div class="text-center mb-4 border-bottom pb-4">
+                        <h3 class="text-success">MEDICAL PRESCRIPTION</h3>
+                        <p class="text-muted">Issued on {{ prescription.created_at|date:"F d, Y" }}</p>
+                    </div>
+                    
+                    <!-- Patient and Doctor Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-user me-2"></i>Patient Information
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Name:</strong> {{ prescription.patient.get_full_name }}</p>
+                                    <p><strong>Age:</strong> {{ prescription.patient.age|default:"Not specified" }}</p>
+                                    <p><strong>Gender:</strong> {{ prescription.patient.gender|default:"Not specified" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-user-md me-2"></i>Doctor Information
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Name:</strong> Dr. {{ prescription.doctor.user.get_full_name }}</p>
+                                    <p><strong>Specialization:</strong> {{ prescription.doctor.specialization }}</p>
+                                    <p><strong>License No:</strong> {{ prescription.doctor.license_number }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Diagnosis -->
+                    <div class="mb-4">
+                        <h5 class="text-info">
+                            <i class="fas fa-diagnosis me-2"></i>Diagnosis
+                        </h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <p>{{ prescription.diagnosis|linebreaks }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Medicines -->
+                    <div class="mb-4">
+                        <h5 class="text-primary">
+                            <i class="fas fa-pills me-2"></i>Medications
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Medicine Name</th>
+                                        <th>Dosage</th>
+                                        <th>Duration</th>
+                                        <th>Instructions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for medicine in prescription.medicines %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ medicine.name }}</td>
+                                        <td>{{ medicine.dosage }}</td>
+                                        <td>{{ medicine.duration }}</td>
+                                        <td>{{ medicine.instructions }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">No medicines prescribed</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Suggested Tests -->
+                    {% if prescription.suggested_tests %}
+                    <div class="mb-4">
+                        <h5 class="text-warning">
+                            <i class="fas fa-vial me-2"></i>Suggested Tests
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-warning">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Test Name</th>
+                                        <th>Instructions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for test in prescription.suggested_tests %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ test.test_name }}</td>
+                                        <td>{{ test.instructions }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Advice and Follow-up -->
+                    <div class="row mb-4">
+                        {% if prescription.advice %}
+                        <div class="col-md-6">
+                            <h5 class="text-secondary">
+                                <i class="fas fa-comment-medical me-2"></i>Medical Advice
+                            </h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    <p>{{ prescription.advice|linebreaks }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if prescription.follow_up_date %}
+                        <div class="col-md-6">
+                            <h5 class="text-info">
+                                <i class="fas fa-calendar-check me-2"></i>Follow-up
+                            </h5>
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h4 class="text-info">{{ prescription.follow_up_date|date:"F d, Y" }}</h4>
+                                    <p class="text-muted">Please schedule your next appointment</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="text-center mt-4 pt-4 border-top">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-0">___________________________</p>
+                                <p class="text-muted">Doctor's Signature</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-0">___________________________</p>
+                                <p class="text-muted">Date: {{ prescription.created_at|date:"F d, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

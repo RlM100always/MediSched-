@@ -1,0 +1,861 @@
+{% extends 'communication/chat_home.html' %}
+
+{% block chat_content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Consultation - MediSched</title>
+    
+    <!-- Agora SDK -->
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.18.2.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #000;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .video-call-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .call-header {
+            background: linear-gradient(135deg, #4a6bff 0%, #6a11cb 100%);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .call-info h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .call-info p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .call-controls-top {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .call-timer {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .btn-end-call {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-end-call:hover {
+            background: #ff3742;
+            transform: translateY(-2px);
+        }
+
+        /* Main Video Area */
+        .video-main {
+            flex: 1;
+            position: relative;
+            background: #1a1a1a;
+            overflow: hidden;
+        }
+
+        /* Remote Video (Doctor) */
+        #remote-video-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #remote-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Local Video (Patient) */
+        .local-video-container {
+            position: absolute;
+            bottom: 100px;
+            right: 20px;
+            width: 180px;
+            height: 135px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border: 3px solid rgba(255,255,255,0.1);
+            background: #000;
+        }
+
+        #local-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror effect */
+        }
+
+        /* Loading State */
+        .loading-state {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.8);
+            z-index: 10;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: #4a6bff;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* User Info Overlay */
+        .user-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 300px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4a6bff, #6a11cb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .user-details h4 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .user-details p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Bottom Controls */
+        .controls-bottom {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 15px;
+            z-index: 100;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+
+        .control-btn.active {
+            background: #4a6bff;
+        }
+
+        .control-btn.danger {
+            background: #ff4757;
+        }
+
+        .control-btn.danger:hover {
+            background: #ff3742;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4cd964;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connecting {
+            background: #ff9500;
+        }
+
+        .status-dot.error {
+            background: #ff3b30;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .local-video-container {
+                width: 120px;
+                height: 90px;
+                bottom: 80px;
+                right: 10px;
+            }
+            
+            .controls-bottom {
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .control-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.1rem;
+            }
+            
+            .user-overlay {
+                max-width: 200px;
+                padding: 10px;
+            }
+            
+            .user-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Empty State */
+        .empty-video {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .empty-video i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-video p {
+            font-size: 1.1rem;
+            opacity: 0.7;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-call-container">
+        <!-- Header -->
+        <div class="call-header">
+            <div class="call-info">
+                <h2>
+                    <i class="fas fa-video me-2"></i>
+                    Video Consultation
+                </h2>
+                <p>
+                    <i class="fas fa-user-md me-1"></i>
+                    Dr. {{ video_call.doctor.user.get_full_name|default:video_call.doctor.user.username }}
+                    • Appointment #{{ video_call.appointment.id }}
+                </p>
+            </div>
+            
+            <div class="call-controls-top">
+                <div class="call-timer" id="timer">00:00</div>
+                <button class="btn-end-call" onclick="leaveChannel()">
+                    <i class="fas fa-phone-slash"></i>
+                    End Call
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Video Area -->
+        <div class="video-main">
+            <!-- Remote Video (Doctor) -->
+            <div id="remote-video-container">
+                <video id="remote-video" autoplay playsinline></video>
+                
+                <!-- Loading State -->
+                <div id="loading-state" class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <h3>Connecting to Doctor...</h3>
+                    <p>Please wait while we connect you with Dr. {{ video_call.doctor.user.get_full_name|default:video_call.doctor.user.username }}</p>
+                </div>
+                
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-video" style="display: none;">
+                    <i class="fas fa-user-md"></i>
+                    <h3>Doctor Not Connected</h3>
+                    <p>Waiting for Dr. {{ video_call.doctor.user.get_full_name|default:video_call.doctor.user.username }} to join the call</p>
+                </div>
+            </div>
+
+            <!-- Local Video (Patient) -->
+            <div class="local-video-container">
+                <video id="local-video" autoplay playsinline muted></video>
+            </div>
+
+            <!-- User Info Overlay -->
+            <div class="user-overlay">
+                <div class="user-badge">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <h4>{{ request.user.get_full_name|default:request.user.username }}</h4>
+                        <p>Patient • You</p>
+                    </div>
+                </div>
+                <div class="call-details">
+                    <p><i class="fas fa-calendar-alt me-2"></i>{{ video_call.scheduled_time|date:"M d, Y" }}</p>
+                    <p><i class="fas fa-clock me-2"></i>{{ video_call.scheduled_time|time:"g:i A" }}</p>
+                </div>
+            </div>
+
+            <!-- Status Indicator -->
+            <div class="status-indicator" id="connection-status">
+                <div class="status-dot connecting"></div>
+                <span>Connecting...</span>
+            </div>
+
+            <!-- Bottom Controls -->
+            <div class="controls-bottom">
+                <button class="control-btn" id="mic-btn" onclick="toggleMic()">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="control-btn" id="video-btn" onclick="toggleVideo()">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button class="control-btn" onclick="toggleChatPanel()">
+                    <i class="fas fa-comment"></i>
+                </button>
+                <button class="control-btn danger" onclick="leaveChannel()">
+                    <i class="fas fa-phone-slash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Panel (Hidden by default) -->
+    <div id="chat-panel" style="display: none; position: fixed; right: 0; top: 0; width: 300px; height: 100vh; background: #1a1a1a; border-left: 1px solid #333; z-index: 1000;">
+        <div style="padding: 20px; height: 100%; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: white;"><i class="fas fa-comments me-2"></i>Chat</h3>
+                <button onclick="toggleChatPanel()" style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 10px;"></div>
+            <div style="padding: 10px; border-top: 1px solid #333;">
+                <input type="text" id="chat-input" placeholder="Type a message..." 
+                       style="width: 100%; padding: 10px; border: 1px solid #444; border-radius: 20px; background: #2a2a2a; color: white; margin-bottom: 10px;">
+                <button onclick="sendChatMessage()" 
+                        style="width: 100%; padding: 10px; background: #4a6bff; color: white; border: none; border-radius: 20px; cursor: pointer;">
+                    Send Message
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Agora Configuration
+        const APP_ID = '{{ agora_app_id }}';
+        const CHANNEL = '{{ channel_name }}';
+        const TOKEN = '{{ rtc_token }}';
+        const UID = {{ user_id }};
+        const USER_NAME = '{{ request.user.get_full_name|default:request.user.username }}';
+        const DOCTOR_NAME = 'Dr. {{ video_call.doctor.user.get_full_name|default:video_call.doctor.user.username }}';
+
+        // Agora instances
+        let client = null;
+        let localTracks = {
+            audioTrack: null,
+            videoTrack: null
+        };
+        let remoteUsers = {};
+        
+        // State variables
+        let callStartTime = null;
+        let timerInterval = null;
+        let isAudioMuted = false;
+        let isVideoMuted = false;
+        let isConnected = false;
+
+        // Initialize Agora RTC
+        async function initAgoraRTC() {
+            try {
+                updateStatus('Initializing...');
+                
+                // Create RTC client
+                client = AgoraRTC.createClient({ 
+                    mode: "rtc", 
+                    codec: "vp8" 
+                });
+                
+                // Join the channel
+                await client.join(APP_ID, CHANNEL, TOKEN, UID);
+                updateStatus('Connected to channel');
+                
+                // Create local tracks
+                localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+                localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack({
+                    encoderConfig: {
+                        width: 640,
+                        height: 480,
+                        frameRate: 15,
+                        bitrateMin: 500,
+                        bitrateMax: 1000
+                    }
+                });
+                
+                // Publish local tracks
+                await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
+                
+                // Play local video
+                localTracks.videoTrack.play("local-video");
+                
+                updateStatus('Waiting for doctor...');
+                
+                // Handle remote users
+                client.on("user-published", handleUserPublished);
+                client.on("user-unpublished", handleUserUnpublished);
+                client.on("user-joined", handleUserJoined);
+                client.on("user-left", handleUserLeft);
+                
+                // Start call timer
+                startCallTimer();
+                
+                showNotification('Connected to video call successfully');
+                isConnected = true;
+                
+            } catch (error) {
+                console.error('Error initializing Agora RTC:', error);
+                updateStatus('Connection failed', 'error');
+                showNotification('Failed to connect to video call: ' + error.message);
+                
+                // Auto retry after 5 seconds
+                setTimeout(initAgoraRTC, 5000);
+            }
+        }
+
+        // Handle user published (doctor started streaming)
+        async function handleUserPublished(user, mediaType) {
+            try {
+                await client.subscribe(user, mediaType);
+                
+                if (mediaType === "video") {
+                    // Play remote video
+                    user.videoTrack.play("remote-video");
+                    
+                    // Hide loading states
+                    document.getElementById("loading-state").style.display = "none";
+                    document.getElementById("empty-state").style.display = "none";
+                    
+                    updateStatus('Doctor video connected');
+                    showNotification('Doctor has joined the call');
+                }
+                
+                if (mediaType === "audio") {
+                    user.audioTrack.play();
+                }
+                
+            } catch (error) {
+                console.error('Error handling user published:', error);
+            }
+        }
+
+        // Handle user unpublished
+        function handleUserUnpublished(user, mediaType) {
+            if (mediaType === "video") {
+                // Show empty state
+                document.getElementById("empty-state").style.display = "flex";
+                updateStatus('Doctor video disconnected');
+            }
+        }
+
+        // Handle user joined
+        function handleUserJoined(user) {
+            console.log("Doctor joined:", user.uid);
+            updateStatus('Doctor joined');
+        }
+
+        // Handle user left
+        function handleUserLeft(user) {
+            console.log("Doctor left:", user.uid);
+            document.getElementById("empty-state").style.display = "flex";
+            updateStatus('Doctor left the call');
+            showNotification('Doctor has left the call');
+        }
+
+        // Start call timer
+        function startCallTimer() {
+            callStartTime = new Date();
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        // Update timer display
+        function updateTimer() {
+            if (!callStartTime) return;
+            
+            const now = new Date();
+            const diffMs = now - callStartTime;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffSecs = Math.floor((diffMs % 60000) / 1000);
+            
+            document.getElementById('timer').textContent = 
+                `${diffMins.toString().padStart(2, '0')}:${diffSecs.toString().padStart(2, '0')}`;
+        }
+
+        // Toggle microphone
+        async function toggleMic() {
+            if (!localTracks.audioTrack) return;
+            
+            try {
+                if (isAudioMuted) {
+                    await localTracks.audioTrack.setMuted(false);
+                    document.getElementById('mic-btn').innerHTML = '<i class="fas fa-microphone"></i>';
+                    document.getElementById('mic-btn').classList.remove('danger');
+                    showNotification('Microphone unmuted');
+                } else {
+                    await localTracks.audioTrack.setMuted(true);
+                    document.getElementById('mic-btn').innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                    document.getElementById('mic-btn').classList.add('danger');
+                    showNotification('Microphone muted');
+                }
+                
+                isAudioMuted = !isAudioMuted;
+            } catch (error) {
+                console.error('Error toggling microphone:', error);
+            }
+        }
+
+        // Toggle video
+        async function toggleVideo() {
+            if (!localTracks.videoTrack) return;
+            
+            try {
+                if (isVideoMuted) {
+                    await localTracks.videoTrack.setMuted(false);
+                    document.getElementById('video-btn').innerHTML = '<i class="fas fa-video"></i>';
+                    document.getElementById('video-btn').classList.remove('danger');
+                    showNotification('Video turned on');
+                } else {
+                    await localTracks.videoTrack.setMuted(true);
+                    document.getElementById('video-btn').innerHTML = '<i class="fas fa-video-slash"></i>';
+                    document.getElementById('video-btn').classList.add('danger');
+                    showNotification('Video turned off');
+                }
+                
+                isVideoMuted = !isVideoMuted;
+            } catch (error) {
+                console.error('Error toggling video:', error);
+            }
+        }
+
+        // Toggle chat panel
+        function toggleChatPanel() {
+            const chatPanel = document.getElementById('chat-panel');
+            chatPanel.style.display = chatPanel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Send chat message
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            try {
+                // For now, just display locally
+                addChatMessage(message, USER_NAME, false);
+                input.value = '';
+                
+                // In production, you would send this via Agora RTM or your own WebSocket
+                
+            } catch (error) {
+                console.error('Error sending chat message:', error);
+            }
+        }
+
+        // Add chat message to UI
+        function addChatMessage(text, sender, isReceived) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.style.marginBottom = '10px';
+            messageDiv.style.padding = '10px';
+            messageDiv.style.borderRadius = '10px';
+            messageDiv.style.background = isReceived ? 'rgba(255,255,255,0.1)' : 'rgba(74, 107, 255, 0.3)';
+            messageDiv.style.alignSelf = isReceived ? 'flex-start' : 'flex-end';
+            messageDiv.style.maxWidth = '80%';
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 5px; color: ${isReceived ? '#4cd964' : '#4a6bff'}">
+                    ${sender}
+                </div>
+                <div>${text}</div>
+                <div style="font-size: 0.7rem; opacity: 0.7; margin-top: 5px; text-align: right;">
+                    ${time}
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Update connection status
+        function updateStatus(status, type = 'info') {
+            const statusElement = document.getElementById('connection-status');
+            const statusDot = statusElement.querySelector('.status-dot');
+            
+            if (statusElement) {
+                statusElement.querySelector('span').textContent = status;
+                
+                // Update dot color based on type
+                statusDot.className = 'status-dot';
+                if (type === 'error') {
+                    statusDot.classList.add('error');
+                } else if (type === 'connecting') {
+                    statusDot.classList.add('connecting');
+                }
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            
+            let icon = 'fas fa-info-circle';
+            if (type === 'error') icon = 'fas fa-exclamation-circle';
+            if (type === 'success') icon = 'fas fa-check-circle';
+            
+            notification.innerHTML = `
+                <i class="${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Leave channel and end call
+        async function leaveChannel() {
+            if (!confirm('End this video call?')) return;
+            
+            try {
+                // Stop timer
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                
+                // Stop local tracks
+                if (localTracks.audioTrack) {
+                    localTracks.audioTrack.stop();
+                    localTracks.audioTrack.close();
+                }
+                if (localTracks.videoTrack) {
+                    localTracks.videoTrack.stop();
+                    localTracks.videoTrack.close();
+                }
+                
+                // Leave channel
+                if (client) {
+                    await client.leave();
+                }
+                
+                // Notify server
+                await fetch(`/communication/video-call/{{ video_call.call_id }}/end/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                // Redirect back to chat
+                window.location.href = "{% url 'communication:chat_detail' video_call.appointment.id %}";
+                
+            } catch (error) {
+                console.error('Error leaving channel:', error);
+                // Still redirect on error
+                window.location.href = "{% url 'communication:chat_detail' video_call.appointment.id %}";
+            }
+        }
+
+        // Handle page unload
+        window.addEventListener('beforeunload', function(e) {
+            if (isConnected) {
+                // Prevent accidental closure
+                e.preventDefault();
+                e.returnValue = 'Are you sure you want to leave the video call?';
+                leaveChannel();
+            }
+        });
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check browser compatibility
+            if (!AgoraRTC.checkSystemRequirements()) {
+                alert('Your browser does not support WebRTC. Please use Chrome, Firefox, or Safari for video calls.');
+                window.location.href = "{% url 'communication:chat_detail' video_call.appointment.id %}";
+                return;
+            }
+            
+            // Check if Agora SDK loaded
+            if (typeof AgoraRTC === 'undefined') {
+                alert('Failed to load video call library. Please refresh the page.');
+                return;
+            }
+            
+            // Request camera/mic permissions
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                .then(function(stream) {
+                    // Stop the test stream
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                    // Initialize Agora
+                    initAgoraRTC();
+                })
+                .catch(function(error) {
+                    console.error('Permission denied:', error);
+                    alert('Camera and microphone permissions are required for video calls. Please enable them in your browser settings.');
+                    
+                    // Try to initialize anyway (audio-only mode)
+                    initAgoraRTC();
+                });
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

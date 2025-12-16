@@ -1,0 +1,858 @@
+{% extends 'doctor/doctor_sidebar.html' %}
+{% load static %}
+
+{% block title %}Appointment #{{ appointment.id }} | MediSched{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="{% url 'doctor:appointments' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Appointments
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Left Column: Appointment Details -->
+        <div class="col-lg-8">
+            <!-- Appointment Card -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Appointment Details</h5>
+                    <div>
+                        {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                        <button class="btn btn-sm btn-success update-status-btn" 
+                                data-id="{{ appointment.id }}" 
+                                data-status="completed">
+                            <i class="fas fa-check"></i> Mark as Completed
+                        </button>
+                        <button class="btn btn-sm btn-danger update-status-btn" 
+                                data-id="{{ appointment.id }}" 
+                                data-status="cancelled">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Appointment ID:</th>
+                                    <td>#{{ appointment.id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Patient Name:</th>
+                                    <td>{{ appointment.patient_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Phone:</th>
+                                    <td>{{ appointment.patient_phone }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Age/Gender:</th>
+                                    <td>
+                                        {% if appointment.patient_age %}{{ appointment.patient_age }} years{% endif %}
+                                        {% if appointment.patient_gender %} / {{ appointment.patient_gender|title }}{% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Date & Time:</th>
+                                    <td>
+                                        {% if appointment.appointment_date %}
+                                            {{ appointment.appointment_date|date:"F d, Y" }} at {{ appointment.appointment_date|time:"h:i A" }}
+                                        {% else %}
+                                            Not scheduled
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Consultation Type:</th>
+                                    <td>{{ appointment.get_consultation_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Appointment Type:</th>
+                                    <td>{{ appointment.get_appointment_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        {% if appointment.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% elif appointment.status == 'confirmed' %}
+                                        <span class="badge bg-info">Confirmed</span>
+                                        {% elif appointment.status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                        {% elif appointment.status == 'cancelled' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Symptoms -->
+                    {% if appointment.symptoms %}
+                    <div class="mt-4">
+                        <h6>Symptoms:</h6>
+                        <div class="p-3 bg-light rounded">
+                            {{ appointment.symptoms|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Created At -->
+                    <div class="mt-4 text-muted small">
+                        Created: {{ appointment.created_at|date:"M d, Y h:i A" }}
+                        {% if appointment.updated_at != appointment.created_at %}
+                        | Last Updated: {{ appointment.updated_at|date:"M d, Y h:i A" }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Payment Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="50%">Consultation Fee:</th>
+                                    <td class="text-end">${{ appointment.consultation_fee }}</td>
+                                </tr>
+                                <tr>
+                                    <th>VAT (5%):</th>
+                                    <td class="text-end">${{ appointment.vat_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Platform Fee:</th>
+                                    <td class="text-end">${{ appointment.platform_fee }}</td>
+                                </tr>
+                                <tr class="border-top">
+                                    <th><strong>Total Amount:</strong></th>
+                                    <td class="text-end"><strong>${{ appointment.total_amount }}</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="50%">Payment Method:</th>
+                                    <td>{{ appointment.payment_method|default:"Not specified"|title }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Status:</th>
+                                    <td>
+                                        {% if appointment.payment_status == 'paid' %}
+                                        <span class="badge bg-success">Paid</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">{{ appointment.payment_status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if appointment.transaction_id %}
+                                <tr>
+                                    <th>Transaction ID:</th>
+                                    <td><code>{{ appointment.transaction_id }}</code></td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Payment Transaction Details -->
+                    {% if payment_transaction %}
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6>Payment Transaction:</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Transaction ID:</th>
+                                <td>{{ payment_transaction.transaction_id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Amount:</th>
+                                <td>${{ payment_transaction.amount }}</td>
+                            </tr>
+                            <tr>
+                                <th>Method:</th>
+                                <td>{{ payment_transaction.method|title }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <span class="badge {% if payment_transaction.status == 'completed' %}bg-success{% else %}bg-warning{% endif %}">
+                                        {{ payment_transaction.status|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Created:</th>
+                                <td>{{ payment_transaction.created_at|date:"M d, Y h:i A" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Prescription (if exists) -->
+            {% if prescription %}
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Prescription</h5>
+                    <a href="{% url 'doctor:view_prescription' prescription.id %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-eye"></i> View Full
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="prescription-details">
+                        <h6>Diagnosis:</h6>
+                        <p>{{ prescription.diagnosis|truncatechars:150 }}</p>
+                        
+                        {% if prescription.advice %}
+                        <h6>Advice:</h6>
+                        <p>{{ prescription.advice|truncatechars:100 }}</p>
+                        {% endif %}
+                        
+                        {% if prescription.medicines %}
+                        <h6>Medicines ({{ prescription.medicines|length }}):</h6>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Medicine</th>
+                                    <th>Dosage</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for medicine in prescription.medicines|slice:":3" %}
+                                <tr>
+                                    <td>{{ medicine.name }}</td>
+                                    <td>{{ medicine.dosage }}</td>
+                                    <td>{{ medicine.duration }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% if prescription.medicines|length > 3 %}
+                        <p class="text-muted small">+ {{ prescription.medicines|length|add:"-3" }} more medicines</p>
+                        {% endif %}
+                        {% endif %}
+                        
+                        <div class="text-muted small mt-3">
+                            Prescribed on: {{ prescription.created_at|date:"M d, Y h:i A" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Test Reports -->
+            {% if test_reports %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Test Reports ({{ test_reports|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for report in test_reports|slice:":3" %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ report.test_name }}</h6>
+                                <small class="text-muted">
+                                    {{ report.test_date|date:"M d, Y" }}
+                                    {% if report.lab_name %}
+                                    | {{ report.lab_name }}
+                                    {% endif %}
+                                </small>
+                                <br>
+                                <span class="badge 
+                                    {% if report.status == 'reviewed' %}bg-success
+                                    {% elif report.status == 'submitted' %}bg-warning
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ report.status|title }}
+                                </span>
+                            </div>
+                            <div>
+                                <a href="{{ report.report_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <a href="{% url 'doctor:review_test_report' report.id %}" class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if test_reports|length > 3 %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'doctor:chat_detail' appointment.id %}" class="btn btn-sm btn-outline-primary">
+                            View All {{ test_reports|length }} Reports
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Video Calls -->
+            {% if video_calls %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Video Calls ({{ video_calls|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for call in video_calls|slice:":3" %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">
+                                        {{ call.call_type|title }} Call
+                                        {% if call.status == 'ongoing' %}
+                                        <span class="badge bg-danger">Live</span>
+                                        {% endif %}
+                                    </h6>
+                                    <small class="text-muted">
+                                        {{ call.scheduled_time|date:"M d, Y h:i A" }}
+                                    </small>
+                                </div>
+                                <div class="btn-group">
+                                    {% if call.status == 'scheduled' or call.status == 'ongoing' %}
+                                    <a href="{% url 'doctor:video_call_room' call.call_id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        {% if call.status == 'ongoing' %}
+                                        <i class="fas fa-video"></i> Join
+                                        {% else %}
+                                        <i class="fas fa-play"></i> Start
+                                        {% endif %}
+                                    </a>
+                                    {% endif %}
+                                    <span class="badge 
+                                        {% if call.status == 'completed' %}bg-success
+                                        {% elif call.status == 'cancelled' %}bg-danger
+                                        {% elif call.status == 'missed' %}bg-warning
+                                        {% else %}bg-info{% endif %}">
+                                        {{ call.status|title }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Actions and Patient Info -->
+        <div class="col-lg-4">
+            <!-- Patient Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Patient Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if appointment.patient.profile_photo %}
+                        <img src="{{ appointment.patient.profile_photo.url }}" 
+                             alt="{{ appointment.patient.get_full_name }}" 
+                             class="rounded-circle" 
+                             style="width: 80px; height: 80px; object-fit: cover;">
+                        {% else %}
+                        <div class="avatar-lg bg-primary rounded-circle text-white d-inline-flex align-items-center justify-content-center">
+                            {{ appointment.patient.first_name.0|upper }}{{ appointment.patient.last_name.0|upper }}
+                        </div>
+                        {% endif %}
+                        <h5 class="mt-3 mb-0">{{ appointment.patient.get_full_name }}</h5>
+                        <p class="text-muted">@{{ appointment.patient.username }}</p>
+                    </div>
+                    
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ appointment.patient.email|default:"Not provided" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Phone:</th>
+                            <td>{{ appointment.patient_phone }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Appointments:</th>
+                            <td>{{ appointment.patient.appointments.count }}</td>
+                        </tr>
+                        <tr>
+                            <th>Active Conversations:</th>
+                            <td>
+                                {% with appointment.conversation as conv %}
+                                    {% if conv %}
+                                        <span class="badge bg-primary">{{ conv.messages.count }} messages</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">No conversation</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <div class="d-grid mt-3">
+                        <a href="{% url 'doctor:chat_detail' appointment.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-comment-medical me-2"></i> 
+                            {% if appointment.conversation %}
+                                Continue Chat
+                            {% else %}
+                                Start Chat
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <!-- Chat Button -->
+                        <a href="{% url 'doctor:chat_detail' appointment.id %}" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-comments me-2"></i> 
+                            {% if appointment.conversation %}
+                                Open Chat
+                            {% else %}
+                                Start Chat
+                            {% endif %}
+                        </a>
+                        
+                        <!-- Prescription Button -->
+                        {% if appointment.status == 'pending' or appointment.status == 'confirmed' or appointment.status == 'completed' %}
+                        <a href="{% url 'doctor:create_prescription' appointment.id %}" 
+                           class="btn btn-success">
+                            <i class="fas fa-file-medical me-2"></i> 
+                            {% if prescription %}
+                                Update Prescription
+                            {% else %}
+                                Create Prescription
+                            {% endif %}
+                        </a>
+                        {% endif %}
+                        
+                        <!-- Video Call Button -->
+                        <button type="button" class="btn btn-info" data-bs-toggle="modal" 
+                                data-bs-target="#videoCallModal{{ appointment.id }}">
+                            <i class="fas fa-video me-2"></i> 
+                            {% if ongoing_call %}
+                                Join Call
+                            {% else %}
+                                Schedule Video Call
+                            {% endif %}
+                        </button>
+                        
+                        <!-- Reschedule Button -->
+                        {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" 
+                                data-bs-target="#rescheduleModal{{ appointment.id }}">
+                            <i class="fas fa-calendar-alt me-2"></i> Reschedule
+                        </button>
+                        {% endif %}
+                        
+                        <!-- Print Button -->
+                        <button class="btn btn-outline-secondary" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i> Print Details
+                        </button>
+                        
+                        <!-- View in Chat Button -->
+                        <a href="{% url 'doctor:chat_detail' appointment.id %}" 
+                           class="btn btn-outline-info">
+                            <i class="fas fa-exchange-alt me-2"></i> View in Chat
+                        </a>
+                        
+                        <!-- Manage Documents Button -->
+                        {% if appointment.previous_prescriptions or appointment.patient_test_reports or test_reports %}
+                        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" 
+                                data-bs-target="#documentsModal{{ appointment.id }}">
+                            <i class="fas fa-folder-open me-2"></i> View Documents
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <!-- Prescription Activity -->
+                        {% if prescription %}
+                        <div class="timeline-item mb-3">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">{{ prescription.created_at|timesince }} ago</small>
+                                <p class="mb-0 small">Prescription created</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Test Report Activity -->
+                        {% if test_reports %}
+                        <div class="timeline-item mb-3">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">{{ test_reports.0.created_at|timesince }} ago</small>
+                                <p class="mb-0 small">{{ test_reports|length }} test report(s) uploaded</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Video Call Activity -->
+                        {% if video_calls %}
+                        <div class="timeline-item mb-3">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">{{ video_calls.0.scheduled_time|timesince }} ago</small>
+                                <p class="mb-0 small">Video call scheduled</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Appointment Status Activity -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <small class="text-muted">{{ appointment.created_at|timesince }} ago</small>
+                                <p class="mb-0 small">Appointment {{ appointment.status }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attachments -->
+            {% if appointment.previous_prescriptions or appointment.patient_test_reports %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Patient Attachments</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% if appointment.previous_prescriptions %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-file-prescription text-primary"></i>
+                                Previous Prescription
+                            </span>
+                            <a href="{{ appointment.previous_prescriptions.url }}" 
+                               target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% if appointment.patient_test_reports %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <i class="fas fa-file-medical-alt text-success"></i>
+                                Test Reports
+                            </span>
+                            <a href="{{ appointment.patient_test_reports.url }}" 
+                               target="_blank" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Video Call Modal -->
+<div class="modal fade" id="videoCallModal{{ appointment.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Schedule Video Call</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'doctor:schedule_video_call' appointment.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Schedule a video call with <strong>{{ appointment.patient.get_full_name }}</strong></p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Call Type</label>
+                        <select class="form-select" name="call_type" required>
+                            <option value="video" selected>Video Call</option>
+                            <option value="audio">Audio Call</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Date & Time</label>
+                        <input type="datetime-local" class="form-control" name="scheduled_time" 
+                               min="{% now 'Y-m-d' %}T{% now 'H:i' %}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" name="notes" rows="3" 
+                                  placeholder="Add any notes for the patient..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Schedule Call</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reschedule Modal -->
+<div class="modal fade" id="rescheduleModal{{ appointment.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reschedule Appointment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'doctor:update_appointment_status' appointment.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reschedule">
+                <div class="modal-body">
+                    <p>Reschedule appointment with <strong>{{ appointment.patient.get_full_name }}</strong></p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">New Date</label>
+                        <input type="date" class="form-control" name="new_date" 
+                               min="{% now 'Y-m-d' %}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">New Time</label>
+                        <input type="time" class="form-control" name="new_time" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Reason for Rescheduling (Optional)</label>
+                        <textarea class="form-control" name="reschedule_reason" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Reschedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Documents Modal -->
+<div class="modal fade" id="documentsModal{{ appointment.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Documents for Appointment #{{ appointment.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Prescriptions -->
+                    <div class="col-md-6">
+                        <h6 class="mb-3">
+                            <i class="fas fa-prescription text-primary me-2"></i>Prescriptions
+                        </h6>
+                        {% if prescription %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6>Prescription #{{ prescription.id }}</h6>
+                                <p class="small text-muted">{{ prescription.created_at|date:"M d, Y" }}</p>
+                                <a href="{% url 'doctor:view_prescription' prescription.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No prescriptions created yet</p>
+                        <a href="{% url 'doctor:create_prescription' appointment.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i>Create Prescription
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Test Reports -->
+                    <div class="col-md-6">
+                        <h6 class="mb-3">
+                            <i class="fas fa-file-medical text-success me-2"></i>Test Reports
+                        </h6>
+                        {% if test_reports %}
+                        <div class="list-group">
+                            {% for report in test_reports|slice:":3" %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ report.test_name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ report.test_date|date:"M d, Y" }}</small>
+                                    </div>
+                                    <div class="btn-group">
+                                        <a href="{{ report.report_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <a href="{% url 'doctor:review_test_report' report.id %}" class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No test reports uploaded yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Patient Uploaded Files -->
+                {% if appointment.previous_prescriptions or appointment.patient_test_reports %}
+                <div class="mt-4">
+                    <h6 class="mb-3">
+                        <i class="fas fa-paperclip text-warning me-2"></i>Patient Uploaded Files
+                    </h6>
+                    <div class="row">
+                        {% if appointment.previous_prescriptions %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>Previous Prescription</h6>
+                                    <a href="{{ appointment.previous_prescriptions.url }}" 
+                                       target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View File
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if appointment.patient_test_reports %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6>Test Reports</h6>
+                                    <a href="{{ appointment.patient_test_reports.url }}" 
+                                       target="_blank" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-eye me-1"></i>View File
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Status Updates -->
+<script>
+$(document).ready(function() {
+    // Update appointment status
+    $('.update-status-btn').click(function() {
+        var appointmentId = $(this).data('id');
+        var newStatus = $(this).data('status');
+        var button = $(this);
+        
+        if (confirm('Are you sure you want to update this appointment status?')) {
+            $.ajax({
+                url: `/doctor/appointments/${appointmentId}/update-status/`,
+                type: 'POST',
+                data: {
+                    'status': newStatus,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while updating the appointment.');
+                }
+            });
+        }
+    });
+});
+</script>
+
+<style>
+.avatar-lg {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+    font-weight: bold;
+}
+.prescription-details h6 {
+    color: #495057;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+.list-group-item {
+    border: none;
+    padding: 0.75rem 0;
+}
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+.timeline-content {
+    padding-left: 10px;
+}
+/* Print Styles */
+@media print {
+    .btn, .modal, .d-print-none {
+        display: none !important;
+    }
+    .card, .card-header, .card-body {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+{% endblock %}

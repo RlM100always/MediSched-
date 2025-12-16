@@ -1,0 +1,770 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Book Appointment - MediSched{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Global Styles */
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Inter', sans-serif;
+        min-height: 100vh;
+    }
+
+    .container {
+        margin-top: 100px;
+        max-width: 1400px;
+        padding: 40px 20px;
+    }
+
+    /* Grid Layout */
+    .row {
+        display: grid;
+        grid-template-columns: 1fr 420px;
+        gap: 30px;
+        align-items: start;
+    }
+
+    /* Card Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -1000px 0;
+        }
+        100% {
+            background-position: 1000px 0;
+        }
+    }
+
+    /* Main Card Styles */
+    .card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .card:hover {
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.12);
+        transform: translateY(-5px);
+    }
+
+    /* Card Header */
+    .card-header {
+        background: #2D9CDB;
+        color: white;
+        padding: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 0.5;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+    }
+
+    .card-header h4 {
+        font-size: 28px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .card-header i {
+        font-size: 32px;
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+    }
+
+    .card-body {
+        padding: 35px;
+    }
+
+    /* Doctor Info Section */
+    .doctor-info {
+        background: linear-gradient(135deg, #f8f9ff 0%, #e8eaf6 100%);
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 35px;
+        border: 2px solid #e3e8ff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .doctor-info::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+        animation: shimmer 3s infinite;
+    }
+
+    .d-flex {
+        display: flex;
+    }
+
+    .align-items-center {
+        align-items: center;
+    }
+
+    .doctor-avatar {
+        margin-right: 20px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .doctor-avatar img {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .doctor-avatar i {
+        font-size: 70px;
+        color: #2D9CDB;
+        filter: drop-shadow(0 4px 10px rgba(102, 126, 234, 0.3));
+    }
+
+    .doctor-info h5 {
+        font-size: 24px;
+        font-weight: 800;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+
+    .doctor-info p {
+        font-size: 14px;
+        color: #718096;
+        margin: 5px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .text-warning {
+        color: #f59e0b;
+    }
+
+    /* Section Titles */
+    .mb-4 h5 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 18px;
+        position: relative;
+        padding-left: 15px;
+    }
+
+    .mb-4 h5::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 5px;
+        height: 24px;
+        background: #2D9CDB;
+        border-radius: 10px;
+    }
+
+    /* Form Cards */
+    .mb-4 .card {
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+        animation: none;
+    }
+
+    .mb-4 .card:hover {
+        border-color: #2D9CDB;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+    }
+
+    .mb-4 .card-body {
+        padding: 25px;
+    }
+
+    /* User Info Display */
+    .d-flex.align-items-center.mb-3 {
+        background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid #d6e4ff;
+    }
+
+    .fa-user-circle {
+        color: #2D9CDB;
+    }
+
+    .mb-3 h6 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 4px;
+    }
+
+    .text-muted {
+        color: #718096 !important;
+        font-size: 13px;
+    }
+
+    /* Form Elements */
+    .form-label {
+        font-size: 15px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #2D9CDB;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: #a0aec0;
+    }
+
+    .form-text {
+        font-size: 13px;
+        color: #718096;
+        margin-top: 8px;
+        display: block;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    /* Radio Buttons */
+    .form-check {
+        padding: 18px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: #f8fafc;
+    }
+
+    .form-check:hover {
+        border-color: #2D9CDB;
+        background: #f5f7ff;
+        transform: translateX(5px);
+    }
+
+    .form-check-input {
+        width: 22px;
+        height: 22px;
+        margin-right: 12px;
+        cursor: pointer;
+        border: 2px solid #cbd5e0;
+        transition: all 0.2s ease;
+    }
+
+    .form-check-input:checked {
+        background-color: #2D9CDB;
+        border-color: #2D9CDB;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+    }
+
+    .form-check-input:checked ~ .form-check-label {
+        color: #2D9CDB;
+    }
+
+    .form-check:has(.form-check-input:checked) {
+        border-color: #2D9CDB;
+        background: linear-gradient(135deg, #f5f7ff 0%, #eef2ff 100%);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        flex: 1;
+        transition: all 0.3s ease;
+    }
+
+    .form-check-label strong {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2d3748;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-check-label p {
+        margin: 0;
+        font-size: 14px;
+    }
+
+    /* Submit Button */
+    .d-grid {
+        margin-top: 35px;
+    }
+
+    .btn {
+        padding: 16px 32px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background:#2D9CDB;
+        color: white;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:active {
+        transform: translateY(-1px);
+    }
+
+    .btn-lg {
+        padding: 18px 40px;
+        font-size: 17px;
+        width: 100%;
+    }
+
+    /* Payment Sidebar */
+    .sticky-top {
+        position: sticky;
+        top: 100px;
+        animation: fadeInUp 0.6s ease 0.2s both;
+    }
+
+    .payment-summary {
+        padding: 30px;
+    }
+
+    .payment-summary .card-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        color: #2d3748;
+        padding: 20px 30px;
+    }
+
+    .payment-summary .card-header h5 {
+        font-size: 20px;
+        font-weight: 800;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .d-flex.justify-content-between {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        font-size: 15px;
+    }
+
+    .d-flex.justify-content-between span:first-child {
+        color: #4a5568;
+        font-weight: 500;
+    }
+
+    .d-flex.justify-content-between span:last-child {
+        color: #2d3748;
+        font-weight: 700;
+    }
+
+    hr {
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+        margin: 20px 0;
+    }
+
+    .fw-bold.fs-5 {
+        padding: 20px;
+        background: linear-gradient(135deg, #f5f7ff 0%, #eef2ff 100%);
+        border-radius: 12px;
+        margin: 20px 0;
+    }
+
+    .fw-bold.fs-5 span:first-child {
+        font-size: 18px;
+        color: #2d3748;
+    }
+
+    .fw-bold.fs-5 span:last-child {
+        font-size: 24px;
+        color: #2D9CDB;
+        font-weight: 800;
+    }
+
+    /* Alert Styles */
+    .alert {
+        padding: 16px 20px;
+        border-radius: 12px;
+        border: none;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, #e6f7ff 0%, #d4edff 100%);
+        color: #0369a1;
+        border-left: 4px solid #0ea5e9;
+    }
+
+    .alert i {
+        font-size: 18px;
+    }
+
+    .alert-dismissible .btn-close {
+        background: transparent;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+    }
+
+    .alert-dismissible .btn-close:hover {
+        opacity: 1;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .row {
+            grid-template-columns: 1fr;
+        }
+
+        .sticky-top {
+            position: relative;
+            top: 0;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 20px 15px;
+        }
+
+        .card-body {
+            padding: 25px 20px;
+        }
+
+        .card-header h4 {
+            font-size: 22px;
+        }
+
+        .doctor-info {
+            padding: 20px;
+        }
+
+        .doctor-avatar img,
+        .doctor-avatar i {
+            width: 70px;
+            height: 70px;
+            font-size: 50px;
+        }
+
+        .mb-4 h5 {
+            font-size: 18px;
+        }
+    }
+
+    /* Loading Animation */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease;
+    }
+
+    /* Focus Visible for Accessibility */
+    *:focus-visible {
+        outline: 3px solid #2D9CDB;
+        outline-offset: 2px;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-calendar-plus"></i> Book Appointment</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Doctor Info -->
+                    <div class="doctor-info mb-4 p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <div class="doctor-avatar me-3">
+                                {% if doctor.profile_image %}
+                                    <img src="{{ doctor.profile_image.url }}" alt="Dr. {{ doctor.user.get_full_name }}">
+                                {% else %}
+                                    <i class="fas fa-user-md fa-3x text-secondary"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</h5>
+                                <p class="text-muted mb-0">
+                                    {% if doctor.qualification %}{{ doctor.qualification }} | {% endif %}
+                                    {{ doctor.total_experience }} year{{ doctor.total_experience|pluralize }} experience
+                                </p>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-star text-warning"></i> 
+                                    {{ doctor.rating|default:"New" }} 
+                                    {% if doctor.total_reviews %}({{ doctor.total_reviews }} reviews){% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if messages %}
+                        <div class="mb-3">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Patient Phone -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">Patient Selection</h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="me-3">
+                                            <i class="fas fa-user-circle fa-2x text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ request.user.get_full_name|default:request.user.username }}</h6>
+                                            <small class="text-muted">{{ request.user.email }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Phone Number *</label>
+                                        <input type="text" name="patient_phone" class="form-control" 
+                                               placeholder="01XXXXXXXXX" required
+                                               pattern="^(?:\+?88)?01[3-9]\d{8}$">
+                                        <div class="form-text">Enter your Bangladeshi phone number (e.g., 013XXXXXXXX)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Consultation Type -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">Type of Consultation</h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input consultation-type" type="radio" 
+                                               name="consultation_type" id="general" value="general" checked 
+                                               data-fee="{{ general_fee }}">
+                                        <label class="form-check-label" for="general">
+                                            <strong>General Consultation</strong>
+                                            <p class="text-muted mb-0">Standard consultation with the doctor</p>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input consultation-type" type="radio" 
+                                               name="consultation_type" id="special" value="special"
+                                               data-fee="{{ special_fee }}">
+                                        <label class="form-check-label" for="special">
+                                            <strong>Special Consultation</strong>
+                                            <p class="text-muted mb-0">In-depth consultation for complex cases</p>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Appointment Type -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">Consultation Mode</h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio" name="appointment_type" 
+                                               id="instant" value="instant" checked>
+                                        <label class="form-check-label" for="instant">
+                                            <strong>Instant Video Consultation</strong>
+                                            <p class="text-muted mb-0">Consult within few minutes</p>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="appointment_type" 
+                                               id="scheduled" value="scheduled">
+                                        <label class="form-check-label" for="scheduled">
+                                            <strong>Book an Appointment</strong>
+                                            <p class="text-muted mb-0">Schedule for a later time</p>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Symptoms -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Symptoms (Optional)</label>
+                            <textarea name="symptoms" class="form-control" rows="3" 
+                                      placeholder="Briefly describe your symptoms..."></textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-arrow-right"></i> Proceed to Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Summary Sidebar -->
+        <div class="col-md-4">
+            <div class="sticky-top" style="top: 20px;">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Payment Details</h5>
+                    </div>
+                    <div class="card-body payment-summary">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Consultation Fee:</span>
+                                <span id="consultation-fee">${{ general_fee|floatformat:2 }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>VAT (5%):</span>
+                                <span id="vat-amount">${{ general_fee|floatformat:2 }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Platform Fee:</span>
+                                <span id="platform-fee">$29.00</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold fs-5">
+                                <span>Net Payable:</span>
+                                <span id="total-amount">$0.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="fas fa-info-circle"></i>
+                                You can submit patient details, old prescriptions, and test reports in the next screen.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const consultationTypes = document.querySelectorAll('.consultation-type');
+    
+    function updateFees() {
+        const selectedType = document.querySelector('.consultation-type:checked');
+        const consultationFee = parseFloat(selectedType.dataset.fee);
+        const vatAmount = consultationFee * 0.05;
+        const platformFee = 29.00;
+        const totalAmount = consultationFee + vatAmount + platformFee;
+        
+        document.getElementById('consultation-fee').textContent = '$' + consultationFee.toFixed(2);
+        document.getElementById('vat-amount').textContent = '$' + vatAmount.toFixed(2);
+        document.getElementById('total-amount').textContent = '$' + totalAmount.toFixed(2);
+    }
+    
+    consultationTypes.forEach(type => {
+        type.addEventListener('change', updateFees);
+    });
+    
+    // Initial calculation
+    updateFees();
+});
+</script>
+{% endblock %}

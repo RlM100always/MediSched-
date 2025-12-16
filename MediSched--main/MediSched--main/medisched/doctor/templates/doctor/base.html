@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MediSched - Doctor Portal{% endblock %}</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary: #2D9CDB;
+            --secondary: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fb;
+        }
+        
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, var(--primary), #1a73e8);
+            color: white;
+            position: fixed;
+            width: 250px;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            padding: 12px 20px;
+            margin: 2px 0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white !important;
+        }
+        
+        .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        
+        .doctor-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255,255,255,0.2);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .table th {
+            font-weight: 600;
+            border-top: none;
+            color: #6c757d;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2381c4;
+            border-color: #2381c4;
+        }
+        
+        .btn-success {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+        }
+        
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .message-bubble.sent {
+            background-color: var(--primary);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message-bubble.received {
+            background-color: #f1f3f4;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .chat-container {
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        
+        .video-call-container {
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .prescription-table th {
+            background-color: #f8f9fa;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+            
+            .nav-link span {
+                display: none;
+            }
+            
+            .nav-link i {
+                margin-right: 0;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    {% include 'doctor/doctor_sidebar.html' %}
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <nav class="navbar navbar-light bg-white rounded-3 mb-4 p-3 shadow-sm">
+            <div class="container-fluid">
+                <div>
+                    <h4 class="mb-0 fw-bold text-primary">{% block page_title %}Doctor Dashboard{% endblock %}</h4>
+                    {% block breadcrumb %}{% endblock %}
+                </div>
+                
+                <div class="d-flex align-items-center">
+                    <!-- Notifications -->
+                    <div class="dropdown me-3">
+                        <button class="btn btn-light position-relative" type="button" id="notificationsDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-count">
+                                0
+                            </span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-0" style="min-width: 300px;">
+                            <div class="dropdown-header bg-primary text-white">
+                                <h6 class="mb-0">Notifications</h6>
+                            </div>
+                            <div id="notifications-list" style="max-height: 300px; overflow-y: auto;">
+                                <!-- Notifications will be loaded via AJAX -->
+                            </div>
+                            <div class="dropdown-footer text-center p-2 border-top">
+                                <a href="#" class="text-decoration-none small" id="mark-all-read">Mark all as read</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Profile -->
+                    <div class="dropdown">
+                        <button class="btn btn-light d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                            {% if request.user.profile_photo %}
+                            <img src="{{ request.user.profile_photo.url }}" alt="Profile" class="doctor-avatar me-2">
+                            {% else %}
+                            <div class="doctor-avatar bg-secondary d-flex align-items-center justify-content-center me-2">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                            {% endif %}
+                            <span class="d-none d-md-inline">{{ request.user.get_full_name }}</span>
+                            <i class="fas fa-chevron-down ms-2"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'doctor:doctor_profile' %}">
+                                <i class="fas fa-user me-2"></i>Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'doctor:doctor_profile_edit' %}">
+                                <i class="fas fa-edit me-2"></i>Edit Profile
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'doctor:doctor-logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Messages -->
+        {% if messages %}
+        <div class="container-fluid mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Global JS -->
+    <script>
+        // Load notifications
+        function loadNotifications() {
+            $.ajax({
+                url: '{% url "doctor:get_notifications" %}',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        $('#notification-count').text(response.unread_count);
+                        
+                        let notificationsHtml = '';
+                        if (response.notifications.length > 0) {
+                            response.notifications.forEach(function(notif) {
+                                notificationsHtml += `
+                                    <a href="#" class="dropdown-item border-bottom py-3 notification-item ${!notif.is_read ? 'bg-light' : ''}" 
+                                       data-id="${notif.id}">
+                                        <div class="d-flex">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1 ${!notif.is_read ? 'fw-bold' : ''}">${notif.title}</h6>
+                                                <p class="mb-0 text-muted small">${notif.message}</p>
+                                                <small class="text-muted">${notif.time_ago}</small>
+                                            </div>
+                                            ${!notif.is_read ? '<span class="badge bg-primary ms-2">New</span>' : ''}
+                                        </div>
+                                    </a>
+                                `;
+                            });
+                        } else {
+                            notificationsHtml = `
+                                <div class="text-center py-4">
+                                    <i class="fas fa-bell-slash fa-2x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">No notifications</p>
+                                </div>
+                            `;
+                        }
+                        $('#notifications-list').html(notificationsHtml);
+                    }
+                }
+            });
+        }
+        
+        // Mark notification as read
+        $(document).on('click', '.notification-item', function(e) {
+            e.preventDefault();
+            const notifId = $(this).data('id');
+            $.ajax({
+                url: `/doctor/api/notifications/${notifId}/read/`,
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                success: function() {
+                    loadNotifications();
+                }
+            });
+        });
+        
+        // Mark all as read
+        $('#mark-all-read').click(function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: '{% url "doctor:mark_all_notifications_read" %}',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                success: function() {
+                    loadNotifications();
+                }
+            });
+        });
+        
+        // CSRF token helper
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Load notifications on page load
+        $(document).ready(function() {
+            loadNotifications();
+            // Refresh notifications every 30 seconds
+            setInterval(loadNotifications, 30000);
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

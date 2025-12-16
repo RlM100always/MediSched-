@@ -1,0 +1,266 @@
+{% extends 'doctor/base.html' %}
+{% load static %}
+
+{% block title %}Create Prescription - MediSched{% endblock %}
+{% block page_title %}Create Prescription{% endblock %}
+
+{% block extra_css %}
+<style>
+    .medicine-item, .test-item {
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+    }
+    .remove-btn {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-prescription text-success me-2"></i>
+                        Create Prescription for {{ appointment.patient.get_full_name }}
+                    </h4>
+                    <p class="text-muted mb-0">Appointment #{{ appointment.id }}</p>
+                </div>
+                
+                <div class="card-body">
+                    <form id="prescriptionForm">
+                        {% csrf_token %}
+                        
+                        <!-- Diagnosis -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">
+                                <i class="fas fa-diagnosis text-info me-2"></i>
+                                Diagnosis
+                            </h5>
+                            <textarea name="diagnosis" class="form-control" rows="4" 
+                                      placeholder="Enter diagnosis details..." required></textarea>
+                        </div>
+                        
+                        <!-- Medicines Section -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-pills text-primary me-2"></i>
+                                    Medicines
+                                </h5>
+                                <button type="button" class="btn btn-sm btn-primary" id="addMedicineBtn">
+                                    <i class="fas fa-plus me-1"></i> Add Medicine
+                                </button>
+                            </div>
+                            
+                            <div id="medicinesContainer">
+                                <!-- Medicines will be added here -->
+                                <div class="medicine-item">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-2">
+                                            <input type="text" name="medicine_name[]" class="form-control" 
+                                                   placeholder="Medicine Name" required>
+                                        </div>
+                                        <div class="col-md-2 mb-2">
+                                            <input type="text" name="medicine_dosage[]" class="form-control" 
+                                                   placeholder="Dosage (e.g., 500mg)">
+                                        </div>
+                                        <div class="col-md-2 mb-2">
+                                            <input type="text" name="medicine_duration[]" class="form-control" 
+                                                   placeholder="Duration (e.g., 7 days)">
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <input type="text" name="medicine_instructions[]" class="form-control" 
+                                                   placeholder="Instructions (e.g., After meal)">
+                                        </div>
+                                        <div class="col-md-1 mb-2">
+                                            <button type="button" class="btn btn-sm btn-danger remove-btn remove-medicine">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Suggested Tests Section -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-vial text-warning me-2"></i>
+                                    Suggested Tests
+                                </h5>
+                                <button type="button" class="btn btn-sm btn-warning" id="addTestBtn">
+                                    <i class="fas fa-plus me-1"></i> Add Test
+                                </button>
+                            </div>
+                            
+                            <div id="testsContainer">
+                                <!-- Tests will be added here -->
+                                <div class="test-item">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <input type="text" name="test_name[]" class="form-control" 
+                                                   placeholder="Test Name">
+                                        </div>
+                                        <div class="col-md-5 mb-2">
+                                            <input type="text" name="test_instructions[]" class="form-control" 
+                                                   placeholder="Instructions">
+                                        </div>
+                                        <div class="col-md-1 mb-2">
+                                            <button type="button" class="btn btn-sm btn-danger remove-btn remove-test">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Advice and Follow-up -->
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-comment-medical text-secondary me-2"></i>
+                                    Medical Advice
+                                </h5>
+                                <textarea name="advice" class="form-control" rows="3" 
+                                          placeholder="Enter medical advice for the patient..."></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-calendar-check text-info me-2"></i>
+                                    Follow-up Date
+                                </h5>
+                                <input type="date" name="follow_up_date" class="form-control" 
+                                       min="{% now 'Y-m-d' %}">
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'doctor:chat_home' %}?appointment={{ appointment.id }}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Chat
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i> Save Prescription
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    const csrfToken = $('[name=csrfmiddlewaretoken]').val();
+    
+    // Add medicine row
+    $('#addMedicineBtn').click(function() {
+        const medicineHtml = `
+            <div class="medicine-item">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <input type="text" name="medicine_name[]" class="form-control" 
+                               placeholder="Medicine Name" required>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <input type="text" name="medicine_dosage[]" class="form-control" 
+                               placeholder="Dosage (e.g., 500mg)">
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <input type="text" name="medicine_duration[]" class="form-control" 
+                               placeholder="Duration (e.g., 7 days)">
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <input type="text" name="medicine_instructions[]" class="form-control" 
+                               placeholder="Instructions (e.g., After meal)">
+                    </div>
+                    <div class="col-md-1 mb-2">
+                        <button type="button" class="btn btn-sm btn-danger remove-btn remove-medicine">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        $('#medicinesContainer').append(medicineHtml);
+    });
+    
+    // Add test row
+    $('#addTestBtn').click(function() {
+        const testHtml = `
+            <div class="test-item">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <input type="text" name="test_name[]" class="form-control" 
+                               placeholder="Test Name">
+                    </div>
+                    <div class="col-md-5 mb-2">
+                        <input type="text" name="test_instructions[]" class="form-control" 
+                               placeholder="Instructions">
+                    </div>
+                    <div class="col-md-1 mb-2">
+                        <button type="button" class="btn btn-sm btn-danger remove-btn remove-test">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        $('#testsContainer').append(testHtml);
+    });
+    
+    // Remove medicine row
+    $(document).on('click', '.remove-medicine', function() {
+        if ($('.medicine-item').length > 1) {
+            $(this).closest('.medicine-item').remove();
+        }
+    });
+    
+    // Remove test row
+    $(document).on('click', '.remove-test', function() {
+        if ($('.test-item').length > 1) {
+            $(this).closest('.test-item').remove();
+        }
+    });
+    
+    // Submit form
+    $('#prescriptionForm').submit(function(e) {
+        e.preventDefault();
+        
+        // Validate at least one medicine
+        if ($('input[name="medicine_name[]"]').filter(function() {
+            return $(this).val().trim() !== '';
+        }).length === 0) {
+            alert('Please add at least one medicine.');
+            return;
+        }
+        
+        $.ajax({
+            url: "{% url 'doctor:create_prescription' appointment.id %}",
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    alert('Prescription created successfully!');
+                    window.location.href = "{% url 'doctor:chat_home' %}?appointment={{ appointment.id }}";
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            },
+            error: function() {
+                alert('Error creating prescription. Please try again.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

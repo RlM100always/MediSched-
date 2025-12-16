@@ -1,0 +1,247 @@
+{% extends 'doctor/base.html' %}
+{% load static %}
+
+{% block title %}Review Test Report - MediSched{% endblock %}
+{% block page_title %}Review Test Report{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-0">
+                                <i class="fas fa-file-medical text-info me-2"></i>
+                                Review Test Report
+                            </h4>
+                            <p class="text-muted mb-0">
+                                For {{ test_report.patient.get_full_name }} | 
+                                Appointment #{{ test_report.appointment.id }}
+                            </p>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{% url 'doctor:chat_home' %}?appointment={{ test_report.appointment.id }}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Chat
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Test Report Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>Report Information
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Test Name:</strong> {{ test_report.test_name }}</p>
+                                    <p><strong>Report Date:</strong> {{ test_report.report_date|date:"F d, Y" }}</p>
+                                    <p><strong>Status:</strong> 
+                                        <span class="badge bg-{{ test_report.status == 'reviewed'|yesno:'success,warning' }}">
+                                            {{ test_report.status|title }}
+                                        </span>
+                                    </p>
+                                    <p><strong>Uploaded By:</strong> {{ test_report.uploaded_by.get_full_name }}</p>
+                                    <p><strong>Uploaded On:</strong> {{ test_report.uploaded_at|date:"F d, Y H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-file-pdf me-2"></i>Report File
+                                    </h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    {% if test_report.report_file %}
+                                    <div class="mb-3">
+                                        <i class="fas fa-file-pdf fa-4x text-danger"></i>
+                                    </div>
+                                    <a href="{{ test_report.report_file.url }}" 
+                                       class="btn btn-danger" download>
+                                        <i class="fas fa-download me-1"></i> Download Report
+                                    </a>
+                                    <a href="{{ test_report.report_file.url }}" 
+                                       class="btn btn-outline-danger" target="_blank">
+                                        <i class="fas fa-eye me-1"></i> View Report
+                                    </a>
+                                    {% else %}
+                                    <p class="text-muted">No report file available</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Test Results -->
+                    {% if test_report.results %}
+                    <div class="mb-4">
+                        <h5 class="text-primary">
+                            <i class="fas fa-chart-line me-2"></i>Test Results
+                        </h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-primary">
+                                            <tr>
+                                                <th>Parameter</th>
+                                                <th>Result</th>
+                                                <th>Normal Range</th>
+                                                <th>Unit</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for result in test_report.results %}
+                                            <tr>
+                                                <td>{{ result.parameter }}</td>
+                                                <td>{{ result.result }}</td>
+                                                <td>{{ result.normal_range }}</td>
+                                                <td>{{ result.unit }}</td>
+                                                <td>
+                                                    {% if result.status == 'normal' %}
+                                                    <span class="badge bg-success">Normal</span>
+                                                    {% elif result.status == 'high' %}
+                                                    <span class="badge bg-warning">High</span>
+                                                    {% elif result.status == 'low' %}
+                                                    <span class="badge bg-danger">Low</span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary">{{ result.status }}</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Doctor's Review Form -->
+                    <div class="mb-4">
+                        <h5 class="text-success">
+                            <i class="fas fa-user-md me-2"></i>Doctor's Review
+                        </h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="reviewForm">
+                                    {% csrf_token %}
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-stethoscope me-1"></i>Doctor's Notes
+                                        </label>
+                                        <textarea name="doctor_notes" class="form-control" rows="6" 
+                                                  placeholder="Enter your professional assessment and recommendations based on the test results..."
+                                                  {% if test_report.status == 'reviewed' and test_report.doctor_notes %}readonly{% endif %}>
+                                            {{ test_report.doctor_notes|default:'' }}
+                                        </textarea>
+                                        {% if test_report.doctor_notes %}
+                                        <div class="form-text">
+                                            Reviewed on: {{ test_report.updated_at|date:"F d, Y H:i" }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if test_report.status != 'reviewed' %}
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check-circle me-1"></i> Submit Review
+                                        </button>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        This report has already been reviewed.
+                                    </div>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recommendations -->
+                    {% if test_report.recommendations %}
+                    <div class="mb-4">
+                        <h5 class="text-warning">
+                            <i class="fas fa-lightbulb me-2"></i>Recommendations
+                        </h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    {% for rec in test_report.recommendations %}
+                                    <li class="list-group-item">
+                                        <i class="fas fa-chevron-right text-warning me-2"></i>
+                                        {{ rec }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Next Steps -->
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>Next Steps
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Review the test results thoroughly</li>
+                            <li>Provide clear notes and recommendations</li>
+                            <li>Notify the patient about the reviewed report</li>
+                            <li>Schedule follow-up if necessary</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    const csrfToken = $('[name=csrfmiddlewaretoken]').val();
+    const reportId = {{ test_report.id }};
+    
+    // Submit review form
+    $('#reviewForm').submit(function(e) {
+        e.preventDefault();
+        
+        if (!confirm('Are you sure you want to submit your review? This action cannot be undone.')) {
+            return;
+        }
+        
+        $.ajax({
+            url: "{% url 'doctor:review_test_report' test_report.id %}",
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    alert('Test report reviewed successfully!');
+                    window.location.reload();
+                } else {
+                    alert('Error: Could not submit review.');
+                }
+            },
+            error: function() {
+                alert('Error submitting review. Please try again.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

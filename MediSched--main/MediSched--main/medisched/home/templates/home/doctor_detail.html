@@ -1,0 +1,866 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dr. {{ doctor.user.get_full_name|default:doctor.user.username }} - MediSched{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        background: #f8fafc;
+        color: #1e293b;
+        line-height: 1.6;
+        padding-top: 80px;
+    }
+    
+    /* Hero Section */
+    .doctor-hero {
+        background: #2D9CDB;
+        color: white;
+        padding: 60px 0;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .doctor-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+    }
+    
+    .hero-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .doctor-header {
+        display: flex;
+        gap: 40px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .doctor-avatar-wrapper {
+        position: relative;
+    }
+    
+    .doctor-avatar {
+        width: 180px;
+        height: 180px;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 6px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        background: white;
+        transition: transform 0.3s ease;
+    }
+    
+    .doctor-avatar:hover {
+        transform: scale(1.05);
+    }
+    
+    .doctor-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .default-avatar {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        color: #2D9CDB;
+        background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+    }
+    
+    .verified-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: #10b981;
+        color: white;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 4px solid white;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+    
+    .doctor-info {
+        flex: 1;
+        min-width: 300px;
+    }
+    
+    .doctor-info h1 {
+        font-size: 2.8rem;
+        margin-bottom: 15px;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .doctor-meta {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        align-items: center;
+    }
+    
+    .meta-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        padding: 10px 18px;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .rating-display {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.95);
+        color: #1e293b;
+        padding: 10px 18px;
+        border-radius: 25px;
+        font-weight: 600;
+    }
+    
+    .stars {
+        color: #fbbf24;
+        display: flex;
+        gap: 2px;
+    }
+    
+    /* Main Content */
+    .content-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px 60px;
+    }
+    
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 30px;
+    }
+    
+    .card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+    
+    .card-icon {
+        width: 45px;
+        height: 45px;
+        background: #2D9CDB;
+        color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+    
+    .card-header h2 {
+        color: #1e293b;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .about-text {
+        color: #475569;
+        font-size: 1.05rem;
+        line-height: 1.8;
+    }
+    
+    .info-grid {
+        display: grid;
+        gap: 20px;
+    }
+    
+    .info-item {
+        display: flex;
+        gap: 15px;
+        padding: 15px;
+        background: #f8fafc;
+        border-radius: 12px;
+        transition: background 0.3s ease;
+    }
+    
+    .info-item:hover {
+        background: #f1f5f9;
+    }
+    
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        background: #2D9CDB;
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .info-content strong {
+        display: block;
+        color: #1e293b;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    
+    .info-content p {
+        color: #64748b;
+        margin: 0;
+    }
+    
+    /* Experience Items */
+    .experience-list {
+        display: grid;
+        gap: 15px;
+    }
+    
+    .experience-item {
+        padding: 20px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 12px;
+        border-left: 4px solid #2D9CDB;
+        transition: all 0.3s ease;
+    }
+    
+    .experience-item:hover {
+        border-left-color: #049ef8;
+        transform: translateX(5px);
+    }
+    
+    .experience-item strong {
+        display: block;
+        color: #1e293b;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+    
+    .experience-item p {
+        color: #64748b;
+        margin: 5px 0;
+    }
+    
+    /* Tags */
+    .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #e0e7ff 0%, #e0f2fe 100%);
+        color: #2D9CDB;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(103, 126, 234, 0.2);
+    }
+    
+    .tag:hover {
+        background: linear-gradient(135deg, #c7d2fe 0%, #bae6fd 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(103, 126, 234, 0.3);
+    }
+    
+    .tag.symptom {
+        background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+        color: #92400e;
+        border-color: rgba(251, 191, 36, 0.2);
+    }
+    
+    .tag.symptom:hover {
+        background: linear-gradient(135deg, #fde68a 0%, #fdba74 100%);
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+    }
+    
+    /* Working Hours */
+    .working-hours-grid {
+        display: grid;
+        gap: 12px;
+    }
+    
+    .day-schedule {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px 18px;
+        background: #f8fafc;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .day-schedule:hover {
+        background: #f1f5f9;
+        transform: translateX(5px);
+    }
+    
+    .day-schedule.active {
+        background: linear-gradient(135deg, #e0e7ff 0%, #ddd6fe 100%);
+        border: 2px solid #2D9CDB;
+    }
+    
+    .day-schedule.closed {
+        opacity: 0.5;
+    }
+    
+    .day-name {
+        font-weight: 600;
+        color: #1e293b;
+        min-width: 80px;
+    }
+    
+    .day-time {
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .day-schedule.active .day-time {
+        color: #2D9CDB;
+        font-weight: 600;
+    }
+    
+    .closed-badge {
+        color: #ef4444;
+        font-weight: 500;
+        font-style: italic;
+    }
+    
+    /* Appointment Fees */
+    .fee-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        border: 2px solid #60b8eb;
+        transition: all 0.3s ease;
+    }
+    
+    .fee-item:hover {
+        transform: translateY(-3px);
+    }
+    
+    .fee-label {
+        font-weight: 600;
+        color: #2D9CDB;
+    }
+    
+    .fee-type {
+        color: #2D9CDB;
+        font-size: 0.9rem;
+        margin-top: 4px;
+    }
+    
+    .fee-amount {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #15803d;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    /* Rating Card */
+    .rating-card-content {
+        text-align: center;
+        padding: 30px 20px;
+    }
+    
+    .rating-number {
+        font-size: 4rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 15px;
+    }
+    
+    .rating-stars {
+        font-size: 1.8rem;
+        color: #fbbf24;
+        margin-bottom: 15px;
+    }
+    
+    .rating-count {
+        color: #64748b;
+        font-size: 1.05rem;
+    }
+    
+    /* Action Buttons */
+    .action-section {
+        margin-top: 40px;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-action {
+        flex: 1;
+        min-width: 200px;
+        padding: 18px 35px;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-book {
+        background: #2D9CDB;
+        color: white;
+        box-shadow: 0 4px 14px #2D9CDB;
+    }
+    
+    .btn-book:hover {
+        background: #029ef9;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px #eff3f5;
+    }
+    
+    .btn-back {
+        background: white;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .btn-back:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #475569;
+    }
+    
+    /* Sticky Sidebar */
+    .sidebar-sticky {
+        position: sticky;
+        top: 100px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 968px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .sidebar-sticky {
+            position: static;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        body {
+            padding-top: 70px;
+        }
+        
+        .doctor-hero {
+            padding: 40px 0;
+        }
+        
+        .doctor-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 25px;
+        }
+        
+        .doctor-avatar {
+            width: 150px;
+            height: 150px;
+        }
+        
+        .doctor-info h1 {
+            font-size: 2rem;
+        }
+        
+        .doctor-meta {
+            justify-content: center;
+        }
+        
+        .action-section {
+            flex-direction: column;
+        }
+        
+        .btn-action {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Doctor Hero Section -->
+<section class="doctor-hero">
+    <div class="hero-container">
+        <div class="doctor-header">
+            <div class="doctor-avatar-wrapper">
+                <div class="doctor-avatar">
+                    {% if doctor.profile_image %}
+                        <img src="{{ doctor.profile_image.url }}" alt="Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}">
+                    {% else %}
+                        <div class="default-avatar">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                {% if doctor.is_verified %}
+                <div class="verified-badge">
+                    <i class="fas fa-check"></i>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="doctor-info">
+                <h1>
+                    {% if doctor.user.get_full_name %}
+                        Dr. {{ doctor.user.get_full_name }}
+                    {% else %}
+                        Dr. {{ doctor.user.username|title }}
+                    {% endif %}
+                </h1>
+                
+                <div class="doctor-meta">
+                    {% if doctor.bmdc_number %}
+                    <div class="meta-badge">
+                        <i class="fas fa-id-card"></i>
+                        <span>BMDC: {{ doctor.bmdc_number }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="meta-badge">
+                        <i class="fas fa-briefcase"></i>
+                        <span>{{ doctor.total_experience }} Years Experience</span>
+                    </div>
+                    
+                    {% if doctor.rating %}
+                    <div class="rating-display">
+                        <span style="font-size: 1.2rem; font-weight: 700;">{{ doctor.rating|floatformat:1 }}</span>
+                        <div class="stars">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= doctor.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span style="color: #64748b;">({{ doctor.total_reviews }})</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="content-wrapper">
+    <div class="content-grid">
+        <!-- Left Column -->
+        <div class="main-content">
+            <!-- About Section -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <h2>About Doctor</h2>
+                </div>
+                {% if doctor.about %}
+                    <p class="about-text">{{ doctor.about }}</p>
+                {% else %}
+                    <p class="about-text" style="color: #94a3b8; font-style: italic;">
+                        <i class="fas fa-info-circle"></i> No detailed information provided yet.
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Qualifications & Experience -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h2>Qualifications & Experience</h2>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-award"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>Educational Qualification</strong>
+                            <p>{{ doctor.qualification|default:"Not specified" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>Total Experience</strong>
+                            <p>{{ doctor.total_experience }} year{{ doctor.total_experience|pluralize }} of medical practice</p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if experiences %}
+                <div style="margin-top: 30px;">
+                    <h3 style="color: #1e293b; margin-bottom: 15px; font-size: 1.2rem; font-weight: 600;">
+                        <i class="fas fa-hospital" style="color: #667eea; margin-right: 8px;"></i>
+                        Work Experience
+                    </h3>
+                    <div class="experience-list">
+                        {% for exp in experiences %}
+                        <div class="experience-item">
+                            <strong>{{ exp.hospital_name }}</strong>
+                            <p><i class="fas fa-user-tie" style="color: #667eea; margin-right: 5px;"></i> {{ exp.designation }}</p>
+                            {% if exp.department %}
+                            <p><i class="fas fa-building" style="color: #667eea; margin-right: 5px;"></i> {{ exp.department }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Specializations -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <h2>Specializations & Expertise</h2>
+                </div>
+                
+                {% if specializations %}
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #1e293b; margin-bottom: 12px; font-size: 1.1rem; font-weight: 600;">
+                        <i class="fas fa-hospital-alt" style="color: #667eea;"></i> Medical Departments
+                    </h3>
+                    <div class="tags-container">
+                        {% for spec in specializations %}
+                        <span class="tag">
+                            <i class="fas fa-check-circle"></i>
+                            {{ spec.department.department_name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if symptoms %}
+                <div>
+                    <h3 style="color: #1e293b; margin-bottom: 12px; font-size: 1.1rem; font-weight: 600;">
+                        <i class="fas fa-notes-medical" style="color: #f59e0b;"></i> Symptoms Expertise
+                    </h3>
+                    <div class="tags-container">
+                        {% for symp in symptoms %}
+                        <span class="tag symptom">
+                            <i class="fas fa-heartbeat"></i>
+                            {{ symp.symptom.symptom_name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="sidebar-sticky">
+            <!-- Location & Contact -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h2>Location</h2>
+                </div>
+                
+                <div class="info-grid">
+                    {% if doctor.division %}
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-map-pin"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>Address</strong>
+                            <p>
+                                {% if doctor.upazila %}{{ doctor.upazila.upazila_name }}<br>{% endif %}
+                                {% if doctor.district %}{{ doctor.district.district_name }}<br>{% endif %}
+                                {{ doctor.division.division_name }}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="info-content">
+                            <strong>Username</strong>
+                            <p>@{{ doctor.user.username }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Working Hours -->
+            {% if doctor.working_hours %}
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h2>Working Hours</h2>
+                </div>
+                
+                <div class="working-hours-grid">
+                    {% for day, hours in doctor.working_hours.items %}
+                    <div class="day-schedule {% if hours %}active{% else %}closed{% endif %}">
+                        <span class="day-name">{{ day }}</span>
+                        {% if hours %}
+                            <span class="day-time">{{ hours }}</span>
+                        {% else %}
+                            <span class="closed-badge">Closed</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Appointment Fees -->
+            {% if appointment_fees %}
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <h2>Consultation Fees</h2>
+                </div>
+                
+                {% for fee in appointment_fees %}
+                <div class="fee-item">
+                    <div>
+                        <div class="fee-label">{{ fee.get_category_display }}</div>
+                        <div class="fee-type">Consultation</div>
+                    </div>
+                    <div class="fee-amount">
+                        <i class="fas fa-bangladeshi-taka-sign" style="font-size: 1.5rem;"></i>
+                        {{ fee.price }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Rating Summary -->
+            {% if doctor.rating %}
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h2>Patient Reviews</h2>
+                </div>
+                
+                <div class="rating-card-content">
+                    <div class="rating-number">{{ doctor.rating|floatformat:1 }}</div>
+                    <div class="rating-stars">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= doctor.rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p class="rating-count">Based on {{ doctor.total_reviews }} review{{ doctor.total_reviews|pluralize }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-section">
+        <a href="{% url 'home:index' %}" class="btn-action btn-back">
+            <i class="fas fa-arrow-left"></i>
+            Back to Departments
+        </a>
+        <a href="{% url 'appointment:book' doctor.id %}" class="btn-action btn-book">
+            <i class="fas fa-calendar-check"></i>
+            Book Appointment Now
+        </a>
+    </div>
+</div>
+{% endblock %}

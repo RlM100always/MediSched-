@@ -1,0 +1,530 @@
+{% extends 'doctor/doctor_sidebar.html' %}
+{% load static %}
+
+{% block title %}Export Appointments | MediSched{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-0">Export Appointments</h1>
+            <p class="text-muted mb-0">Export your appointment data in various formats</p>
+        </div>
+        <div>
+            <a href="{% url 'doctor:appointments' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Appointments
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Export Options -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-export"></i> Export Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form id="exportForm" method="get" target="_blank">
+                        <!-- Date Range -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Date Range *</label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Start Date</label>
+                                    <input type="date" name="start_date" class="form-control" required
+                                           value="{{ start_date|default:'' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">End Date</label>
+                                    <input type="date" name="end_date" class="form-control" required
+                                           value="{{ end_date|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Format Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Export Format</label>
+                            <div class="row">
+                                {% for format in export_formats %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="format-card">
+                                        <input type="radio" name="format" id="format{{ forloop.counter }}" 
+                                               value="{{ format.value }}" class="d-none" 
+                                               {% if forloop.first %}checked{% endif %}>
+                                        <label for="format{{ forloop.counter }}" class="format-label">
+                                            <div class="format-icon text-center mb-3">
+                                                {% if format.value == 'csv' %}
+                                                <i class="fas fa-file-csv fa-3x text-success"></i>
+                                                {% elif format.value == 'pdf' %}
+                                                <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                                {% elif format.value == 'excel' %}
+                                                <i class="fas fa-file-excel fa-3x text-success"></i>
+                                                {% endif %}
+                                            </div>
+                                            <h6 class="text-center">{{ format.name }}</h6>
+                                            <p class="text-muted text-center small mb-0">{{ format.description }}</p>
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Status Filter -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Appointment Status</label>
+                            <div class="row">
+                                {% for key, value in status_choices.items %}
+                                <div class="col-md-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="status" value="{{ key }}" id="status{{ forloop.counter }}"
+                                               {% if key == status or status == 'all' %}checked{% endif %}>
+                                        <label class="form-check-label" for="status{{ forloop.counter }}">
+                                            {{ value }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Fields to Include -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Fields to Include</label>
+                            <div class="row">
+                                {% for field in export_fields %}
+                                <div class="col-md-4 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="fields" value="{{ field.value }}" id="field{{ forloop.counter }}"
+                                               checked>
+                                        <label class="form-check-label" for="field{{ forloop.counter }}">
+                                            {{ field.name }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Additional Options -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Additional Options</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="include_patient_details" id="includePatient" checked>
+                                        <label class="form-check-label" for="includePatient">
+                                            Include Patient Details
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="include_payment_details" id="includePayment" checked>
+                                        <label class="form-check-label" for="includePayment">
+                                            Include Payment Details
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="group_by_date" id="groupByDate">
+                                        <label class="form-check-label" for="groupByDate">
+                                            Group by Date
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="include_summary" id="includeSummary" checked>
+                                        <label class="form-check-label" for="includeSummary">
+                                            Include Summary Statistics
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Export Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-download"></i> Generate Export
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-eye"></i> Data Preview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Patient</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Fee</th>
+                                    <th>Payment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments|slice:":5" %}
+                                <tr>
+                                    <td>#{{ appointment.id }}</td>
+                                    <td>{{ appointment.patient_name }}</td>
+                                    <td>{{ appointment.appointment_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if appointment.status == 'completed' %}bg-success
+                                            {% elif appointment.status == 'pending' %}bg-warning
+                                            {% elif appointment.status == 'confirmed' %}bg-info
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ appointment.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>${{ appointment.consultation_fee }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if appointment.payment_status == 'paid' %}bg-success
+                                            {% else %}bg-warning{% endif %}">
+                                            {{ appointment.payment_status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-3">
+                                        No appointments match your criteria
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if appointments.count > 5 %}
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            Showing 5 of {{ appointments.count }} appointments
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-lg-4">
+            <!-- Export Statistics -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Export Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Total Appointments
+                            <span class="badge bg-primary rounded-pill">{{ appointments.count }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Date Range
+                            <span class="text-muted">
+                                {% if start_date and end_date %}
+                                {{ start_date }} to {{ end_date }}
+                                {% else %}
+                                All dates
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Estimated File Size
+                            <span class="text-muted">~{{ file_size_estimate }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            Last Export
+                            <span class="text-muted">{{ last_export|default:"Never" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Export Templates -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Export</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group-vertical w-100" role="group">
+                        <button type="button" class="btn btn-outline-primary mb-2 quick-export-btn" 
+                                data-period="today">
+                            <i class="fas fa-calendar-day"></i> Today's Appointments
+                        </button>
+                        <button type="button" class="btn btn-outline-primary mb-2 quick-export-btn" 
+                                data-period="week">
+                            <i class="fas fa-calendar-week"></i> This Week's Appointments
+                        </button>
+                        <button type="button" class="btn btn-outline-primary mb-2 quick-export-btn" 
+                                data-period="month">
+                            <i class="fas fa-calendar-alt"></i> This Month's Appointments
+                        </button>
+                        <button type="button" class="btn btn-outline-primary quick-export-btn" 
+                                data-period="year">
+                            <i class="fas fa-calendar-year"></i> This Year's Appointments
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export History -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Recent Exports</h5>
+                </div>
+                <div class="card-body">
+                    {% if export_history %}
+                    <div class="list-group list-group-flush">
+                        {% for export in export_history %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <small class="text-muted">{{ export.date }}</small>
+                                <span class="badge 
+                                    {% if export.format == 'pdf' %}bg-danger
+                                    {% elif export.format == 'csv' %}bg-success
+                                    {% else %}bg-info{% endif %}">
+                                    {{ export.format|upper }}
+                                </span>
+                            </div>
+                            <p class="mb-1">{{ export.period }}</p>
+                            <small class="text-muted">{{ export.records }} records</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-file-export fa-2x mb-2"></i>
+                        <p>No recent exports</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+$(document).ready(function() {
+    // Format selection
+    $('.format-label').click(function() {
+        $('.format-card').removeClass('selected');
+        $(this).closest('.format-card').addClass('selected');
+    });
+
+    // Quick Export buttons
+    $('.quick-export-btn').click(function() {
+        const period = $(this).data('period');
+        let startDate, endDate;
+        const today = new Date();
+        
+        switch(period) {
+            case 'today':
+                startDate = endDate = today.toISOString().split('T')[0];
+                break;
+            case 'week':
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - today.getDay());
+                const weekEnd = new Date(today);
+                weekEnd.setDate(today.getDate() + (6 - today.getDay()));
+                
+                startDate = weekStart.toISOString().split('T')[0];
+                endDate = weekEnd.toISOString().split('T')[0];
+                break;
+            case 'month':
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1)
+                    .toISOString().split('T')[0];
+                endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+                    .toISOString().split('T')[0];
+                break;
+            case 'year':
+                startDate = new Date(today.getFullYear(), 0, 1)
+                    .toISOString().split('T')[0];
+                endDate = new Date(today.getFullYear(), 11, 31)
+                    .toISOString().split('T')[0];
+                break;
+        }
+        
+        $('input[name="start_date"]').val(startDate);
+        $('input[name="end_date"]').val(endDate);
+        
+        // Select CSV format
+        $('#format1').prop('checked', true);
+        $('.format-card').removeClass('selected');
+        $('label[for="format1"]').closest('.format-card').addClass('selected');
+    });
+
+    // Form submission
+    $('#exportForm').submit(function(e) {
+        e.preventDefault();
+        
+        // Get selected format
+        const format = $('input[name="format"]:checked').val();
+        
+        // Get selected statuses
+        const statuses = [];
+        $('input[name="status"]:checked').each(function() {
+            statuses.push($(this).val());
+        });
+        
+        // Get selected fields
+        const fields = [];
+        $('input[name="fields"]:checked').each(function() {
+            fields.push($(this).val());
+        });
+        
+        // Build URL
+        let url = '/doctor/appointments/export/?';
+        url += 'start_date=' + $('input[name="start_date"]').val();
+        url += '&end_date=' + $('input[name="end_date"]').val();
+        url += '&format=' + format;
+        
+        if (statuses.length > 0) {
+            url += '&status=' + statuses.join(',');
+        }
+        
+        if (fields.length > 0) {
+            url += '&fields=' + fields.join(',');
+        }
+        
+        if ($('#includePatient').is(':checked')) {
+            url += '&include_patient_details=1';
+        }
+        
+        if ($('#includePayment').is(':checked')) {
+            url += '&include_payment_details=1';
+        }
+        
+        if ($('#groupByDate').is(':checked')) {
+            url += '&group_by_date=1';
+        }
+        
+        if ($('#includeSummary').is(':checked')) {
+            url += '&include_summary=1';
+        }
+        
+        // Open download in new tab
+        window.open(url, '_blank');
+        
+        // Show success message
+        showNotification('Export started! Your file will download shortly.', 'success');
+    });
+
+    // Notification function
+    function showNotification(message, type) {
+        const alert = $('<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
+                       message +
+                       '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                       '</div>');
+        
+        $('.container-fluid').prepend(alert);
+        
+        setTimeout(function() {
+            alert.alert('close');
+        }, 5000);
+    }
+
+    // Set default dates if not set
+    if (!$('input[name="start_date"]').val()) {
+        const today = new Date();
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        
+        $('input[name="start_date"]').val(firstDay.toISOString().split('T')[0]);
+        $('input[name="end_date"]').val(today.toISOString().split('T')[0]);
+    }
+});
+</script>
+
+<style>
+.format-card {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.format-card:hover {
+    border-color: #4e73df;
+    background-color: #f8f9fa;
+}
+.format-card.selected {
+    border-color: #4e73df;
+    background-color: #e3f2fd;
+}
+.format-icon {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.quick-export-btn {
+    text-align: left;
+}
+.list-group-item {
+    border: none;
+    padding: 0.75rem 0;
+}
+.alert {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1050;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
+
+<!-- Context data needed in view -->
+{% comment %}
+Add this context in your export_appointments view:
+
+context = {
+    'start_date': start_date,
+    'end_date': end_date,
+    'status': status,
+    'appointments': appointments,
+    'status_choices': dict(Appointment.APPOINTMENT_STATUS),
+    'export_formats': [
+        {'value': 'csv', 'name': 'CSV', 'description': 'Comma separated values'},
+        {'value': 'pdf', 'name': 'PDF', 'description': 'Portable document format'},
+        {'value': 'excel', 'name': 'Excel', 'description': 'Microsoft Excel format'},
+    ],
+    'export_fields': [
+        {'value': 'id', 'name': 'Appointment ID'},
+        {'value': 'patient', 'name': 'Patient Name'},
+        {'value': 'date', 'name': 'Date & Time'},
+        {'value': 'status', 'name': 'Status'},
+        {'value': 'fee', 'name': 'Consultation Fee'},
+        {'value': 'payment', 'name': 'Payment Status'},
+        {'value': 'type', 'name': 'Consultation Type'},
+        {'value': 'phone', 'name': 'Patient Phone'},
+        {'value': 'symptoms', 'name': 'Symptoms'},
+    ],
+    'file_size_estimate': '250 KB',
+    'last_export': '2 hours ago',
+    'export_history': [
+        {'date': '2024-01-10', 'format': 'csv', 'period': 'Last 7 days', 'records': 24},
+        {'date': '2024-01-05', 'format': 'pdf', 'period': 'Last month', 'records': 89},
+        {'date': '2023-12-30', 'format': 'excel', 'period': 'Last year', 'records': 1045},
+    ],
+}
+{% endcomment %}
+{% endblock %}

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Consultation - MediSched</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+        }
+        .header {
+            background: #4a6bff;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #jitsi-container {
+            width: 100%;
+            height: 600px;
+            background: black;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .call-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background: #4a6bff;
+            color: white;
+        }
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+        .btn-success {
+            background: #2ed573;
+            color: white;
+        }
+        .instructions {
+            background: #fff8e1;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ffa502;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Video Consultation</h2>
+        <div>
+            <span>Appointment #{{ appointment.id }}</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="call-info">
+            <h3>👨‍⚕️ Doctor: Dr. {{ appointment.doctor.user.get_full_name|default:appointment.doctor.user.username }}</h3>
+            <h3>👤 Patient: {{ appointment.patient.get_full_name|default:appointment.patient.username }}</h3>
+            <p><strong>Room Code:</strong> {{ room_name }}</p>
+        </div>
+        
+        <div class="instructions">
+            <h4>📋 Instructions:</h4>
+            <ol>
+                <li>Click "Start Video Call" below</li>
+                <li>Allow camera & microphone permissions when asked</li>
+                <li>Share this link with the other person: <code>Copy URL from browser</code></li>
+                <li>Both parties need to join the same room</li>
+                <li>Click "End Call" when finished</li>
+            </ol>
+        </div>
+        
+        <div id="jitsi-container">
+            <!-- Jitsi will load here -->
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-success" onclick="startJitsiCall()">
+                🎥 Start Video Call
+            </button>
+            <button class="btn btn-primary" onclick="copyRoomLink()">
+                📋 Copy Invite Link
+            </button>
+            <button class="btn btn-danger" onclick="endCall()">
+                ❌ End Call
+            </button>
+            <button class="btn" onclick="window.close()">
+                ← Back to Chat
+            </button>
+        </div>
+    </div>
+
+    <!-- Load Jitsi API -->
+    <script src='https://meet.jit.si/external_api.js'></script>
+    
+    <script>
+        let jitsiApi = null;
+        const roomName = '{{ room_name }}';
+        const displayName = '{{ display_name }}';
+        
+        function startJitsiCall() {
+            const domain = 'meet.jit.si';
+            const options = {
+                roomName: roomName,
+                width: '100%',
+                height: 600,
+                parentNode: document.querySelector('#jitsi-container'),
+                userInfo: {
+                    displayName: displayName,
+                },
+                configOverwrite: {
+                    startWithAudioMuted: false,
+                    startWithVideoMuted: false,
+                    enableWelcomePage: false,
+                },
+                interfaceConfigOverwrite: {
+                    APP_NAME: 'MediSched',
+                    SHOW_CHROME_EXTENSION_BANNER: false,
+                    TOOLBAR_BUTTONS: [
+                        'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+                        'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
+                        'livestreaming', 'settings', 'raisehand', 'videoquality', 'filmstrip',
+                        'invite', 'feedback', 'stats', 'shortcuts', 'tileview', 'videobackgroundblur',
+                        'download', 'help', 'mute-everyone', 'security'
+                    ],
+                }
+            };
+            
+            try {
+                jitsiApi = new JitsiMeetExternalAPI(domain, options);
+                
+                // Add event listeners
+                jitsiApi.addEventListeners({
+                    readyToClose: function() {
+                        console.log('Call ended');
+                        endCall();
+                    },
+                    participantJoined: function(participant) {
+                        console.log('Participant joined:', participant);
+                        alert('Someone joined the call!');
+                    },
+                    participantLeft: function(participant) {
+                        console.log('Participant left:', participant);
+                    }
+                });
+                
+                document.querySelector('.btn-success').disabled = true;
+                document.querySelector('.btn-success').innerText = '🎥 Call Active';
+                
+            } catch (error) {
+                console.error('Error starting Jitsi:', error);
+                alert('Error starting video call: ' + error.message);
+            }
+        }
+        
+        function copyRoomLink() {
+            const link = window.location.href;
+            navigator.clipboard.writeText(link).then(function() {
+                alert('Link copied to clipboard! Share this with the other person.');
+            }, function(err) {
+                alert('Failed to copy link. Please copy the URL manually.');
+            });
+        }
+        
+        function endCall() {
+            if (jitsiApi) {
+                jitsiApi.dispose();
+                jitsiApi = null;
+            }
+            
+            // Redirect back to chat
+            window.location.href = "{% url 'communication:chat_detail' appointment.id %}";
+        }
+        
+        // Auto-start if URL contains ?autostart=true
+        if (window.location.search.includes('autostart=true')) {
+            window.addEventListener('load', function() {
+                setTimeout(startJitsiCall, 1000);
+            });
+        }
+        
+        // Close window when leaving
+        window.addEventListener('beforeunload', function(e) {
+            if (jitsiApi) {
+                if (!confirm('Are you sure you want to leave the video call?')) {
+                    e.preventDefault();
+                    return false;
+                }
+                endCall();
+            }
+        });
+    </script>
+</body>
+</html>

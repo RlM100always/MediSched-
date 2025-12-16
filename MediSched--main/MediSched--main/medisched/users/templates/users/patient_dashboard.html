@@ -1,0 +1,606 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Patient Dashboard - MediSched{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-blue: #2D9CDB;
+        --primary-dark: #1a7db8;
+        --secondary: #27ae60;
+        --danger: #e74c3c;
+        --warning: #f39c12;
+        --light-bg: #f8f9fa;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding-top: 80px;
+    }
+
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .welcome-banner {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 40px;
+        border-radius: 20px;
+        margin-bottom: 35px;
+        box-shadow: 0 10px 40px rgba(45, 156, 219, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .welcome-banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .welcome-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .welcome-text h1 {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .welcome-text p {
+        font-size: 16px;
+        opacity: 0.95;
+    }
+
+    .quick-stats {
+        display: flex;
+        gap: 25px;
+    }
+
+    .stat-item {
+        text-align: center;
+        background: rgba(255,255,255,0.15);
+        padding: 15px 25px;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .stat-number {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        opacity: 0.9;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 35px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .stat-card.blue { border-color: var(--primary-blue); }
+    .stat-card.green { border-color: var(--secondary); }
+    .stat-card.orange { border-color: var(--warning); }
+    .stat-card.red { border-color: var(--danger); }
+
+    .stat-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .stat-card-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .stat-card.blue .stat-card-icon {
+        background: rgba(45, 156, 219, 0.1);
+        color: var(--primary-blue);
+    }
+
+    .stat-card.green .stat-card-icon {
+        background: rgba(39, 174, 96, 0.1);
+        color: var(--secondary);
+    }
+
+    .stat-card.orange .stat-card-icon {
+        background: rgba(243, 156, 18, 0.1);
+        color: var(--warning);
+    }
+
+    .stat-card.red .stat-card-icon {
+        background: rgba(231, 76, 60, 0.1);
+        color: var(--danger);
+    }
+
+    .stat-card h3 {
+        font-size: 36px;
+        font-weight: 800;
+        color: #2d3748;
+        margin-bottom: 5px;
+    }
+
+    .stat-card p {
+        color: #718096;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    /* Main Content Grid */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+        margin-bottom: 35px;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-header h2 {
+        font-size: 22px;
+        font-weight: 800;
+        color: #2d3748;
+    }
+
+    .btn-view-all {
+        color: var(--primary-blue);
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-view-all:hover {
+        color: var(--primary-dark);
+        transform: translateX(5px);
+    }
+
+    /* Appointments List */
+    .appointment-item {
+        padding: 20px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .appointment-item:hover {
+        border-color: var(--primary-blue);
+        box-shadow: 0 5px 15px rgba(45, 156, 219, 0.1);
+    }
+
+    .appointment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .doctor-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .doctor-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    .doctor-details h4 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 3px;
+    }
+
+    .doctor-details p {
+        font-size: 13px;
+        color: #718096;
+    }
+
+    .appointment-status {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-upcoming {
+        background: rgba(45, 156, 219, 0.1);
+        color: var(--primary-blue);
+    }
+
+    .status-completed {
+        background: rgba(39, 174, 96, 0.1);
+        color: var(--secondary);
+    }
+
+    .status-cancelled {
+        background: rgba(231, 76, 60, 0.1);
+        color: var(--danger);
+    }
+
+    .appointment-details {
+        display: flex;
+        gap: 25px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #4a5568;
+    }
+
+    .detail-item i {
+        color: var(--primary-blue);
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: grid;
+        gap: 15px;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .action-btn:hover {
+        border-color: var(--primary-blue);
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(45, 156, 219, 0.1);
+    }
+
+    .action-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+        color: white;
+    }
+
+    .action-content h4 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 4px;
+    }
+
+    .action-content p {
+        font-size: 13px;
+        color: #718096;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #718096;
+    }
+
+    .empty-state i {
+        font-size: 60px;
+        margin-bottom: 15px;
+        opacity: 0.3;
+    }
+
+    .empty-state h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #4a5568;
+    }
+
+    .empty-state p {
+        font-size: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .welcome-text h1 {
+            font-size: 24px;
+        }
+
+        .quick-stats {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .appointment-details {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <div class="welcome-content">
+            <div class="welcome-text">
+                <h1>Welcome back, {{ user.first_name|default:user.username }}! 👋</h1>
+                <p>Here's your health overview for today</p>
+            </div>
+            <div class="quick-stats">
+                <div class="stat-item">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Appointments</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Upcoming</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-card-header">
+                <div class="stat-card-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+            </div>
+            <h3>12</h3>
+            <p>Total Appointments</p>
+        </div>
+
+        <div class="stat-card green">
+            <div class="stat-card-header">
+                <div class="stat-card-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+            <h3>8</h3>
+            <p>Completed</p>
+        </div>
+
+        <div class="stat-card orange">
+            <div class="stat-card-header">
+                <div class="stat-card-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <h3>3</h3>
+            <p>Upcoming</p>
+        </div>
+
+        <div class="stat-card red">
+            <div class="stat-card-header">
+                <div class="stat-card-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+            </div>
+            <h3>1</h3>
+            <p>Cancelled</p>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+        <!-- Upcoming Appointments -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2>Upcoming Appointments</h2>
+                <a href="#" class="btn-view-all">View All →</a>
+            </div>
+
+            <!-- Example Appointment -->
+            <div class="appointment-item">
+                <div class="appointment-header">
+                    <div class="doctor-info">
+                        <div class="doctor-avatar">DR</div>
+                        <div class="doctor-details">
+                            <h4>Dr. Sarah Johnson</h4>
+                            <p>Cardiologist</p>
+                        </div>
+                    </div>
+                    <span class="appointment-status status-upcoming">Upcoming</span>
+                </div>
+                <div class="appointment-details">
+                    <div class="detail-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>Dec 10, 2025</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span>10:00 AM</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-video"></i>
+                        <span>Video Call</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="appointment-item">
+                <div class="appointment-header">
+                    <div class="doctor-info">
+                        <div class="doctor-avatar">DM</div>
+                        <div class="doctor-details">
+                            <h4>Dr. Michael Chen</h4>
+                            <p>General Physician</p>
+                        </div>
+                    </div>
+                    <span class="appointment-status status-upcoming">Upcoming</span>
+                </div>
+                <div class="appointment-details">
+                    <div class="detail-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>Dec 15, 2025</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span>2:30 PM</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-hospital"></i>
+                        <span>In-Person</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State Example -->
+            <!-- <div class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <h3>No Upcoming Appointments</h3>
+                <p>Schedule your next appointment with our doctors</p>
+            </div> -->
+        </div>
+
+        <!-- Quick Actions Sidebar -->
+        <div>
+            <div class="section-card">
+                <div class="section-header">
+                    <h2>Quick Actions</h2>
+                </div>
+                <div class="quick-actions">
+                    <a href="{% url 'home:all_doctors' %}" class="action-btn">
+                        <div class="action-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Book Appointment</h4>
+                            <p>Schedule with a doctor</p>
+                        </div>
+                    </a>
+
+                    <a href="#" class="action-btn">
+                        <div class="action-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Find Doctors</h4>
+                            <p>Browse specialists</p>
+                        </div>
+                    </a>
+
+                    <a href="#" class="action-btn">
+                        <div class="action-icon">
+                            <i class="fas fa-file-medical"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Medical Records</h4>
+                            <p>View your history</p>
+                        </div>
+                    </a>
+
+                    <a href="#" class="action-btn">
+                        <div class="action-icon">
+                            <i class="fas fa-prescription"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Prescriptions</h4>
+                            <p>Manage medications</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

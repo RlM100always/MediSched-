@@ -1,0 +1,275 @@
+{% extends 'doctor/base.html' %}
+{% load static %}
+
+{% block title %}Chat with {{ patient.get_full_name }} - MediSched{% endblock %}
+{% block page_title %}Chat with {{ patient.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-0">
+                                <i class="fas fa-comments text-primary me-2"></i>
+                                Chat with {{ patient.get_full_name }}
+                            </h4>
+                            <p class="text-muted mb-0">Appointment #{{ appointment.id }}</p>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{% url 'doctor:chat_home'  %}" 
+                               class="btn btn-success">
+                                <i class="fas fa-prescription me-1"></i> Chat Home
+                            </a>
+                            <a href="{% url 'doctor:create_prescription' appointment.id %}" 
+                               class="btn btn-success">
+                                <i class="fas fa-prescription me-1"></i> Prescription
+                            </a>
+                            <a href="{% url 'doctor:schedule_video_call' appointment.id %}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-video me-1"></i> Video Call
+                            </a>
+                            <a href="{% url 'doctor:chat_home' %}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Chats
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Messages Area -->
+                    <div id="chatMessages" style="height: 500px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
+                        {% for message in messages %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-{% if message.sender == request.user %}end{% else %}start{% endif %}">
+                                <div class="card {% if message.sender == request.user %}bg-primary text-white{% else %}bg-light{% endif %}" 
+                                     style="max-width: 70%;">
+                                    <div class="card-body p-2">
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <small class="{% if message.sender == request.user %}text-white-50{% else %}text-muted{% endif %}">
+                                                {{ message.sender.get_full_name }}
+                                            </small>
+                                            <small class="{% if message.sender == request.user %}text-white-50{% else %}text-muted{% endif %}">
+                                                {{ message.created_at|date:"g:i A" }}
+                                            </small>
+                                        </div>
+                                        <p class="card-text mb-0">{{ message.content }}</p>
+                                        
+                                        {% if message.image %}
+                                        <div class="mt-2">
+                                            <img src="{{ message.image.url }}" alt="Attachment" style="max-width: 200px; border-radius: 5px;">
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if message.file %}
+                                        <div class="mt-2">
+                                            <a href="{{ message.file.url }}" class="btn btn-sm btn-outline-{% if message.sender == request.user %}light{% else %}secondary{% endif %}" download>
+                                                <i class="fas fa-file-download me-1"></i> Download File
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <h5>No messages yet</h5>
+                            <p>Start the conversation with your patient</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Message Input -->
+                    <div id="messageFormArea">
+                        <form id="sendMessageForm">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <textarea id="messageContent" class="form-control" 
+                                          placeholder="Type your message here..." 
+                                          rows="2" required></textarea>
+                                <button type="button" class="btn btn-outline-secondary" id="attachFileBtn">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i> Send
+                                </button>
+                            </div>
+                            <input type="file" id="fileInput" style="display: none;" accept="image/*,.pdf,.doc,.docx">
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Sidebar with patient info -->
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Patient Information</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Name:</strong> {{ patient.get_full_name }}</li>
+                                <li><strong>Email:</strong> {{ patient.email }}</li>
+                                <li><strong>Phone:</strong> {{ patient.phone|default:"Not provided" }}</li>
+                                <li><strong>Appointment Status:</strong> 
+                                    <span class="badge bg-{% if appointment.status == 'confirmed' %}success{% elif appointment.status == 'completed' %}secondary{% elif appointment.status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                                        {{ appointment.status|title }}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Quick Actions</h6>
+                            <div class="btn-group-vertical w-100">
+                                <a href="{% url 'doctor:create_prescription' appointment.id %}" 
+                                   class="btn btn-outline-success mb-2">
+                                    <i class="fas fa-prescription me-1"></i> Create Prescription
+                                </a>
+                                <a href="{% url 'doctor:schedule_video_call' appointment.id %}" 
+                                   class="btn btn-outline-primary mb-2">
+                                    <i class="fas fa-video me-1"></i> Schedule Video Call
+                                </a>
+                                {% if prescriptions %}
+                                <a href="{% url 'doctor:view_prescription' prescriptions.0.id %}" 
+                                   class="btn btn-outline-info mb-2">
+                                    <i class="fas fa-file-medical me-1"></i> View Latest Prescription
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    const csrfToken = $('[name=csrfmiddlewaretoken]').val();
+    const appointmentId = {{ appointment.id }};
+    
+    // Scroll to bottom of messages
+    $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+    
+    // File attachment
+    $('#attachFileBtn').click(function() {
+        $('#fileInput').click();
+    });
+    
+    // Send message
+    $('#sendMessageForm').submit(function(e) {
+        e.preventDefault();
+        const content = $('#messageContent').val().trim();
+        const fileInput = $('#fileInput')[0];
+        
+        if (!content && !fileInput.files.length) return;
+        
+        const formData = new FormData();
+        formData.append('content', content);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        
+        if (fileInput.files.length) {
+            const file = fileInput.files[0];
+            if (file.type.startsWith('image/')) {
+                formData.append('message_type', 'image');
+                formData.append('image', file);
+            } else {
+                formData.append('message_type', 'file');
+                formData.append('file', file);
+            }
+        }
+        
+        $.ajax({
+            url: "{% url 'doctor:send_message' appointment.id %}",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    $('#messageContent').val('');
+                    $('#fileInput').val('');
+                    loadMessages();
+                }
+            }
+        });
+    });
+    
+    // Load messages function
+    function loadMessages() {
+        $.ajax({
+            url: "{% url 'doctor:get_messages' appointment.id %}",
+            type: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    $('#chatMessages').empty();
+                    
+                    if (response.messages.length === 0) {
+                        $('#chatMessages').html(`
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-comments fa-3x mb-3"></i>
+                                <h5>No messages yet</h5>
+                                <p>Start the conversation with your patient</p>
+                            </div>
+                        `);
+                    } else {
+                        response.messages.forEach(function(message) {
+                            const isSent = message.sender_type === 'doctor';
+                            let messageHtml = `
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-${isSent ? 'end' : 'start'}">
+                                        <div class="card ${isSent ? 'bg-primary text-white' : 'bg-light'}" 
+                                             style="max-width: 70%;">
+                                            <div class="card-body p-2">
+                                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                                    <small class="${isSent ? 'text-white-50' : 'text-muted'}">
+                                                        ${message.sender_name}
+                                                    </small>
+                                                    <small class="${isSent ? 'text-white-50' : 'text-muted'}">
+                                                        ${message.time}
+                                                    </small>
+                                                </div>
+                                                <p class="card-text mb-0">${message.content}</p>`;
+                                
+                            if (message.image_url) {
+                                messageHtml += `
+                                    <div class="mt-2">
+                                        <img src="${message.image_url}" alt="Attachment" style="max-width: 200px; border-radius: 5px;">
+                                    </div>`;
+                            }
+                            
+                            if (message.file_url) {
+                                messageHtml += `
+                                    <div class="mt-2">
+                                        <a href="${message.file_url}" class="btn btn-sm btn-outline-${isSent ? 'light' : 'secondary'}" download>
+                                            <i class="fas fa-file-download me-1"></i> Download File
+                                        </a>
+                                    </div>`;
+                            }
+                            
+                            messageHtml += `
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            
+                            $('#chatMessages').append(messageHtml);
+                        });
+                    }
+                    
+                    // Scroll to bottom
+                    $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                }
+            }
+        });
+    }
+    
+    // Auto-refresh messages every 5 seconds
+    setInterval(loadMessages, 5000);
+});
+</script>
+{% endblock %}

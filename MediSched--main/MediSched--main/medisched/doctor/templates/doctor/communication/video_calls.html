@@ -1,0 +1,249 @@
+{% extends 'doctor/base.html' %}
+{% load static %}
+
+{% block title %}Video Calls - MediSched{% endblock %}
+{% block page_title %}Video Calls{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-video text-primary me-2"></i>
+                            Video Calls Management
+                        </h4>
+                        {% if ongoing_call %}
+                        <a href="{% url 'doctor:video_call_room' ongoing_call.call_id %}" 
+                           class="btn btn-success">
+                            <i class="fas fa-play me-1"></i> Join Ongoing Call
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ongoing Call -->
+    {% if ongoing_call %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-broadcast-tower me-2"></i>
+                        Ongoing Call
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-video fa-4x text-success mb-3"></i>
+                                <h5>Active</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>{{ ongoing_call.patient.get_full_name }}</h5>
+                            <p class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                Started: {{ ongoing_call.actual_start_time|date:"F d, Y H:i" }}
+                            </p>
+                            <p class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Call ID: {{ ongoing_call.call_id }}
+                            </p>
+                        </div>
+                        <div class="col-md-3 text-end">
+                            <a href="{% url 'doctor:video_call_room' ongoing_call.call_id %}" 
+                               class="btn btn-success btn-lg mb-2">
+                                <i class="fas fa-play me-1"></i> Join Call
+                            </a>
+                            <br>
+                            <form action="{% url 'doctor:end_video_call' ongoing_call.call_id %}" 
+                                  method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm" 
+                                        onclick="return confirm('End this video call?')">
+                                    <i class="fas fa-stop me-1"></i> End Call
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Upcoming Calls -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt text-primary me-2"></i>
+                        Upcoming Calls ({{ upcoming_calls|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_calls %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Appointment</th>
+                                    <th>Scheduled Time</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for call in upcoming_calls %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if call.patient.profile_photo %}
+                                            <img src="{{ call.patient.profile_photo.url }}" 
+                                                 class="rounded-circle me-2" width="40" height="40" 
+                                                 alt="{{ call.patient.get_full_name }}">
+                                            {% else %}
+                                            <div class="rounded-circle bg-secondary me-2 d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                <span class="text-white">
+                                                    {{ call.patient.get_full_name|slice:":1"|upper }}
+                                                </span>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ call.patient.get_full_name }}</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>#{{ call.appointment.id }}</td>
+                                    <td>
+                                        {{ call.scheduled_time|date:"M d, Y" }}<br>
+                                        <small class="text-muted">{{ call.scheduled_time|time:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if call.call_type == 'video' %}bg-primary{% else %}bg-info{% endif %}">
+                                            {{ call.call_type|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning">{{ call.status|title }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'doctor:video_call_room' call.call_id %}?join=true" 
+                                               class="btn btn-primary">
+                                                <i class="fas fa-play me-1"></i> Start
+                                            </a>
+                                            <form action="{% url 'doctor:cancel_video_call' call.call_id %}" 
+                                                  method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger" 
+                                                        onclick="return confirm('Cancel this scheduled call?')">
+                                                    <i class="fas fa-times me-1"></i> Cancel
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-video-slash fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No upcoming calls scheduled</h5>
+                        <p class="text-muted">Schedule calls from patient chats</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Past Calls -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history text-secondary me-2"></i>
+                        Past Calls ({{ past_calls|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if past_calls %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Date & Time</th>
+                                    <th>Duration</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for call in past_calls %}
+                                <tr>
+                                    <td>{{ call.patient.get_full_name }}</td>
+                                    <td>
+                                        {{ call.scheduled_time|date:"M d, Y" }}<br>
+                                        <small class="text-muted">{{ call.scheduled_time|time:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if call.duration %}
+                                        {{ call.duration }} minutes
+                                        {% else %}
+                                        <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if call.call_type == 'video' %}bg-primary{% else %}bg-info{% endif %}">
+                                            {{ call.call_type|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if call.status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                        {% elif call.status == 'cancelled' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                        {% elif call.status == 'missed' %}
+                                        <span class="badge bg-warning">Missed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if call.notes %}
+                                        <small>{{ call.notes|truncatechars:30 }}</small>
+                                        {% else %}
+                                        <span class="text-muted">No notes</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <p class="text-muted">No past calls found</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

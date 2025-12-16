@@ -1,0 +1,792 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload Test Report - MediSched{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-blue: #2D9CDB;
+        --primary-dark: #1a7db8;
+        --success-green: #28a745;
+        --danger-red: #dc3545;
+        --warning-yellow: #ffc107;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+        padding-top: 80px;
+        min-height: 100vh;
+    }
+
+    .upload-wrapper {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .upload-container {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(45, 156, 219, 0.12);
+        overflow: hidden;
+        animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Header Section */
+    .upload-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 40px 35px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .upload-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 25s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .upload-header > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .upload-header h3 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .upload-header p {
+        font-size: 15px;
+        opacity: 0.95;
+        margin: 0;
+    }
+
+    /* Form Section */
+    .form-section {
+        padding: 35px 40px;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: var(--primary-blue);
+        font-size: 22px;
+    }
+
+    /* Appointment Info Card */
+    .appointment-info {
+        background: linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%);
+        border-radius: 16px;
+        padding: 25px;
+        border: 2px solid rgba(45, 156, 219, 0.15);
+        margin-bottom: 20px;
+    }
+
+    .appointment-info h6 {
+        color: var(--primary-blue);
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    .appointment-info p {
+        color: #4a5568;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .appointment-info strong {
+        color: #2d3748;
+        font-weight: 600;
+    }
+
+    /* Form Inputs */
+    .form-label {
+        display: block;
+        color: #2d3748;
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 14px;
+        letter-spacing: 0.3px;
+    }
+
+    .form-control,
+    .form-select {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #f7fafc;
+        color: #2d3748;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(45, 156, 219, 0.1);
+        transform: translateY(-2px);
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-text {
+        color: #718096;
+        font-size: 13px;
+        margin-top: 6px;
+        font-style: italic;
+    }
+
+    /* Drop Zone */
+    .drop-zone {
+        border: 3px dashed var(--primary-blue);
+        border-radius: 16px;
+        padding: 50px 30px;
+        text-align: center;
+        background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .drop-zone::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(45, 156, 219, 0.1);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.4s ease, height 0.4s ease;
+    }
+
+    .drop-zone:hover::before {
+        width: 100%;
+        height: 100%;
+    }
+
+    .drop-zone:hover {
+        background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+        border-color: var(--primary-dark);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(45, 156, 219, 0.15);
+    }
+
+    .drop-zone.dragover {
+        background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
+        border-color: var(--primary-dark);
+        transform: scale(1.02);
+    }
+
+    .drop-zone > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .drop-zone i {
+        font-size: 60px;
+        color: var(--primary-blue);
+        margin-bottom: 20px;
+        animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .drop-zone h5 {
+        color: #2d3748;
+        font-weight: 700;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .drop-zone p {
+        color: #718096;
+        font-size: 15px;
+        margin: 5px 0;
+    }
+
+    /* File Preview */
+    .file-preview {
+        margin-top: 25px;
+        padding: 20px;
+        background: linear-gradient(135deg, #f0fff4 0%, #e6ffed 100%);
+        border-radius: 16px;
+        border: 2px solid #68d391;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .file-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .file-icon {
+        font-size: 45px;
+        color: var(--success-green);
+    }
+
+    .file-details {
+        flex-grow: 1;
+    }
+
+    .file-details h6 {
+        color: #2d3748;
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 5px;
+        word-break: break-word;
+    }
+
+    .file-details p {
+        color: #718096;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    /* Buttons */
+    .btn-remove {
+        background: linear-gradient(135deg, #fee 0%, #fdd 100%);
+        color: var(--danger-red);
+        border: 2px solid #fc8181;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-remove:hover {
+        background: linear-gradient(135deg, #fdd 0%, #fcc 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.2);
+    }
+
+    .btn-upload {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
+        color: white;
+        border: none;
+        padding: 18px 35px;
+        font-size: 17px;
+        font-weight: 700;
+        border-radius: 12px;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 25px rgba(45, 156, 219, 0.35);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-upload::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s;
+    }
+
+    .btn-upload:hover::before {
+        left: 100%;
+    }
+
+    .btn-upload:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(45, 156, 219, 0.5);
+    }
+
+    .btn-upload:disabled {
+        background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+        cursor: not-allowed;
+        opacity: 0.6;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-cancel {
+        background: white;
+        color: #718096;
+        border: 2px solid #e2e8f0;
+        padding: 16px 35px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 12px;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 15px;
+    }
+
+    .btn-cancel:hover {
+        background: #f7fafc;
+        border-color: #cbd5e0;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+
+    /* Supported Formats */
+    .supported-formats {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #92400e;
+        border: 2px solid #fcd34d;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .supported-formats i {
+        color: var(--warning-yellow);
+        font-size: 18px;
+    }
+
+    /* Hidden File Input */
+    #id_report_file {
+        display: none;
+    }
+
+    /* Alerts */
+    .alert {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border-left: 4px solid;
+        font-size: 14px;
+        font-weight: 500;
+        animation: slideDown 0.4s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+        color: #2f855a;
+        border-color: #68d391;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+        color: #c53030;
+        border-color: #fc8181;
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
+        color: #1a7db8;
+        border-color: var(--primary-blue);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        body {
+            padding-top: 70px;
+        }
+
+        .upload-wrapper {
+            margin: 20px auto;
+        }
+
+        .form-section {
+            padding: 25px 20px;
+        }
+
+        .upload-header {
+            padding: 30px 20px;
+        }
+
+        .upload-header h3 {
+            font-size: 22px;
+        }
+
+        .drop-zone {
+            padding: 40px 20px;
+        }
+
+        .drop-zone i {
+            font-size: 50px;
+        }
+
+        .file-info {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-wrapper">
+    <div class="upload-container">
+        <!-- Header -->
+        <div class="upload-header">
+            <h3>
+                <i class="fas fa-file-medical-alt"></i>
+                Upload Test Report
+            </h3>
+            <p>Appointment #{{ appointment.id }} • Dr. {{ appointment.doctor.user.get_full_name }}</p>
+        </div>
+
+        <!-- Appointment Information -->
+        <div class="form-section">
+            <div class="appointment-info">
+                <div class="row">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <h6><i class="fas fa-user-circle"></i> Patient Information</h6>
+                        <p class="mb-1"><strong>Name:</strong> {{ appointment.patient.get_full_name|default:appointment.patient.username }}</p>
+                        <p class="mb-0"><strong>Phone:</strong> {{ appointment.patient_phone }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user-md"></i> Doctor Information</h6>
+                        <p class="mb-1"><strong>Name:</strong> Dr. {{ appointment.doctor.user.get_full_name }}</p>
+                        <p class="mb-0"><strong>Specialization:</strong> 
+                            {% if appointment.doctor.qualification %}
+                                {{ appointment.doctor.qualification }}
+                            {% else %}
+                                General Physician
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Form -->
+        <form method="POST" enctype="multipart/form-data" id="upload-form">
+            {% csrf_token %}
+            
+            {% if messages %}
+            <div class="form-section" style="padding-top: 0;">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Test Details -->
+            <div class="form-section">
+                <h5 class="section-title">
+                    <i class="fas fa-vial"></i>
+                    Test Information
+                </h5>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_test_name" class="form-label">Test Name *</label>
+                            {{ form.test_name }}
+                            {% if form.test_name.errors %}
+                            <div class="text-danger small mt-2">{{ form.test_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_test_date" class="form-label">Test Date *</label>
+                            {{ form.test_date }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_lab_name" class="form-label">Laboratory Name</label>
+                            {{ form.lab_name }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Upload -->
+            <div class="form-section">
+                <h5 class="section-title">
+                    <i class="fas fa-file-upload"></i>
+                    Upload Report
+                </h5>
+                
+                <!-- Drop Zone -->
+                <div class="drop-zone" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h5>Drag & Drop Your Report</h5>
+                    <p>or click to browse files</p>
+                    <p class="small">Maximum file size: 10MB</p>
+                    
+                    <!-- Hidden file input -->
+                    {{ form.report_file }}
+                </div>
+                
+                <!-- File Preview -->
+                <div class="file-preview" id="filePreview" style="display: none;">
+                    <div class="file-info">
+                        <div>
+                            <i class="fas fa-file-pdf file-icon" id="fileIcon"></i>
+                        </div>
+                        <div class="file-details">
+                            <h6 id="fileName">No file selected</h6>
+                            <p id="fileSize">0 KB</p>
+                        </div>
+                        <div>
+                            <button type="button" class="btn-remove" id="removeFile">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="supported-formats">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Supported formats: PDF, JPG, JPEG, PNG (Maximum 10MB)</span>
+                </div>
+            </div>
+
+            <!-- Findings -->
+            <div class="form-section">
+                <h5 class="section-title">
+                    <i class="fas fa-search"></i>
+                    Test Findings
+                </h5>
+                <div class="mb-3">
+                    <label for="id_findings" class="form-label">Findings (Optional)</label>
+                    {{ form.findings }}
+                    <div class="form-text">Briefly describe the test results or key findings</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="form-section">
+                <button type="submit" class="btn-upload" id="submitBtn" disabled>
+                    <i class="fas fa-upload"></i> Upload Test Report
+                </button>
+                <a href="{% url 'communication:chat_detail' appointment.id %}" class="btn-cancel">
+                    <i class="fas fa-arrow-left"></i> Cancel & Go Back
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}    
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('id_report_file');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileIcon = document.getElementById('fileIcon');
+    const removeFileBtn = document.getElementById('removeFile');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Click drop zone to trigger file input
+    dropZone.addEventListener('click', function() {
+        fileInput.click();
+    });
+    
+    // File input change
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(this.files);
+    });
+    
+    // Drag and drop events
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        dropZone.classList.add('dragover');
+    }
+    
+    function unhighlight() {
+        dropZone.classList.remove('dragover');
+    }
+    
+    // Handle dropped files
+    dropZone.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    });
+    
+    // Handle files
+    function handleFiles(files) {
+        if (files.length > 0) {
+            const file = files[0];
+            
+            // Validate file type
+            const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload only PDF, JPG, or PNG files.');
+                return;
+            }
+            
+            // Validate file size (10MB)
+            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            if (file.size > maxSize) {
+                alert('File size exceeds 10MB limit.');
+                return;
+            }
+            
+            // Update file input (for FormData)
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            
+            // Show preview
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            filePreview.style.display = 'block';
+            
+            // Enable submit button
+            submitBtn.disabled = false;
+            
+            // Update file icon based on type
+            if (file.type === 'application/pdf') {
+                fileIcon.className = 'fas fa-file-pdf file-icon';
+            } else if (file.type.includes('image')) {
+                fileIcon.className = 'fas fa-file-image file-icon';
+            }
+        }
+    }
+    
+    // Remove file
+    removeFileBtn.addEventListener('click', function() {
+        fileInput.value = '';
+        filePreview.style.display = 'none';
+        submitBtn.disabled = true;
+    });
+    
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Form validation
+    document.getElementById('upload-form').addEventListener('submit', function(e) {
+        const testName = document.getElementById('id_test_name').value.trim();
+        const testDate = document.getElementById('id_test_date').value;
+        const file = fileInput.files[0];
+        
+        if (!testName) {
+            e.preventDefault();
+            alert('Please enter the test name.');
+            return;
+        }
+        
+        if (!testDate) {
+            e.preventDefault();
+            alert('Please select the test date.');
+            return;
+        }
+        
+        if (!file) {
+            e.preventDefault();
+            alert('Please upload a test report file.');
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

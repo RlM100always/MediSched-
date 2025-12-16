@@ -1,0 +1,1171 @@
+{% extends 'adminapp/base_admin.html' %}
+{% load static %}
+
+{% block title %}Edit Upazila | MediSched Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2D9CDB;
+        --primary-dark: #1e7cb3;
+        --primary-light: #e1f1fa;
+        --primary-gradient: linear-gradient(135deg, #2D9CDB 0%, #1e7cb3 100%);
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --light-bg: #f8fafc;
+        --card-shadow: 0 10px 30px rgba(45, 156, 219, 0.12);
+        --hover-shadow: 0 20px 50px rgba(45, 156, 219, 0.18);
+    }
+    
+    /* Mobile First Base Styles - Minimal padding */
+    .form-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        animation: slideInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        width: 100%;
+    }
+    
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Card */
+    .form-card {
+        border: none;
+        border-radius: 0;
+        overflow: hidden;
+        box-shadow: none;
+        background: white;
+        min-height: 100vh;
+    }
+    
+    /* Header */
+    .card-header-custom {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1rem 0.75rem;
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+    }
+    
+    .header-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        position: relative;
+        z-index: 2;
+        max-width: 100%;
+    }
+    
+    .header-title {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.25rem;
+        letter-spacing: 0.3px;
+        width: 100%;
+    }
+    
+    .header-title i {
+        font-size: 1.25rem;
+        margin-right: 0.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem;
+        border-radius: 8px;
+        backdrop-filter: blur(5px);
+        flex-shrink: 0;
+    }
+    
+    .upazila-badge {
+        background: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        align-self: flex-start;
+        flex-shrink: 0;
+    }
+    
+    /* Card Body */
+    .card-body {
+        padding: 1rem 0.75rem;
+        background: #f8fafc;
+        width: 100%;
+    }
+    
+    /* Hierarchy Info */
+    .hierarchy-info {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        width: 100%;
+    }
+    
+    .info-card {
+        background: white;
+        padding: 0.75rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border-left: 3px solid var(--primary-color);
+    }
+    
+    .info-label {
+        font-size: 0.75rem;
+        color: #718096;
+        font-weight: 600;
+        margin-bottom: 0.125rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .info-value {
+        font-size: 0.875rem;
+        color: #2d3748;
+        font-weight: 600;
+    }
+    
+    /* Form Section */
+    .form-section {
+        background: white;
+        border-radius: 10px;
+        padding: 0.875rem;
+        margin-bottom: 0.875rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        border: 1px solid #eef2f7;
+        width: 100%;
+    }
+    
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #2d3748;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.875rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-light);
+        width: 100%;
+    }
+    
+    .section-title i {
+        color: var(--primary-color);
+        background: var(--primary-light);
+        padding: 0.375rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+    
+    /* Form Elements */
+    .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.375rem;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        width: 100%;
+    }
+    
+    .form-label i {
+        color: var(--primary-color);
+        font-size: 0.75rem;
+        flex-shrink: 0;
+    }
+    
+    .form-control-custom,
+    .form-select-custom {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 0.875rem;
+        width: 100%;
+        background: white;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+    
+    .form-control-custom:focus,
+    .form-select-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.15);
+        outline: none;
+    }
+    
+    .select-wrapper {
+        position: relative;
+        width: 100%;
+    }
+    
+    .select-wrapper::after {
+        content: "▾";
+        font-size: 0.875rem;
+        color: var(--primary-color);
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+    
+    .form-select-custom {
+        appearance: none;
+        cursor: pointer;
+        width: 100%;
+    }
+    
+    .current-selection {
+        background: var(--primary-light);
+        border: 1px solid var(--primary-color);
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        width: 100%;
+    }
+    
+    .current-selection i {
+        color: var(--primary-color);
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+    
+    .current-selection-text {
+        font-size: 0.75rem;
+        color: #2d3748;
+        line-height: 1.3;
+    }
+    
+    .current-selection-text strong {
+        color: var(--primary-dark);
+    }
+    
+    /* Search Box */
+    .search-box {
+        position: relative;
+        margin-bottom: 0.75rem;
+        width: 100%;
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a0aec0;
+        z-index: 2;
+        font-size: 0.875rem;
+    }
+    
+    .search-input {
+        padding-left: 2.25rem !important;
+        border-radius: 8px !important;
+        width: 100%;
+    }
+    
+    /* Form Helper */
+    .form-helper {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        color: #718096;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        font-weight: 500;
+        width: 100%;
+    }
+    
+    .form-helper i {
+        color: var(--primary-color);
+        font-size: 0.625rem;
+        flex-shrink: 0;
+    }
+    
+    /* Validation */
+    .validation-feedback {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(-5px);
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+    
+    .validation-feedback.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .valid-feedback {
+        color: var(--success-color);
+    }
+    
+    .invalid-feedback {
+        color: var(--danger-color);
+    }
+    
+    /* Buttons */
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 2px solid #edf2f7;
+        width: 100%;
+    }
+    
+    .btn-back,
+    .btn-update {
+        border-radius: 8px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        width: 100%;
+        border: none;
+        box-sizing: border-box;
+    }
+    
+    .btn-back {
+        background: white;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .btn-back:hover {
+        background: #f7fafc;
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .btn-update {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 2px 8px rgba(45, 156, 219, 0.3);
+    }
+    
+    .btn-update:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(45, 156, 219, 0.4);
+    }
+    
+    .btn-loading {
+        position: relative;
+        color: transparent !important;
+    }
+    
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        top: 50%;
+        left: 50%;
+        margin: -9px 0 0 -9px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Success Toast */
+    .success-toast {
+        position: fixed;
+        bottom: 15px;
+        left: 0.75rem;
+        right: 0.75rem;
+        background: var(--success-color);
+        color: white;
+        padding: 0.875rem 1rem;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        z-index: 9999;
+        animation: slideInUp 0.3s ease-out;
+        display: none;
+    }
+    
+    .success-toast i {
+        font-size: 1.125rem;
+        flex-shrink: 0;
+    }
+    
+    /* Tablet Styles (min-width: 576px) */
+    @media (min-width: 576px) {
+        .form-container {
+            padding: 1rem;
+            max-width: 540px;
+            margin: 0 auto;
+        }
+        
+        .form-card {
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            min-height: auto;
+        }
+        
+        .card-header-custom {
+            padding: 1.25rem;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .header-content {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-title {
+            font-size: 1.375rem;
+        }
+        
+        .header-title i {
+            font-size: 1.5rem;
+            padding: 0.625rem;
+            margin-right: 0.75rem;
+        }
+        
+        .upazila-badge {
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .hierarchy-info {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-card {
+            padding: 1rem;
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+        }
+        
+        .info-value {
+            font-size: 1rem;
+        }
+        
+        .form-section {
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            border-radius: 12px;
+        }
+        
+        .section-title {
+            font-size: 1.125rem;
+            margin-bottom: 1.25rem;
+        }
+        
+        .section-title i {
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .form-label {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control-custom,
+        .form-select-custom {
+            padding: 0.875rem;
+            font-size: 0.95rem;
+        }
+        
+        .current-selection {
+            padding: 0.875rem;
+            font-size: 0.875rem;
+        }
+        
+        .search-box i {
+            left: 0.875rem;
+        }
+        
+        .search-input {
+            padding-left: 2.5rem !important;
+        }
+        
+        .form-helper {
+            font-size: 0.75rem;
+            margin-top: 0.375rem;
+        }
+        
+        .validation-feedback {
+            font-size: 0.75rem;
+            margin-top: 0.375rem;
+        }
+        
+        .button-group {
+            flex-direction: row;
+            gap: 0.875rem;
+            margin-top: 2rem;
+        }
+        
+        .btn-back,
+        .btn-update {
+            flex: 1;
+            min-width: 120px;
+        }
+    }
+    
+    /* Desktop Styles (min-width: 768px) */
+    @media (min-width: 768px) {
+        .form-container {
+            max-width: 720px;
+            padding: 2rem 1rem;
+        }
+        
+        .card-header-custom {
+            padding: 1.75rem;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+        }
+        
+        .header-title i {
+            font-size: 1.75rem;
+            padding: 0.875rem;
+        }
+        
+        .upazila-badge {
+            font-size: 1rem;
+            padding: 0.625rem 1.25rem;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .hierarchy-info {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-card {
+            padding: 1.25rem;
+        }
+        
+        .info-label {
+            font-size: 0.875rem;
+        }
+        
+        .info-value {
+            font-size: 1.125rem;
+        }
+        
+        .form-section {
+            padding: 1.75rem;
+            margin-bottom: 1.75rem;
+            border-radius: 14px;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title i {
+            padding: 0.625rem;
+            font-size: 1.125rem;
+        }
+        
+        .form-label {
+            font-size: 1rem;
+        }
+        
+        .form-control-custom,
+        .form-select-custom {
+            padding: 1rem;
+            font-size: 1rem;
+            border-radius: 10px;
+        }
+        
+        .current-selection {
+            padding: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .search-box {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-helper {
+            font-size: 0.875rem;
+        }
+        
+        .validation-feedback {
+            font-size: 0.875rem;
+        }
+        
+        .button-group {
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            padding-top: 1.75rem;
+        }
+        
+        .btn-back,
+        .btn-update {
+            width: auto;
+            padding: 0.875rem 1.75rem;
+            font-size: 0.95rem;
+        }
+        
+        .success-toast {
+            left: auto;
+            right: 1.5rem;
+            width: auto;
+            max-width: 380px;
+            padding: 1rem 1.5rem;
+        }
+    }
+    
+    /* Large Desktop (min-width: 992px) */
+    @media (min-width: 992px) {
+        .form-container {
+            max-width: 750px;
+        }
+    }
+    
+    /* Extra Small Devices Fix (<= 360px) */
+    @media (max-width: 360px) {
+        .card-header-custom {
+            padding: 0.875rem 0.5rem;
+        }
+        
+        .header-title {
+            font-size: 1.125rem;
+        }
+        
+        .header-title i {
+            font-size: 1.125rem;
+            padding: 0.375rem;
+            margin-right: 0.375rem;
+        }
+        
+        .upazila-badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .card-body {
+            padding: 0.75rem 0.5rem;
+        }
+        
+        .form-section {
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .section-title {
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .form-label {
+            font-size: 0.8rem;
+        }
+        
+        .form-control-custom,
+        .form-select-custom {
+            padding: 0.625rem;
+            font-size: 0.8rem;
+        }
+        
+        .current-selection {
+            padding: 0.625rem;
+            font-size: 0.7rem;
+        }
+        
+        .search-box i {
+            left: 0.625rem;
+        }
+        
+        .search-input {
+            padding-left: 2rem !important;
+        }
+        
+        .form-helper,
+        .validation-feedback {
+            font-size: 0.7rem;
+        }
+        
+        .btn-back,
+        .btn-update {
+            padding: 0.625rem 0.75rem;
+            font-size: 0.8rem;
+        }
+        
+        .success-toast {
+            left: 0.5rem;
+            right: 0.5rem;
+            padding: 0.75rem 0.875rem;
+            font-size: 0.8rem;
+        }
+    }
+    
+    /* Extra Extra Small (<= 320px) */
+    @media (max-width: 320px) {
+        .header-title {
+            font-size: 1rem;
+        }
+        
+        .header-title i {
+            font-size: 1rem;
+        }
+        
+        .card-body {
+            padding: 0.5rem;
+        }
+        
+        .form-section {
+            padding: 0.625rem;
+        }
+        
+        .btn-back span,
+        .btn-update span {
+            font-size: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card form-card">
+        <!-- Header -->
+        <div class="card-header card-header-custom">
+            <div class="header-content">
+                <h2 class="header-title">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    Edit Upazila
+                </h2>
+                <div class="upazila-badge">
+                    <i class="fa-solid fa-hashtag"></i>
+                    ID: {{ upazila.id }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Body -->
+        <div class="card-body">
+            <!-- Location Hierarchy -->
+            <div class="hierarchy-info">
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="fa-solid fa-map"></i>
+                        Division
+                    </div>
+                    <div class="info-value">
+                        {{ upazila.district.division.division_name }}
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="fa-solid fa-map-marker-alt"></i>
+                        District
+                    </div>
+                    <div class="info-value">
+                        {{ upazila.district.district_name }}
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        Created
+                    </div>
+                    <div class="info-value">
+                        {{ upazila.created_at|date:"M d, Y"|default:"N/A" }}
+                    </div>
+                </div>
+            </div>
+            
+            <form method="POST" id="editUpazilaForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- Upazila Name Section -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-signature"></i>
+                        Upazila Information
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="upazila_name" class="form-label">
+                            <i class="fa-solid fa-map-pin"></i>
+                            Upazila Name *
+                        </label>
+                        <input 
+                            type="text" 
+                            name="upazila_name" 
+                            id="upazila_name" 
+                            class="form-control-custom" 
+                            value="{{ upazila.upazila_name }}" 
+                            placeholder="Enter upazila name"
+                            required
+                            maxlength="100"
+                        >
+                        <div class="form-helper">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Enter the official name (max 100 characters)
+                        </div>
+                        <div class="validation-feedback valid-feedback" id="nameValid">
+                            <i class="fa-solid fa-circle-check"></i>
+                            Upazila name is valid
+                        </div>
+                        <div class="validation-feedback invalid-feedback" id="nameError">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            Minimum 3 characters required
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- District Selection Section -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-location-dot"></i>
+                        District Selection
+                    </div>
+                    
+                    <!-- Current Selection Display -->
+                    <div class="current-selection">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <div class="current-selection-text">
+                            Currently: 
+                            <strong>{{ upazila.district.district_name }}</strong> 
+                            ({{ upazila.district.division.division_name }})
+                        </div>
+                    </div>
+                    
+                    <!-- District Search -->
+                    <div class="search-box">
+                        <i class="fa-solid fa-search"></i>
+                        <input 
+                            type="text" 
+                            id="districtSearch" 
+                            class="form-control-custom search-input" 
+                            placeholder="Search districts..."
+                        >
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="district_id" class="form-label">
+                            <i class="fa-solid fa-map-marked-alt"></i>
+                            Select District *
+                        </label>
+                        <div class="select-wrapper">
+                            <select 
+                                name="district_id" 
+                                id="district_id" 
+                                class="form-select-custom"
+                                required
+                            >
+                                <option value="" disabled>Select a district</option>
+                                {% for dist in districts %}
+                                    <option 
+                                        value="{{ dist.id }}" 
+                                        {% if dist.id == upazila.district.id %}selected{% endif %}
+                                        data-division="{{ dist.division.division_name }}"
+                                    >
+                                        {{ dist.district_name }} ({{ dist.division.division_name }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-helper">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Select the district this upazila belongs to
+                        </div>
+                        <div class="validation-feedback valid-feedback" id="districtValid">
+                            <i class="fa-solid fa-circle-check"></i>
+                            District selected
+                        </div>
+                        <div class="validation-feedback invalid-feedback" id="districtError">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            Please select a district
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <a href="{% url 'upazila_list' %}" class="btn-back">
+                        <i class="fa-solid fa-arrow-left-long"></i>
+                        <span>Back to List</span>
+                    </a>
+                    <button type="submit" class="btn-update" id="submitBtn">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Update Upazila</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Success Toast -->
+<div class="success-toast" id="successToast">
+    <i class="fa-solid fa-circle-check"></i>
+    <div>
+        <strong>Upazila Updated!</strong>
+        <div style="font-size: 0.8rem;">Changes saved successfully</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('editUpazilaForm');
+        const upazilaNameInput = document.getElementById('upazila_name');
+        const districtSelect = document.getElementById('district_id');
+        const districtSearch = document.getElementById('districtSearch');
+        const submitBtn = document.getElementById('submitBtn');
+        const successToast = document.getElementById('successToast');
+        
+        // Character counter
+        function updateCharCounter() {
+            const charCount = upazilaNameInput.value.length;
+            const maxLength = 100;
+            const counter = document.getElementById('charCounter') || createCharCounter();
+            
+            counter.textContent = `${charCount}/${maxLength}`;
+            
+            // Color coding
+            if (charCount > 90) {
+                counter.style.color = 'var(--danger-color)';
+                counter.style.fontWeight = 'bold';
+            } else if (charCount > 75) {
+                counter.style.color = 'var(--warning-color)';
+                counter.style.fontWeight = '600';
+            } else {
+                counter.style.color = '#718096';
+                counter.style.fontWeight = 'normal';
+            }
+        }
+        
+        function createCharCounter() {
+            const counter = document.createElement('div');
+            counter.id = 'charCounter';
+            counter.className = 'form-helper text-end';
+            upazilaNameInput.parentNode.appendChild(counter);
+            return counter;
+        }
+        
+        // Initialize
+        updateCharCounter();
+        
+        // Event Listeners
+        upazilaNameInput.addEventListener('input', function() {
+            updateCharCounter();
+            validateUpazilaName();
+        });
+        
+        districtSelect.addEventListener('change', function() {
+            validateDistrict();
+            updateCurrentSelection();
+        });
+        
+        // District search
+        districtSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const options = districtSelect.querySelectorAll('option');
+            
+            options.forEach(option => {
+                if (option.value === '') return;
+                
+                const optionText = option.textContent.toLowerCase();
+                if (optionText.includes(searchTerm)) {
+                    option.style.display = '';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+        
+        // Validation
+        function validateUpazilaName() {
+            const value = upazilaNameInput.value.trim();
+            const nameValid = document.getElementById('nameValid');
+            const nameError = document.getElementById('nameError');
+            
+            if (value.length < 3) {
+                showValidation(nameError, true);
+                showValidation(nameValid, false);
+                return false;
+            } else {
+                showValidation(nameError, false);
+                showValidation(nameValid, true);
+                return true;
+            }
+        }
+        
+        function validateDistrict() {
+            const value = districtSelect.value;
+            const districtValid = document.getElementById('districtValid');
+            const districtError = document.getElementById('districtError');
+            
+            if (!value) {
+                showValidation(districtError, true);
+                showValidation(districtValid, false);
+                return false;
+            } else {
+                showValidation(districtError, false);
+                showValidation(districtValid, true);
+                return true;
+            }
+        }
+        
+        function showValidation(element, show) {
+            if (show) {
+                element.classList.add('show');
+            } else {
+                element.classList.remove('show');
+            }
+        }
+        
+        // Update current selection
+        function updateCurrentSelection() {
+            const selectedOption = districtSelect.options[districtSelect.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                const text = selectedOption.textContent;
+                const match = text.match(/(.+)\s\((.+)\)/);
+                
+                if (match) {
+                    document.querySelector('.current-selection-text').innerHTML = `
+                        Currently: 
+                        <strong>${match[1]}</strong> 
+                        (${match[2]})
+                    `;
+                }
+            }
+        }
+        
+        // Form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const isNameValid = validateUpazilaName();
+            const isDistrictValid = validateDistrict();
+            
+            if (isNameValid && isDistrictValid) {
+                // Loading state
+                submitBtn.classList.add('btn-loading');
+                submitBtn.disabled = true;
+                
+                // Show success toast
+                showSuccessToast();
+                
+                // Submit after delay
+                setTimeout(() => {
+                    form.submit();
+                }, 1500);
+            } else {
+                // Shake invalid fields
+                const invalidFields = form.querySelectorAll('.validation-feedback.show.invalid-feedback');
+                invalidFields.forEach(feedback => {
+                    feedback.parentElement.classList.add('animate__animated', 'animate__headShake');
+                    setTimeout(() => {
+                        feedback.parentElement.classList.remove('animate__animated', 'animate__headShake');
+                    }, 1000);
+                });
+                
+                // Focus first invalid field
+                if (!isNameValid) {
+                    upazilaNameInput.focus();
+                } else if (!isDistrictValid) {
+                    districtSelect.focus();
+                }
+            }
+        });
+        
+        // Success toast
+        function showSuccessToast() {
+            successToast.style.display = 'flex';
+            
+            setTimeout(() => {
+                successToast.style.opacity = '0';
+                successToast.style.transform = 'translateY(20px)';
+                successToast.style.transition = 'all 0.3s ease';
+                
+                setTimeout(() => {
+                    successToast.style.display = 'none';
+                    successToast.style.opacity = '';
+                    successToast.style.transform = '';
+                }, 300);
+            }, 2500);
+        }
+        
+        // Initialize validation
+        validateUpazilaName();
+        validateDistrict();
+    });
+</script>
+
+<!-- Minimal animation styles -->
+<style>
+    .animate__animated {
+        animation-duration: 0.5s;
+    }
+    
+    .animate__headShake {
+        animation-name: headShake;
+    }
+    
+    @keyframes headShake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-5px); }
+        40% { transform: translateX(5px); }
+        60% { transform: translateX(-5px); }
+        80% { transform: translateX(5px); }
+    }
+</style>
+{% endblock %}

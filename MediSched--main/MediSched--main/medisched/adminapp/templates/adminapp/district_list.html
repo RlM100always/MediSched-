@@ -1,0 +1,1456 @@
+{% extends 'adminapp/base_admin.html' %}
+{% load static %}
+
+{% block title %}Manage Districts | MediSched Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    
+    :root {
+        --primary-color: #2D9CDB;
+        --primary-dark: #1e7cb3;
+        --primary-light: #e1f1fa;
+        --primary-gradient: linear-gradient(135deg, #2D9CDB 0%, #1e7cb3 100%);
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --light-bg: #f8fafc;
+        --card-shadow: 0 8px 30px rgba(45, 156, 219, 0.08);
+        --hover-shadow: 0 12px 40px rgba(45, 156, 219, 0.12);
+        --border-color: #e2e8f0;
+    }
+    
+    /* Base Reset */
+    body {
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Container */
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    
+    /* Page Header */
+    .page-header {
+        padding: 1.5rem 0 2rem 0;
+        margin-bottom: 1.5rem;
+    }
+    
+    .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+    
+    .header-title-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .header-icon {
+        background: var(--primary-gradient);
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 20px rgba(45, 156, 219, 0.2);
+        flex-shrink: 0;
+    }
+    
+    .header-icon i {
+        font-size: 1.8rem;
+        color: white;
+    }
+    
+    .header-title {
+        margin: 0;
+        font-weight: 800;
+        font-size: 1.8rem;
+        color: #1e293b;
+        line-height: 1.2;
+    }
+    
+    .header-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .header-stats {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-item {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(45, 156, 219, 0.1);
+    }
+    
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        background: var(--primary-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-color);
+        font-size: 1.3rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1e293b;
+        line-height: 1;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+    
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: 18px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(45, 156, 219, 0.1);
+        animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .form-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #1e293b;
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--primary-light);
+    }
+    
+    .form-title i {
+        background: var(--primary-gradient);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    
+    /* Form Grid - FIXED */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 1.5rem;
+        align-items: end;
+        width: 100%;
+    }
+    
+    /* Form Group - CRITICAL FIX */
+    .form-group {
+        margin-bottom: 0;
+        position: relative;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-label i {
+        color: var(--primary-color);
+        font-size: 1rem;
+    }
+    
+    /* Input Fields - FIXED */
+    .form-control-custom {
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+        font-weight: 500;
+        width: 100%;
+        box-sizing: border-box;
+        font-family: inherit;
+        line-height: 1.5;
+        color: #1e293b;
+    }
+    
+    .form-control-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.15);
+        outline: none;
+    }
+    
+    .form-control-custom::placeholder {
+        color: #94a3b8;
+    }
+    
+    /* Dropdown - COMPLETELY FIXED */
+    .select-wrapper {
+        position: relative;
+        width: 100%;
+        display: block;
+    }
+    
+    .select-wrapper::after {
+        content: "▾";
+        font-size: 1.2rem;
+        color: var(--primary-color);
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        z-index: 1;
+        font-weight: bold;
+    }
+    
+    .form-select-custom {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0.875rem 2.75rem 0.875rem 1rem;
+        font-size: 1rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-weight: 500;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 2;
+        min-height: 52px;
+        line-height: 1.5;
+        color: #1e293b;
+        font-family: inherit;
+    }
+    
+    /* iOS Safari specific fixes */
+    @supports (-webkit-touch-callout: none) {
+        .form-select-custom {
+            background-image: none;
+            -webkit-appearance: none;
+        }
+    }
+    
+    .form-select-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(45, 156, 219, 0.15);
+        outline: none;
+    }
+    
+    .form-select-custom:hover {
+        border-color: #cbd5e0;
+    }
+    
+    .form-select-custom option {
+        padding: 12px;
+        font-size: 1rem;
+        background: white;
+        color: #1e293b;
+    }
+    
+    /* Form Text */
+    .form-text {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-top: 0.5rem;
+    }
+    
+    /* Buttons */
+    .btn-add {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 52px;
+        white-space: nowrap;
+        box-shadow: 0 4px 15px rgba(45, 156, 219, 0.3);
+    }
+    
+    .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(45, 156, 219, 0.4);
+    }
+    
+    .btn-add:active {
+        transform: translateY(0);
+    }
+    
+    .btn-add:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* Table Card */
+    .table-card {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(45, 156, 219, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .table-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.5rem 2rem;
+    }
+    
+    .table-title {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    /* Responsive Table */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+    }
+    
+    .custom-table {
+        width: 100%;
+        min-width: 768px;
+        border-collapse: collapse;
+    }
+    
+    .custom-table th {
+        padding: 1.25rem 1.5rem;
+        font-weight: 700;
+        color: #475569;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: left;
+        border-bottom: 2px solid #e2e8f0;
+        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    }
+    
+    .custom-table td {
+        padding: 1.25rem 1.5rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+        font-weight: 500;
+    }
+    
+    .custom-table tbody tr:hover {
+        background: var(--primary-light);
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-action {
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        white-space: nowrap;
+        min-width: 90px;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+    
+    .btn-danger {
+        background: var(--danger-color);
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+    }
+    
+    /* Badges */
+    .badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .bg-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .bg-info {
+        background: #17a2b8;
+        color: white;
+    }
+    
+    /* ===== TABLET: 768px - 991px ===== */
+    @media (min-width: 768px) and (max-width: 991px) {
+        .form-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+        
+        .form-grid .form-group:nth-child(3) {
+            grid-column: span 2;
+        }
+        
+        .btn-add {
+            width: 100%;
+        }
+        
+        .header-stats {
+            width: 100%;
+            justify-content: space-between;
+        }
+        
+        .stat-item {
+            flex: 1;
+        }
+    }
+    
+    /* ===== MOBILE: 0 - 767px ===== */
+    @media (max-width: 767px) {
+        .container-fluid {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        /* Header */
+        .page-header {
+            padding: 1rem 0 1.5rem 0;
+        }
+        
+        .header-container {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .header-title-wrapper {
+            width: 100%;
+        }
+        
+        .header-icon {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .header-icon i {
+            font-size: 1.5rem;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+        }
+        
+        .header-subtitle {
+            font-size: 0.9rem;
+        }
+        
+        .header-stats {
+            width: 100%;
+            gap: 0.75rem;
+        }
+        
+        .stat-item {
+            flex: 1;
+            min-width: calc(50% - 0.375rem);
+            padding: 0.875rem 1rem;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .stat-value {
+            font-size: 1.3rem;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+        }
+        
+        /* Form Card */
+        .form-card {
+            padding: 1.5rem;
+            border-radius: 14px;
+        }
+        
+        .form-title {
+            font-size: 1.15rem;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-title i {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+        
+        /* CRITICAL MOBILE FIX */
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+        
+        .form-label {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Prevent iOS zoom on input focus */
+        .form-control-custom,
+        .form-select-custom {
+            font-size: 16px !important;
+            padding: 0.875rem 1rem;
+            min-height: 52px;
+        }
+        
+        .form-select-custom {
+            padding-right: 2.75rem;
+        }
+        
+        .select-wrapper::after {
+            right: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .btn-add {
+            width: 100%;
+            padding: 1rem;
+            min-height: 52px;
+        }
+        
+        /* Table */
+        .table-header {
+            padding: 1.25rem 1rem;
+        }
+        
+        .table-title {
+            font-size: 1.1rem;
+        }
+        
+        .custom-table {
+            min-width: 600px;
+        }
+        
+        .custom-table th,
+        .custom-table td {
+            padding: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .btn-action {
+            width: 100%;
+            min-height: 44px;
+        }
+    }
+    
+    /* ===== SMALL MOBILE: 0 - 480px ===== */
+    @media (max-width: 480px) {
+        .container-fluid {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+        
+        .header-title {
+            font-size: 1.3rem;
+        }
+        
+        .stat-item {
+            min-width: 100%;
+        }
+        
+        .form-card {
+            padding: 1.25rem;
+        }
+        
+        .form-title {
+            font-size: 1rem;
+        }
+        
+        .custom-table {
+            min-width: 500px;
+        }
+        
+        .custom-table th,
+        .custom-table td {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.85rem;
+        }
+    }
+    
+    /* ===== LANDSCAPE MODE ===== */
+    @media (max-height: 500px) and (orientation: landscape) {
+        .page-header {
+            padding: 0.75rem 0 1rem 0;
+        }
+        
+        .form-card {
+            padding: 1rem;
+        }
+        
+        .form-title {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-grid {
+            gap: 0.875rem;
+        }
+        
+        .form-control-custom,
+        .form-select-custom {
+            padding: 0.625rem 1rem;
+            min-height: 44px;
+        }
+        
+        .btn-add {
+            min-height: 44px;
+            padding: 0.625rem 1rem;
+        }
+    }
+    
+    /* ===== TOUCH DEVICES ===== */
+    @media (pointer: coarse) {
+        .btn-action,
+        .btn-add,
+        .form-control-custom,
+        .form-select-custom {
+            min-height: 44px;
+        }
+        
+        /* Larger touch targets */
+        .form-select-custom {
+            touch-action: manipulation;
+        }
+    }
+    
+    /* Modal Styles */
+    .modal-content {
+        border-radius: 18px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .modal-body {
+        padding: 2rem;
+    }
+    
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        padding: 0.625rem 1.25rem;
+        border-radius: 10px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-close {
+        padding: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-container">
+            <div class="header-title-wrapper">
+                <div class="header-icon">
+                    <i class="fa-solid fa-city"></i>
+                </div>
+                <div>
+                    <h1 class="header-title">Manage Districts</h1>
+                    <span class="header-subtitle">Administrative district management</span>
+                </div>
+            </div>
+            
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ districts|length }}</div>
+                        <div class="stat-label">Total Districts</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-map"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ divisions|length }}</div>
+                        <div class="stat-label">Divisions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add District Form -->
+    <div class="form-card">
+        <div class="form-title">
+            <i class="fa-solid fa-circle-plus"></i>
+            Add New District
+        </div>
+        <form method="POST" action="{% url 'add_district' %}" id="addDistrictForm">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fa-solid fa-map-pin"></i>
+                        District Name
+                    </label>
+                    <input type="text" 
+                           name="district_name" 
+                           class="form-control-custom" 
+                           placeholder="e.g., Dhaka, Chittagong"
+                           required
+                           maxlength="100"
+                           autocomplete="off"
+                           id="districtName">
+                    <div class="form-text">
+                        Enter the official name of the district
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fa-solid fa-map-marked-alt"></i>
+                        Division
+                    </label>
+                    <div class="select-wrapper">
+                        <select name="division_id" 
+                                class="form-select-custom"
+                                required
+                                id="divisionSelect">
+                            <option value="">Select a Division</option>
+                            {% for div in divisions %}
+                                <option value="{{ div.id }}">{{ div.division_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-text">
+                        Choose the division for this district
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn-add" id="submitBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        Add District
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Districts Table -->
+    <div class="table-card">
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="fa-solid fa-table-list"></i>
+                All Districts
+            </h3>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="custom-table" id="districtsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>District Name</th>
+                        <th>Division</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dist in districts %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-primary">#{{ dist.id }}</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700;">{{ dist.district_name }}</div>
+                            <small style="color: #64748b;">
+                                <i class="fa-solid fa-calendar"></i>
+                                {{ dist.created_at|date:"M d, Y"|default:"N/A" }}
+                            </small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">
+                                <i class="fa-solid fa-map"></i>
+                                {{ dist.division.division_name }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'edit_district' dist.id %}" class="btn-action btn-primary">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    Edit
+                                </a>
+                                <a href="{% url 'delete_district' dist.id %}" 
+                                   class="btn-action btn-danger delete-btn"
+                                   data-id="{{ dist.id }}"
+                                   data-name="{{ dist.district_name }}">
+                                    <i class="fa-solid fa-trash"></i>
+                                    Delete
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 3rem;">
+                            <div style="color: #64748b;">
+                                <i class="fa-solid fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <h5>No Districts Found</h5>
+                                <p>Start by adding your first district using the form above.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="color: var(--danger-color); display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 2rem;">
+                <i class="fa-solid fa-trash" style="font-size: 3rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
+                <h5 id="deleteModalTitle" style="margin-bottom: 0.75rem;">Delete District?</h5>
+                <p id="deleteModalMessage" style="color: #64748b;">
+                    This action cannot be undone. All associated data will be permanently removed.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-xmark"></i>
+                    Cancel
+                </button>
+                <a href="#" id="confirmDeleteBtn" class="btn-action btn-danger">
+                    <i class="fa-solid fa-trash"></i>
+                    Delete District
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addDistrictForm = document.getElementById('addDistrictForm');
+        const districtNameInput = document.getElementById('districtName');
+        const divisionSelect = document.getElementById('divisionSelect');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // ===== CRITICAL MOBILE DROPDOWN FIX =====
+        if (divisionSelect) {
+            // Detect device type
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            
+            // iOS specific fixes
+            if (isIOS) {
+                divisionSelect.style.webkitAppearance = 'menulist-button';
+                divisionSelect.style.MozAppearance = 'none';
+            }
+            
+            // Android/Chrome fix - force hardware acceleration
+            divisionSelect.addEventListener('touchstart', function(e) {
+                this.style.transform = 'translateZ(0)';
+                this.style.webkitTransform = 'translateZ(0)';
+            }, { passive: true });
+            
+            // Fix for dropdown not opening on first tap
+            divisionSelect.addEventListener('mousedown', function(e) {
+                if (isMobile && this.value === '') {
+                    e.preventDefault();
+                    this.focus();
+                    setTimeout(() => {
+                        this.click();
+                    }, 100);
+                }
+            });
+            
+            // Ensure dropdown closes properly
+            divisionSelect.addEventListener('change', function() {
+                this.blur();
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 300);
+            });
+            
+            // Prevent zoom on focus for mobile
+            if (isMobile) {
+                divisionSelect.addEventListener('focus', function() {
+                    if (this.style.fontSize !== '16px') {
+                        this.style.fontSize = '16px';
+                    }
+                });
+            }
+        }
+        
+        // ===== FORM VALIDATION =====
+        if (addDistrictForm) {
+            addDistrictForm.addEventListener('submit', function(e) {
+                const districtName = districtNameInput.value.trim();
+                const divisionId = divisionSelect.value;
+                
+                // Validate district name
+                if (!districtName) {
+                    e.preventDefault();
+                    showAlert('Please enter a district name.', 'danger');
+                    districtNameInput.focus();
+                    return false;
+                }
+                
+                if (districtName.length < 3) {
+                    e.preventDefault();
+                    showAlert('District name must be at least 3 characters long.', 'danger');
+                    districtNameInput.focus();
+                    return false;
+                }
+                
+                if (districtName.length > 100) {
+                    e.preventDefault();
+                    showAlert('District name cannot exceed 100 characters.', 'danger');
+                    districtNameInput.focus();
+                    return false;
+                }
+                
+                // Validate division selection
+                if (!divisionId || divisionId === '') {
+                    e.preventDefault();
+                    showAlert('Please select a division.', 'danger');
+                    divisionSelect.focus();
+                    return false;
+                }
+                
+                // Show loading state
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
+                submitBtn.disabled = true;
+                
+                return true;
+            });
+            
+            // Real-time validation feedback
+            districtNameInput.addEventListener('input', function() {
+                const value = this.value.trim();
+                
+                if (value.length > 0 && value.length < 3) {
+                    this.style.borderColor = 'var(--warning-color)';
+                } else if (value.length >= 3) {
+                    this.style.borderColor = 'var(--success-color)';
+                } else {
+                    this.style.borderColor = 'var(--border-color)';
+                }
+            });
+            
+            divisionSelect.addEventListener('change', function() {
+                if (this.value !== '') {
+                    this.style.borderColor = 'var(--success-color)';
+                } else {
+                    this.style.borderColor = 'var(--border-color)';
+                }
+            });
+        }
+        
+        // ===== CHARACTER COUNTER =====
+        if (districtNameInput) {
+            const charCounter = document.createElement('div');
+            charCounter.className = 'form-text';
+            charCounter.id = 'charCounter';
+            charCounter.style.textAlign = 'right';
+            charCounter.style.marginTop = '0.25rem';
+            charCounter.style.fontWeight = '600';
+            
+            const formText = districtNameInput.parentNode.querySelector('.form-text');
+            if (formText) {
+                formText.parentNode.insertBefore(charCounter, formText.nextSibling);
+            } else {
+                districtNameInput.parentNode.appendChild(charCounter);
+            }
+            
+            function updateCharCounter() {
+                const charCount = districtNameInput.value.length;
+                const maxLength = 100;
+                charCounter.textContent = `${charCount}/${maxLength} characters`;
+                
+                if (charCount > maxLength * 0.9) {
+                    charCounter.style.color = 'var(--danger-color)';
+                } else if (charCount > maxLength * 0.75) {
+                    charCounter.style.color = 'var(--warning-color)';
+                } else {
+                    charCounter.style.color = '#64748b';
+                }
+            }
+            
+            districtNameInput.addEventListener('input', updateCharCounter);
+            updateCharCounter();
+        }
+        
+        // ===== DELETE CONFIRMATION =====
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        const deleteModal = document.getElementById('deleteConfirmModal');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const districtId = this.getAttribute('data-id');
+                const districtName = this.getAttribute('data-name');
+                const deleteUrl = this.href;
+                
+                const deleteModalTitle = document.getElementById('deleteModalTitle');
+                const deleteModalMessage = document.getElementById('deleteModalMessage');
+                const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+                
+                deleteModalTitle.textContent = `Delete "${districtName}"?`;
+                deleteModalMessage.textContent = `Are you sure you want to delete "${districtName}"? This action cannot be undone and all associated data will be permanently removed.`;
+                confirmDeleteBtn.href = deleteUrl;
+                
+                // Show modal
+                if (typeof bootstrap !== 'undefined') {
+                    const modal = new bootstrap.Modal(deleteModal);
+                    modal.show();
+                } else {
+                    // Fallback if Bootstrap JS not loaded
+                    if (confirm(`Are you sure you want to delete "${districtName}"?`)) {
+                        window.location.href = deleteUrl;
+                    }
+                }
+            });
+        });
+        
+        // ===== ALERT SYSTEM =====
+        function showAlert(message, type) {
+            // Remove any existing alerts
+            const existingAlerts = document.querySelectorAll('.custom-alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show custom-alert`;
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 99999;
+                max-width: 400px;
+                min-width: 300px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                border-radius: 12px;
+                animation: slideInRight 0.3s ease;
+                border: none;
+            `;
+            
+            const iconMap = {
+                'success': 'check-circle',
+                'danger': 'exclamation-circle',
+                'warning': 'exclamation-triangle',
+                'info': 'info-circle'
+            };
+            
+            alertDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fa-solid fa-${iconMap[type] || 'info-circle'}" style="font-size: 1.5rem;"></i>
+                    <div style="flex: 1;">${message}</div>
+                    <button type="button" class="btn-close" aria-label="Close"></button>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Close button functionality
+            const closeBtn = alertDiv.querySelector('.btn-close');
+            closeBtn.addEventListener('click', () => {
+                alertDiv.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => alertDiv.remove(), 300);
+            });
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => alertDiv.remove(), 300);
+                }
+            }, 5000);
+        }
+        
+        // Add animation styles
+        if (!document.getElementById('alertAnimations')) {
+            const style = document.createElement('style');
+            style.id = 'alertAnimations';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        opacity: 0;
+                        transform: translateX(100%);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                
+                @keyframes slideOutRight {
+                    from {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                    to {
+                        opacity: 0;
+                        transform: translateX(100%);
+                    }
+                }
+                
+                .alert {
+                    padding: 1rem 1.25rem;
+                    border-left: 4px solid;
+                }
+                
+                .alert-success {
+                    background: #d4edda;
+                    color: #155724;
+                    border-left-color: #28a745;
+                }
+                
+                .alert-danger {
+                    background: #f8d7da;
+                    color: #721c24;
+                    border-left-color: #dc3545;
+                }
+                
+                .alert-warning {
+                    background: #fff3cd;
+                    color: #856404;
+                    border-left-color: #ffc107;
+                }
+                
+                .alert-info {
+                    background: #d1ecf1;
+                    color: #0c5460;
+                    border-left-color: #17a2b8;
+                }
+                
+                .btn-close {
+                    background: transparent;
+                    border: none;
+                    font-size: 1.25rem;
+                    cursor: pointer;
+                    opacity: 0.5;
+                    padding: 0;
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .btn-close:hover {
+                    opacity: 1;
+                }
+                
+                .btn-close::before {
+                    content: "×";
+                    font-size: 1.5rem;
+                    line-height: 1;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // ===== ORIENTATION CHANGE HANDLER =====
+        let currentOrientation = window.orientation;
+        
+        window.addEventListener('orientationchange', function() {
+            if (window.orientation !== currentOrientation) {
+                currentOrientation = window.orientation;
+                
+                // Force reflow for form elements
+                if (divisionSelect) {
+                    divisionSelect.style.display = 'none';
+                    districtNameInput.style.display = 'none';
+                    
+                    setTimeout(() => {
+                        divisionSelect.style.display = '';
+                        districtNameInput.style.display = '';
+                    }, 50);
+                }
+            }
+        });
+        
+        // ===== RESPONSIVE TABLE HANDLER =====
+        const tableResponsive = document.querySelector('.table-responsive');
+        
+        if (tableResponsive) {
+            let isScrolling = false;
+            
+            tableResponsive.addEventListener('scroll', function() {
+                if (!isScrolling) {
+                    isScrolling = true;
+                    this.style.cursor = 'grabbing';
+                    
+                    setTimeout(() => {
+                        isScrolling = false;
+                        this.style.cursor = 'grab';
+                    }, 150);
+                }
+            });
+            
+            // Show scroll indicator on mobile
+            if (window.innerWidth <= 767) {
+                const scrollIndicator = document.createElement('div');
+                scrollIndicator.style.cssText = `
+                    position: absolute;
+                    right: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: linear-gradient(to left, rgba(255,255,255,0.9), transparent);
+                    padding: 1rem 0.5rem;
+                    pointer-events: none;
+                    z-index: 10;
+                `;
+                scrollIndicator.innerHTML = '<i class="fa-solid fa-chevron-right" style="color: var(--primary-color); font-size: 1.2rem;"></i>';
+                
+                const tableCard = document.querySelector('.table-card');
+                tableCard.style.position = 'relative';
+                tableCard.appendChild(scrollIndicator);
+                
+                tableResponsive.addEventListener('scroll', function() {
+                    if (this.scrollLeft + this.clientWidth >= this.scrollWidth - 10) {
+                        scrollIndicator.style.display = 'none';
+                    } else {
+                        scrollIndicator.style.display = 'block';
+                    }
+                });
+            }
+        }
+        
+        // ===== PREVENT DOUBLE TAP ZOOM ON MOBILE =====
+        if ('ontouchstart' in window) {
+            let lastTouchEnd = 0;
+            
+            document.addEventListener('touchend', function(e) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, { passive: false });
+            
+            // Optimize touch response for buttons
+            document.querySelectorAll('.btn-action, .btn-add, .form-select-custom').forEach(element => {
+                element.style.touchAction = 'manipulation';
+                element.style.webkitTapHighlightColor = 'transparent';
+            });
+        }
+        
+        // ===== VIEWPORT HEIGHT FIX FOR MOBILE BROWSERS =====
+        function setViewportHeight() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        setViewportHeight();
+        window.addEventListener('resize', setViewportHeight);
+        window.addEventListener('orientationchange', setViewportHeight);
+        
+        // ===== FOCUS MANAGEMENT FOR ACCESSIBILITY =====
+        const formElements = document.querySelectorAll('input, select, button');
+        
+        formElements.forEach((element, index) => {
+            element.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && this.tagName !== 'BUTTON') {
+                    e.preventDefault();
+                    const nextElement = formElements[index + 1];
+                    if (nextElement) {
+                        nextElement.focus();
+                    } else if (submitBtn) {
+                        submitBtn.focus();
+                    }
+                }
+            });
+        });
+        
+        // ===== SMOOTH SCROLL TO ERROR =====
+        function scrollToElement(element) {
+            const offset = 100;
+            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - offset;
+            
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+        
+        // ===== NETWORK STATUS INDICATOR =====
+        window.addEventListener('online', function() {
+            showAlert('Connection restored', 'success');
+        });
+        
+        window.addEventListener('offline', function() {
+            showAlert('No internet connection', 'warning');
+        });
+        
+        // ===== LOADING OVERLAY FOR FORM SUBMISSION =====
+        if (addDistrictForm) {
+            addDistrictForm.addEventListener('submit', function() {
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(255, 255, 255, 0.9);
+                    z-index: 999999;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    backdrop-filter: blur(5px);
+                `;
+                overlay.innerHTML = `
+                    <div style="text-align: center;">
+                        <i class="fa-solid fa-spinner fa-spin" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                        <h4 style="color: #1e293b; margin: 0;">Processing...</h4>
+                        <p style="color: #64748b; margin-top: 0.5rem;">Please wait</p>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            });
+        }
+        
+        console.log('✅ District Management System Initialized');
+        console.log('📱 Mobile optimization: ACTIVE');
+        console.log('🎨 Responsive design: ACTIVE');
+        console.log('✨ All features: LOADED');
+    });
+</script>
+{% endblock %}

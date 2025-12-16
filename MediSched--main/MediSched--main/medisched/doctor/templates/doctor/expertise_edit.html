@@ -1,0 +1,521 @@
+{% extends 'doctor/doctor_sidebar.html' %}
+
+{% load static %}
+
+{% block title %}Manage Expertise | MediSched{% endblock %}
+
+{% block content %}
+<style>
+    /* Header Banner */
+    .expertise-header-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .expertise-header-banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .expertise-header-banner h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .expertise-header-banner p {
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Main Form Card */
+    .form-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s;
+    }
+
+    .form-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Section Cards */
+    .section-card {
+        background: #f9fafb;
+        border-radius: 1rem;
+        padding: 2rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s;
+        height: 100%;
+    }
+
+    .section-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .section-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .section-icon.departments {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+
+    .section-icon.symptoms {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    /* Form Labels */
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+        display: block;
+    }
+
+    /* Helper Text */
+    .helper-text {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-top: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .helper-text i {
+        color: #667eea;
+    }
+
+    /* Select2 Custom Styling */
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--multiple {
+        background: white;
+        border: 2px solid #e5e7eb !important;
+        border-radius: 0.75rem !important;
+        padding: 0.75rem !important;
+        min-height: 120px !important;
+        transition: all 0.3s ease;
+    }
+
+    .select2-container--default .select2-selection--multiple:hover {
+        border-color: #667eea !important;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    /* Selected Tags Styling */
+    .select2-selection__choice {
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        color: white !important;
+        border-radius: 0.5rem !important;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        border: none !important;
+        margin: 0.25rem !important;
+        display: inline-flex !important;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .select2-selection__choice:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .select2-selection__choice__remove {
+        color: white !important;
+        font-weight: 700 !important;
+        margin-right: 0.25rem !important;
+        font-size: 1.1rem !important;
+    }
+
+    .select2-selection__choice__remove:hover {
+        color: #fee !important;
+    }
+
+    /* Dropdown Styling */
+    .select2-dropdown {
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        margin-top: 0.5rem;
+    }
+
+    .select2-results__option {
+        padding: 0.75rem 1rem;
+        transition: background 0.2s ease;
+        font-size: 0.95rem;
+    }
+
+    .select2-results__option--highlighted {
+        background: #667eea !important;
+        color: white !important;
+    }
+
+    .select2-search__field {
+        border: 1px solid #e5e7eb !important;
+        border-radius: 0.5rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+
+    .select2-search__field:focus {
+        border-color: #667eea !important;
+        outline: none !important;
+    }
+
+    /* Save Button */
+    .btn-save-expertise {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        padding: 1rem 3rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .btn-save-expertise:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-save-expertise:active {
+        transform: translateY(0);
+    }
+
+    .btn-save-expertise i {
+        font-size: 1.1rem;
+    }
+
+    /* Info Boxes */
+    .info-box {
+        background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+        border-left: 4px solid #667eea;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-box-title {
+        font-weight: 700;
+        color: #6d28d9;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-box-text {
+        color: #5b21b6;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    /* Stats Preview */
+    .stats-preview {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .stat-item {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        text-align: center;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: #6b7280;
+        font-weight: 600;
+        margin-top: 0.25rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .expertise-header-banner {
+            padding: 1.5rem;
+        }
+
+        .expertise-header-banner h1 {
+            font-size: 1.5rem;
+        }
+
+        .form-card,
+        .section-card {
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+        }
+
+        .stats-preview {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-save-expertise {
+            width: 100%;
+            padding: 1rem 2rem;
+        }
+    }
+</style>
+
+<!-- Header Banner -->
+<div class="expertise-header-banner">
+    <div class="header-content">
+        <h1><i class="fa-solid fa-stethoscope"></i> Manage Your Expertise</h1>
+        <p>Select your medical specializations and symptom expertise to help patients find you easily</p>
+    </div>
+</div>
+
+<!-- Info Box -->
+<div class="info-box">
+    <div class="info-box-title">
+        <i class="fa-solid fa-lightbulb"></i>
+        Why set your expertise?
+    </div>
+    <p class="info-box-text">
+        Selecting your departments and symptoms helps patients find the right specialist for their needs. 
+        This improves appointment quality and patient satisfaction.
+    </p>
+</div>
+
+<!-- Main Form -->
+<div class="form-card">
+    <form method="POST" action="{% url 'doctor:expertise_update' %}">
+        {% csrf_token %}
+
+        <div class="row g-4">
+            <!-- Departments Section -->
+            <div class="col-lg-6">
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon departments">
+                            <i class="fa-solid fa-hospital"></i>
+                        </div>
+                        <div>
+                            <h3 class="section-title">Medical Departments</h3>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Select Your Specializations</label>
+                        <select class="form-select select2-departments" name="departments[]" multiple>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}"
+                                    {% if dept in doctor.departments.all %}selected{% endif %}>
+                                    {{ dept.department_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="helper-text">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>Choose all departments you specialize in</span>
+                        </div>
+                    </div>
+
+                    <div class="stats-preview">
+                        <div class="stat-item">
+                            <div class="stat-number" id="dept-count">{{ doctor.departments.count }}</div>
+                            <div class="stat-label">Selected</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ departments|length }}</div>
+                            <div class="stat-label">Available</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Symptoms Section -->
+            <div class="col-lg-6">
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon symptoms">
+                            <i class="fa-solid fa-heartbeat"></i>
+                        </div>
+                        <div>
+                            <h3 class="section-title">Symptom Expertise</h3>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Select Symptoms You Treat</label>
+                        <select class="form-select select2-symptoms" name="symptoms[]" multiple>
+                            {% for sym in symptoms %}
+                                <option value="{{ sym.id }}"
+                                    {% if sym in doctor.symptoms.all %}selected{% endif %}>
+                                    {{ sym.symptom_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="helper-text">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>Choose symptoms you commonly diagnose and treat</span>
+                        </div>
+                    </div>
+
+                    <div class="stats-preview">
+                        <div class="stat-item">
+                            <div class="stat-number" id="symp-count">{{ doctor.symptoms.count }}</div>
+                            <div class="stat-label">Selected</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ symptoms|length }}</div>
+                            <div class="stat-label">Available</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mt-4 d-flex justify-content-end">
+            <button type="submit" class="btn-save-expertise">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Save Expertise Settings</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Select2 CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+
+<!-- jQuery (required for Select2) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Initialize Select2 for Departments
+    $('.select2-departments').select2({
+        placeholder: "🏥 Search and select departments...",
+        allowClear: true,
+        width: '100%',
+        closeOnSelect: false,
+        theme: 'default'
+    });
+
+    // Initialize Select2 for Symptoms
+    $('.select2-symptoms').select2({
+        placeholder: "💊 Search and select symptoms...",
+        allowClear: true,
+        width: '100%',
+        closeOnSelect: false,
+        theme: 'default'
+    });
+
+    // Update department count on change
+    $('.select2-departments').on('change', function() {
+        const count = $(this).val() ? $(this).val().length : 0;
+        $('#dept-count').text(count);
+    });
+
+    // Update symptom count on change
+    $('.select2-symptoms').on('change', function() {
+        const count = $(this).val() ? $(this).val().length : 0;
+        $('#symp-count').text(count);
+    });
+
+    // Add loading animation on form submit
+    $('form').on('submit', function() {
+        const btn = $('.btn-save-expertise');
+        btn.html('<i class="fa-solid fa-spinner fa-spin"></i> Saving...');
+        btn.prop('disabled', true);
+    });
+
+    // Add subtle animation when hovering over select2 choices
+    $(document).on('mouseenter', '.select2-selection__choice', function() {
+        $(this).css('transform', 'scale(1.05)');
+    }).on('mouseleave', '.select2-selection__choice', function() {
+        $(this).css('transform', 'scale(1)');
+    });
+});
+</script>
+
+{% endblock %}

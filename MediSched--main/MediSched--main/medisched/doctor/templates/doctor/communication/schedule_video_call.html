@@ -1,0 +1,153 @@
+{% extends 'doctor/base.html' %}
+{% load static %}
+
+{% block title %}Schedule Video Call - Doctor Portal{% endblock %}
+{% block page_title %}Schedule Video Call{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb bg-transparent p-0">
+        <li class="breadcrumb-item"><a href="{% url 'doctor:dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'doctor:chat_detail' appointment.id %}">Chat</a></li>
+        <li class="breadcrumb-item active">Schedule Video Call</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Schedule Video Call</h5>
+                    <small class="text-muted">Schedule a video consultation with {{ appointment.patient.get_full_name }}</small>
+                </div>
+                
+                <form id="scheduleCallForm">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <!-- Patient Info -->
+                        <div class="alert alert-info mb-4">
+                            <div class="d-flex align-items-center">
+                                {% if appointment.patient.profile_photo %}
+                                <img src="{{ appointment.patient.profile_photo.url }}" 
+                                     alt="{{ appointment.patient.get_full_name }}" 
+                                     class="rounded-circle me-3" 
+                                     style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                <div class="avatar-placeholder rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3"
+                                     style="width: 50px; height: 50px; font-size: 20px;">
+                                    {{ appointment.patient.get_full_name|default:appointment.patient.username|slice:":1"|upper }}
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-0">{{ appointment.patient.get_full_name|default:appointment.patient.username }}</h6>
+                                    <p class="mb-0 small">Appointment #{{ appointment.id }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Call Details -->
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Call Type *</label>
+                                <select class="form-select" name="call_type" required>
+                                    <option value="video" selected>Video Call</option>
+                                    <option value="audio">Audio Call</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Date & Time *</label>
+                                <input type="datetime-local" class="form-control" name="scheduled_time" 
+                                       value="{{ default_time }}" 
+                                       min="{{ min_date }}T00:00" required>
+                                <small class="text-muted">Select a future date and time</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Duration -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Estimated Duration</label>
+                            <select class="form-select" name="estimated_duration">
+                                <option value="15">15 minutes</option>
+                                <option value="30" selected>30 minutes</option>
+                                <option value="45">45 minutes</option>
+                                <option value="60">60 minutes</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Notes -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Notes (Optional)</label>
+                            <textarea class="form-control" name="notes" rows="4" 
+                                      placeholder="Add any notes or instructions for the patient..."></textarea>
+                        </div>
+                        
+                        <!-- Preview -->
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-info-circle me-2"></i>What happens next?
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Patient will receive a notification about the scheduled call</li>
+                                <li>You can start the call from your Video Calls dashboard</li>
+                                <li>Patient can join the call from their appointment page</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-white">
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'doctor:chat_detail' appointment.id %}" class="btn btn-light me-3">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-calendar-plus me-2"></i>Schedule Call
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Set minimum datetime to current time + 30 minutes
+    const now = new Date();
+    const minDateTime = new Date(now.getTime() + 30 * 60 * 1000);
+    const minDate = minDateTime.toISOString().slice(0, 16);
+    
+    $('input[name="scheduled_time"]').attr('min', minDate);
+    
+    // Form submission
+    $('#scheduleCallForm').submit(function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: window.location.href,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    alert(`Video call scheduled successfully for ${response.scheduled_time}`);
+                    window.location.href = '{% url "doctor:chat_detail" appointment.id %}';
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            },
+            error: function() {
+                alert('An error occurred. Please try again.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
