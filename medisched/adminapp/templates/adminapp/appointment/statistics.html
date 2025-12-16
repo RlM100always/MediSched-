@@ -1,350 +1,1296 @@
 {% extends 'adminapp/base_admin.html' %}
 {% load static %}
 
-{% block title %}Appointment Statistics - Admin Panel{% endblock %}
+{% block title %}Appointment Analytics | MediSched Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    
+    :root {
+        --primary-color: #2D9CDB;
+        --primary-dark: #1e7cb3;
+        --primary-light: #e1f1fa;
+        --primary-gradient: linear-gradient(135deg, #2D9CDB 0%, #1e7cb3 100%);
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #17a2b8;
+        --purple-color: #9b59b6;
+        --light-bg: #f8fafc;
+        --card-shadow: 0 8px 30px rgba(45, 156, 219, 0.08);
+        --hover-shadow: 0 12px 40px rgba(45, 156, 219, 0.12);
+        --border-color: #e2e8f0;
+    }
+    
+    /* Base Reset */
+    body {
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    
+    /* Page Header */
+    .page-header {
+        padding: 1.5rem 0 2rem 0;
+        margin-bottom: 1.5rem;
+    }
+    
+    .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+    
+    .header-title-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .header-icon {
+        background: var(--primary-gradient);
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 20px rgba(45, 156, 219, 0.2);
+        flex-shrink: 0;
+    }
+    
+    .header-icon i {
+        font-size: 1.8rem;
+        color: white;
+    }
+    
+    .header-title {
+        margin: 0;
+        font-weight: 800;
+        font-size: 1.8rem;
+        color: #1e293b;
+        line-height: 1.2;
+    }
+    
+    .header-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-action-header {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(45, 156, 219, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(45, 156, 219, 0.4);
+    }
+    
+    /* Main Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(45, 156, 219, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .stat-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .stat-primary { background: linear-gradient(135deg, #e1f1fa 0%, #d4eaf7 100%); color: var(--primary-color); }
+    .stat-success { background: linear-gradient(135deg, #d4f4e1 0%, #c6efd6 100%); color: var(--success-color); }
+    .stat-info { background: linear-gradient(135deg, #d1ecf1 0%, #c1e6ec 100%); color: var(--info-color); }
+    .stat-warning { background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%); color: var(--warning-color); }
+    .stat-purple { background: linear-gradient(135deg, #f4e6fa 0%, #eedaf7 100%); color: var(--purple-color); }
+    
+    .stat-icon {
+        font-size: 1.5rem;
+    }
+    
+    .stat-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #1e293b;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #64748b;
+        font-weight: 600;
+    }
+    
+    .stat-subtitle {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-top: 0.25rem;
+    }
+    
+    /* Period Cards Grid */
+    .period-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .period-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(45, 156, 219, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .period-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .period-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    
+    .period-header i {
+        background: var(--primary-light);
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .period-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    
+    .period-stat {
+        padding: 1rem;
+        border-radius: 12px;
+        background: var(--light-bg);
+    }
+    
+    .period-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #1e293b;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+    
+    .period-label {
+        font-size: 0.85rem;
+        color: #64748b;
+        font-weight: 600;
+    }
+    
+    /* Distribution Cards */
+    .distribution-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .distribution-card {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(45, 156, 219, 0.1);
+    }
+    
+    .distribution-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .distribution-title {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .distribution-title i {
+        color: var(--primary-color);
+    }
+    
+    .distribution-body {
+        padding: 0;
+    }
+    
+    /* Enhanced Table */
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .custom-table th {
+        padding: 1.25rem 1.5rem;
+        font-weight: 700;
+        color: #475569;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: left;
+        border-bottom: 2px solid #e2e8f0;
+        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    }
+    
+    .custom-table td {
+        padding: 1.25rem 1.5rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+        font-weight: 500;
+    }
+    
+    .custom-table tbody tr:hover {
+        background: var(--primary-light);
+    }
+    
+    .custom-table-sm td {
+        padding: 1rem 1.25rem;
+    }
+    
+    /* Badges */
+    .badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .bg-primary { background: var(--primary-color); color: white; }
+    .bg-success { background: var(--success-color); color: white; }
+    .bg-warning { background: var(--warning-color); color: white; }
+    .bg-danger { background: var(--danger-color); color: white; }
+    .bg-info { background: var(--info-color); color: white; }
+    .bg-secondary { background: #6c757d; color: white; }
+    .bg-purple { background: var(--purple-color); color: white; }
+    
+    /* Progress Bar */
+    .progress-container {
+        width: 100%;
+        height: 8px;
+        background: var(--border-color);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    /* Top Doctors Card */
+    .top-doctors-card {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(45, 156, 219, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .top-doctors-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.5rem 2rem;
+    }
+    
+    .top-doctors-title {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .rank-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+    
+    .rank-1 { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #1e293b; }
+    .rank-2 { background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%); color: white; }
+    .rank-3 { background: linear-gradient(135deg, #CD7F32 0%, #A65A00 100%); color: white; }
+    .rank-other { background: var(--primary-light); color: var(--primary-color); }
+    
+    /* Recent Appointments Card */
+    .recent-card {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(45, 156, 219, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .recent-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .recent-title {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .recent-title i {
+        color: var(--primary-color);
+    }
+    
+    /* ===== RESPONSIVE DESIGN ===== */
+    
+    /* Tablet */
+    @media (min-width: 768px) and (max-width: 991px) {
+        .stats-grid,
+        .period-grid,
+        .distribution-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .header-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+    }
+    
+    /* Mobile */
+    @media (max-width: 767px) {
+        .container-fluid {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+        
+        .page-header {
+            padding: 1rem 0 1.5rem 0;
+        }
+        
+        .header-container {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .header-title-wrapper {
+            width: 100%;
+        }
+        
+        .header-icon {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .header-icon i {
+            font-size: 1.5rem;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+        }
+        
+        .header-actions {
+            width: 100%;
+        }
+        
+        .btn-action-header {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .stats-grid,
+        .period-grid,
+        .distribution-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .stat-card {
+            padding: 1.25rem;
+        }
+        
+        .stat-icon-wrapper {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+        }
+        
+        .period-card {
+            padding: 1.5rem;
+        }
+        
+        .period-stats {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .distribution-header,
+        .top-doctors-header,
+        .recent-header {
+            padding: 1.25rem;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .custom-table {
+            min-width: 800px;
+        }
+    }
+    
+    /* Small Mobile */
+    @media (max-width: 480px) {
+        .header-title {
+            font-size: 1.3rem;
+        }
+        
+        .stat-value {
+            font-size: 1.3rem;
+        }
+        
+        .period-value {
+            font-size: 1.5rem;
+        }
+        
+        .custom-table {
+            min-width: 600px;
+        }
+        
+        .custom-table th,
+        .custom-table td {
+            padding: 0.875rem 1rem;
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-card {
+        animation: fadeInUp 0.5s ease-out;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <!-- Header -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Appointment Statistics & Analytics</h1>
-        <div>
-            <a href="{% url 'appointment_list' %}" class="btn btn-primary btn-sm">
-                <i class="fas fa-list"></i> All Appointments
-            </a>
-        </div>
-    </div>
-
-    <!-- Summary Cards -->
-    <div class="row mb-4">
-        <!-- Total Appointments -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Total Appointments</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_appointments }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-container">
+            <div class="header-title-wrapper">
+                <div class="header-icon">
+                    <i class="fa-solid fa-chart-bar"></i>
+                </div>
+                <div>
+                    <h1 class="header-title">Appointment Analytics</h1>
+                    <span class="header-subtitle">Comprehensive statistics and insights</span>
                 </div>
             </div>
-        </div>
-
-        <!-- Total Revenue -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Total Revenue</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">৳{{ total_revenue }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Today's Appointments -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Today's Appointments ({{ today }})</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ today_appointments }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Today's Revenue -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Today's Revenue</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">৳{{ today_revenue }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-coins fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+            
+            <div class="header-actions">
+                <a href="{% url 'appointment_list' %}" class="btn-action-header btn-primary">
+                    <i class="fa-solid fa-list"></i>
+                    All Appointments
+                </a>
             </div>
         </div>
     </div>
-
-    <!-- Weekly & Monthly Stats -->
-    <div class="row mb-4">
-        <!-- Weekly Stats -->
-        <div class="col-xl-6 col-md-6 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Last 7 Days</h6>
+    
+    <!-- Main Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card animate-card">
+            <div class="stat-icon-wrapper stat-primary">
+                <i class="fa-solid fa-calendar-check stat-icon"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ total_appointments }}</div>
+                <div class="stat-label">Total Appointments</div>
+            </div>
+        </div>
+        
+        <div class="stat-card animate-card">
+            <div class="stat-icon-wrapper stat-success">
+                <i class="fa-solid fa-money-bill-wave stat-icon"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">৳{{ total_revenue }}</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+        </div>
+        
+        <div class="stat-card animate-card">
+            <div class="stat-icon-wrapper stat-info">
+                <i class="fa-solid fa-calendar-day stat-icon"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ today_appointments }}</div>
+                <div class="stat-label">Today's Appointments</div>
+                <div class="stat-subtitle">{{ today }}</div>
+            </div>
+        </div>
+        
+        <div class="stat-card animate-card">
+            <div class="stat-icon-wrapper stat-warning">
+                <i class="fa-solid fa-coins stat-icon"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">৳{{ today_revenue }}</div>
+                <div class="stat-label">Today's Revenue</div>
+                <div class="stat-subtitle">{{ today }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Period Statistics -->
+    <div class="period-grid">
+        <div class="period-card animate-card">
+            <div class="period-header">
+                <i class="fa-solid fa-calendar-week"></i>
+                Last 7 Days
+            </div>
+            <div class="period-stats">
+                <div class="period-stat">
+                    <div class="period-value">{{ weekly_appointments }}</div>
+                    <div class="period-label">Appointments</div>
                 </div>
-                <div class="card-body">
-                    <div class="text-center">
-                        <div class="h1 mb-0 font-weight-bold text-gray-800">{{ weekly_appointments }}</div>
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Appointments</div>
-                        <hr>
-                        <div class="h1 mb-0 font-weight-bold text-success">৳{{ weekly_revenue }}</div>
-                        <div class="text-xs font-weight-bold text-success text-uppercase">Revenue</div>
-                    </div>
+                <div class="period-stat">
+                    <div class="period-value" style="color: var(--success-color);">৳{{ weekly_revenue }}</div>
+                    <div class="period-label">Revenue</div>
                 </div>
             </div>
         </div>
-
-        <!-- Monthly Stats -->
-        <div class="col-xl-6 col-md-6 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Last 30 Days</h6>
+        
+        <div class="period-card animate-card">
+            <div class="period-header">
+                <i class="fa-solid fa-calendar-alt"></i>
+                Last 30 Days
+            </div>
+            <div class="period-stats">
+                <div class="period-stat">
+                    <div class="period-value">{{ monthly_appointments }}</div>
+                    <div class="period-label">Appointments</div>
                 </div>
-                <div class="card-body">
-                    <div class="text-center">
-                        <div class="h1 mb-0 font-weight-bold text-gray-800">{{ monthly_appointments }}</div>
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Appointments</div>
-                        <hr>
-                        <div class="h1 mb-0 font-weight-bold text-success">৳{{ monthly_revenue }}</div>
-                        <div class="text-xs font-weight-bold text-success text-uppercase">Revenue</div>
-                    </div>
+                <div class="period-stat">
+                    <div class="period-value" style="color: var(--success-color);">৳{{ monthly_revenue }}</div>
+                    <div class="period-label">Revenue</div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Charts & Detailed Stats -->
-    <div class="row">
+    
+    <!-- Distribution Statistics -->
+    <div class="distribution-grid">
         <!-- Status Distribution -->
-        <div class="col-xl-6 col-lg-6 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Appointments by Status</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Status</th>
-                                    <th>Count</th>
-                                    <th>Percentage</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in status_counts %}
-                                <tr>
-                                    <td>
-                                        <span class="badge 
-                                            {% if item.status == 'pending' %}bg-warning
-                                            {% elif item.status == 'confirmed' %}bg-primary
-                                            {% elif item.status == 'completed' %}bg-success
-                                            {% elif item.status == 'cancelled' %}bg-danger
-                                            {% else %}bg-secondary{% endif %}">
-                                            {% if item.status == 'pending' %}Pending
-                                            {% elif item.status == 'confirmed' %}Confirmed
-                                            {% elif item.status == 'completed' %}Completed
-                                            {% elif item.status == 'cancelled' %}Cancelled
-                                            {% else %}{{ item.status|title }}{% endif %}
-                                        </span>
-                                    </td>
-                                    <td>{{ item.count }}</td>
-                                    <td>
+        <div class="distribution-card animate-card">
+            <div class="distribution-header">
+                <h3 class="distribution-title">
+                    <i class="fa-solid fa-tags"></i>
+                    Appointments by Status
+                </h3>
+            </div>
+            <div class="distribution-body">
+                <div class="table-responsive">
+                    <table class="custom-table custom-table-sm">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                                <th style="width: 100px;">Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in status_counts %}
+                            {% with percentage=item.count|floatformat:2|default:0 %}
+                            {% with percent=item.count|floatformat:2|default:0|stringformat:"s" %}
+                            {% with percent_int=item.count|floatformat:0|default:0 %}
+                            <tr>
+                                <td>
+                                    <span class="badge 
+                                        {% if item.status == 'pending' %}bg-warning
+                                        {% elif item.status == 'confirmed' %}bg-primary
+                                        {% elif item.status == 'completed' %}bg-success
+                                        {% elif item.status == 'cancelled' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {% if item.status == 'pending' %}Pending
+                                        {% elif item.status == 'confirmed' %}Confirmed
+                                        {% elif item.status == 'completed' %}Completed
+                                        {% elif item.status == 'cancelled' %}Cancelled
+                                        {% else %}{{ item.status|title }}{% endif %}
+                                    </span>
+                                </td>
+                                <td style="font-weight: 700;">{{ item.count }}</td>
+                                <td style="font-weight: 700;">
+                                    {% if total_appointments > 0 %}
                                         {% widthratio item.count total_appointments 100 %}%
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="3" class="text-center">No data available</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if total_appointments > 0 %}
+                                    {% with progress=item.count|floatformat:0|default:0 %}
+                                    {% with percent=item.count|floatformat:2|default:0 %}
+                                    <div class="progress-container">
+                                        <div class="progress-bar" 
+                                             style="width: {% widthratio item.count total_appointments 100 %}%; 
+                                                    background: {% if item.status == 'pending' %}var(--warning-color)
+                                                              {% elif item.status == 'confirmed' %}var(--primary-color)
+                                                              {% elif item.status == 'completed' %}var(--success-color)
+                                                              {% elif item.status == 'cancelled' %}var(--danger-color)
+                                                              {% else %}#6c757d{% endif %};">
+                                        </div>
+                                    </div>
+                                    {% endwith %}
+                                    {% endwith %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endwith %}
+                            {% endwith %}
+                            {% endwith %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 2rem; color: #64748b;">
+                                    <i class="fa-solid fa-inbox" style="font-size: 2rem; opacity: 0.5; margin-bottom: 0.5rem;"></i>
+                                    <div>No data available</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-
+        
         <!-- Payment Status Distribution -->
-        <div class="col-xl-6 col-lg-6 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Appointments by Payment Status</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Payment Status</th>
-                                    <th>Count</th>
-                                    <th>Percentage</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in payment_status_counts %}
-                                <tr>
-                                    <td>
-                                        <span class="badge 
-                                            {% if item.payment_status == 'paid' %}bg-success
-                                            {% elif item.payment_status == 'failed' %}bg-danger
-                                            {% elif item.payment_status == 'refunded' %}bg-info
-                                            {% else %}bg-warning{% endif %}">
-                                            {% if item.payment_status == 'pending' %}Pending
-                                            {% elif item.payment_status == 'paid' %}Paid
-                                            {% elif item.payment_status == 'failed' %}Failed
-                                            {% elif item.payment_status == 'refunded' %}Refunded
-                                            {% else %}{{ item.payment_status|title }}{% endif %}
-                                        </span>
-                                    </td>
-                                    <td>{{ item.count }}</td>
-                                    <td>
+        <div class="distribution-card animate-card">
+            <div class="distribution-header">
+                <h3 class="distribution-title">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Payment Status Distribution
+                </h3>
+            </div>
+            <div class="distribution-body">
+                <div class="table-responsive">
+                    <table class="custom-table custom-table-sm">
+                        <thead>
+                            <tr>
+                                <th>Payment Status</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                                <th style="width: 100px;">Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in payment_status_counts %}
+                            <tr>
+                                <td>
+                                    <span class="badge 
+                                        {% if item.payment_status == 'paid' %}bg-success
+                                        {% elif item.payment_status == 'failed' %}bg-danger
+                                        {% elif item.payment_status == 'refunded' %}bg-info
+                                        {% else %}bg-warning{% endif %}">
+                                        {% if item.payment_status == 'pending' %}Pending
+                                        {% elif item.payment_status == 'paid' %}Paid
+                                        {% elif item.payment_status == 'failed' %}Failed
+                                        {% elif item.payment_status == 'refunded' %}Refunded
+                                        {% else %}{{ item.payment_status|title }}{% endif %}
+                                    </span>
+                                </td>
+                                <td style="font-weight: 700;">{{ item.count }}</td>
+                                <td style="font-weight: 700;">
+                                    {% if total_appointments > 0 %}
                                         {% widthratio item.count total_appointments 100 %}%
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="3" class="text-center">No data available</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if total_appointments > 0 %}
+                                    <div class="progress-container">
+                                        <div class="progress-bar" 
+                                             style="width: {% widthratio item.count total_appointments 100 %}%; 
+                                                    background: {% if item.payment_status == 'paid' %}var(--success-color)
+                                                              {% elif item.payment_status == 'failed' %}var(--danger-color)
+                                                              {% elif item.payment_status == 'refunded' %}var(--info-color)
+                                                              {% else %}var(--warning-color){% endif %};">
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 2rem; color: #64748b;">
+                                    <i class="fa-solid fa-inbox" style="font-size: 2rem; opacity: 0.5; margin-bottom: 0.5rem;"></i>
+                                    <div>No data available</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <!-- Recent Appointments -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Recent Appointments</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Patient</th>
-                                    <th>Doctor</th>
-                                    <th>Date & Time</th>
-                                    <th>Status</th>
-                                    <th>Payment</th>
-                                    <th>Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for appointment in recent_appointments %}
-                                <tr>
-                                    <td>#{{ appointment.id }}</td>
-                                    <td>{{ appointment.patient_name|default:appointment.patient.username }}</td>
-                                    <td>{{ appointment.doctor.user.get_full_name|default:appointment.doctor.user.username }}</td>
-                                    <td>
-                                        {% if appointment.appointment_date %}
-                                        {{ appointment.appointment_date|date:"M d, Y" }}<br>
-                                        <small>{{ appointment.appointment_date|time:"h:i A" }}</small>
-                                        {% else %}
-                                        <em>Not scheduled</em>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <span class="badge 
-                                            {% if appointment.status == 'pending' %}bg-warning
-                                            {% elif appointment.status == 'confirmed' %}bg-primary
-                                            {% elif appointment.status == 'completed' %}bg-success
-                                            {% elif appointment.status == 'cancelled' %}bg-danger
-                                            {% else %}bg-secondary{% endif %}">
-                                            {{ appointment.get_status_display }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge 
-                                            {% if appointment.payment_status == 'paid' %}bg-success
-                                            {% elif appointment.payment_status == 'failed' %}bg-danger
-                                            {% elif appointment.payment_status == 'refunded' %}bg-info
-                                            {% else %}bg-warning{% endif %}">
-                                            {{ appointment.get_payment_status_display }}
-                                        </span>
-                                    </td>
-                                    <td>৳{{ appointment.total_amount }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="7" class="text-center">No recent appointments</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div class="recent-card animate-card">
+        <div class="recent-header">
+            <h3 class="recent-title">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                Recent Appointments
+            </h3>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Date & Time</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in recent_appointments %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-primary">#{{ appointment.id }}</span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700;">{{ appointment.patient_name|default:appointment.patient.username }}</div>
+                            <small style="color: #64748b;">{{ appointment.patient_phone|default:"N/A" }}</small>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700;">{{ appointment.doctor.user.get_full_name|default:appointment.doctor.user.username }}</div>
+                            <small style="color: #64748b;">
+                                <i class="fa-solid fa-stethoscope"></i>
+                                {{ appointment.doctor.specialization|default:"General" }}
+                            </small>
+                        </td>
+                        <td>
+                            {% if appointment.appointment_date %}
+                            <div style="font-weight: 700;">{{ appointment.appointment_date|date:"M d, Y" }}</div>
+                            <small style="color: #64748b;">
+                                <i class="fa-solid fa-clock"></i>
+                                {{ appointment.appointment_date|time:"h:i A" }}
+                            </small>
+                            {% else %}
+                            <span style="color: #94a3b8; font-style: italic;">Not scheduled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if appointment.status == 'pending' %}bg-warning
+                                {% elif appointment.status == 'confirmed' %}bg-primary
+                                {% elif appointment.status == 'completed' %}bg-success
+                                {% elif appointment.status == 'cancelled' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ appointment.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if appointment.payment_status == 'paid' %}bg-success
+                                {% elif appointment.payment_status == 'failed' %}bg-danger
+                                {% elif appointment.payment_status == 'refunded' %}bg-info
+                                {% else %}bg-warning{% endif %}">
+                                {{ appointment.get_payment_status_display }}
+                            </span>
+                        </td>
+                        <td style="font-weight: 700; color: #1e293b;">
+                            ৳{{ appointment.total_amount|default:"0" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 3rem;">
+                            <div style="color: #64748b;">
+                                <i class="fa-solid fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <h5>No Recent Appointments</h5>
+                                <p>No appointments have been created recently.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-
+    
     <!-- Top Doctors -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Top Doctors by Appointments</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Doctor Name</th>
-                                    <th>Specialization</th>
-                                    <th>Appointments</th>
-                                    <th>Total Revenue</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for doctor in top_doctors %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ doctor.user.get_full_name|default:doctor.user.username }}</td>
-                                    <td>{{ doctor.specialization|default:"General" }}</td>
-                                    <td>{{ doctor.appointment_count }}</td>
-                                    <td>৳{{ doctor.total_revenue|default:0 }}</td>
-                                    <td>
-                                        <span class="badge {% if doctor.is_verified %}bg-success{% else %}bg-warning{% endif %}">
-                                            {% if doctor.is_verified %}Verified{% else %}Not Verified{% endif %}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="6" class="text-center">No data available</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div class="top-doctors-card animate-card">
+        <div class="top-doctors-header">
+            <h3 class="top-doctors-title">
+                <i class="fa-solid fa-trophy"></i>
+                Top Doctors by Appointments
+            </h3>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">Rank</th>
+                        <th>Doctor Name</th>
+                        <th>Specialization</th>
+                        <th>Appointments</th>
+                        <th>Total Revenue</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doctor in top_doctors %}
+                    <tr>
+                        <td>
+                            <div class="rank-badge rank-{{ forloop.counter }}">
+                                {{ forloop.counter }}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; margin-bottom: 0.25rem;">
+                                {{ doctor.user.get_full_name|default:doctor.user.username }}
+                            </div>
+                            <small style="color: #64748b;">{{ doctor.user.email|default:"N/A" }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">
+                                {{ doctor.specialization|default:"General" }}
+                            </span>
+                        </td>
+                        <td style="font-weight: 700; color: var(--primary-color);">
+                            {{ doctor.appointment_count }}
+                        </td>
+                        <td style="font-weight: 700; color: var(--success-color);">
+                            ৳{{ doctor.total_revenue|default:0 }}
+                        </td>
+                        <td>
+                            <span class="badge {% if doctor.is_verified %}bg-success{% else %}bg-warning{% endif %}">
+                                {% if doctor.is_verified %}
+                                    <i class="fa-solid fa-check"></i> Verified
+                                {% else %}
+                                    <i class="fa-solid fa-clock"></i> Pending
+                                {% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 3rem;">
+                            <div style="color: #64748b;">
+                                <i class="fa-solid fa-user-md" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <h5>No Doctor Data</h5>
+                                <p>No appointment data available for doctors.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ===== ANIMATION DELAYS =====
+        const animateCards = document.querySelectorAll('.animate-card');
+        animateCards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+        
+        // ===== STATS COUNTER ANIMATION =====
+        function animateValue(element, start, end, duration) {
+            if (start === end) return;
+            
+            const range = end - start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                element.textContent = current;
+                
+                if (current === end) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }
+        
+        // Animate numeric values on page load
+        const statValues = document.querySelectorAll('.stat-value, .period-value');
+        statValues.forEach(element => {
+            const text = element.textContent;
+            const isCurrency = text.includes('৳');
+            const cleanValue = isCurrency ? text.replace('৳', '').replace(',', '') : text.replace(',', '');
+            
+            if (!isNaN(cleanValue) && cleanValue.trim() !== '') {
+                const numericValue = parseFloat(cleanValue);
+                if (numericValue > 0 && numericValue <= 1000000) { // Only animate reasonable values
+                    element.textContent = isCurrency ? '৳0' : '0';
+                    
+                    setTimeout(() => {
+                        animateValue(element, 0, numericValue, 1000);
+                    }, 500);
+                }
+            }
+        });
+        
+        // ===== PROGRESS BAR ANIMATION =====
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const currentWidth = bar.style.width;
+            bar.style.width = '0%';
+            
+            setTimeout(() => {
+                bar.style.transition = 'width 1s ease-in-out';
+                bar.style.width = currentWidth;
+            }, 800);
+        });
+        
+        // ===== TOOLTIP ENHANCEMENTS =====
+        const badges = document.querySelectorAll('.badge');
+        badges.forEach(badge => {
+            badge.title = badge.textContent.trim();
+            badge.style.cursor = 'help';
+        });
+        
+        // ===== PRINT FUNCTIONALITY =====
+        const printBtn = document.createElement('button');
+        printBtn.innerHTML = '<i class="fa-solid fa-print"></i> Print Report';
+        printBtn.className = 'btn-action-header btn-primary';
+        printBtn.style.marginLeft = 'auto';
+        printBtn.addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Add print button to header actions
+        const headerActions = document.querySelector('.header-actions');
+        if (headerActions) {
+            headerActions.appendChild(printBtn);
+        }
+        
+        // ===== REFRESH DATA BUTTON =====
+        const refreshBtn = document.createElement('button');
+        refreshBtn.innerHTML = '<i class="fa-solid fa-sync-alt"></i> Refresh';
+        refreshBtn.className = 'btn-action-header btn-secondary';
+        refreshBtn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            icon.className = 'fa-solid fa-spinner fa-spin';
+            this.disabled = true;
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        });
+        
+        if (headerActions) {
+            headerActions.insertBefore(refreshBtn, printBtn);
+        }
+        
+        // ===== TIME AGO FORMATTER =====
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return date.toLocaleDateString();
+        }
+        
+        // Apply time ago formatting to dates
+        document.querySelectorAll('td').forEach(td => {
+            const text = td.textContent.trim();
+            if (text.match(/[A-Z][a-z]{2} \d{1,2}, \d{4}/)) {
+                const timeElement = td.querySelector('small');
+                if (timeElement && timeElement.textContent.includes('AM') || timeElement.textContent.includes('PM')) {
+                    const fullDate = text + ' ' + timeElement.textContent;
+                    td.innerHTML = `<div>${text}</div><small title="${fullDate}">${formatTimeAgo(fullDate)}</small>`;
+                }
+            }
+        });
+        
+        // ===== RESPONSIVE TABLE HANDLING =====
+        const tables = document.querySelectorAll('.table-responsive');
+        
+        tables.forEach(table => {
+            if (table.offsetWidth < table.scrollWidth) {
+                // Table is horizontally scrollable
+                const container = table.parentElement;
+                container.style.position = 'relative';
+                
+                // Add scroll indicators
+                const leftIndicator = document.createElement('div');
+                leftIndicator.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+                leftIndicator.style.cssText = `
+                    position: absolute;
+                    left: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: linear-gradient(to right, rgba(255,255,255,0.9), transparent);
+                    padding: 1rem 0.5rem;
+                    pointer-events: none;
+                    z-index: 10;
+                    display: none;
+                    color: var(--primary-color);
+                `;
+                
+                const rightIndicator = document.createElement('div');
+                rightIndicator.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+                rightIndicator.style.cssText = `
+                    position: absolute;
+                    right: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: linear-gradient(to left, rgba(255,255,255,0.9), transparent);
+                    padding: 1rem 0.5rem;
+                    pointer-events: none;
+                    z-index: 10;
+                    display: block;
+                    color: var(--primary-color);
+                `;
+                
+                container.appendChild(leftIndicator);
+                container.appendChild(rightIndicator);
+                
+                // Update indicators on scroll
+                table.addEventListener('scroll', function() {
+                    if (this.scrollLeft > 10) {
+                        leftIndicator.style.display = 'block';
+                    } else {
+                        leftIndicator.style.display = 'none';
+                    }
+                    
+                    if (this.scrollLeft + this.clientWidth < this.scrollWidth - 10) {
+                        rightIndicator.style.display = 'block';
+                    } else {
+                        rightIndicator.style.display = 'none';
+                    }
+                });
+            }
+        });
+        
+        // ===== DARK MODE SUPPORT =====
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        function updateDarkMode() {
+            if (prefersDark.matches) {
+                document.documentElement.style.setProperty('--light-bg', '#1e293b');
+                document.documentElement.style.setProperty('--border-color', '#334155');
+            }
+        }
+        
+        prefersDark.addEventListener('change', updateDarkMode);
+        updateDarkMode();
+        
+        // ===== EXPORT DATA FUNCTION =====
+        function exportData(format) {
+            const data = {
+                total_appointments: {{ total_appointments }},
+                total_revenue: {{ total_revenue }},
+                today_appointments: {{ today_appointments }},
+                today_revenue: {{ today_revenue }},
+                weekly_appointments: {{ weekly_appointments }},
+                weekly_revenue: {{ weekly_revenue }},
+                monthly_appointments: {{ monthly_appointments }},
+                monthly_revenue: {{ monthly_revenue }},
+                generated_at: new Date().toISOString()
+            };
+            
+            let content, mimeType, fileName;
+            
+            if (format === 'json') {
+                content = JSON.stringify(data, null, 2);
+                mimeType = 'application/json';
+                fileName = `appointment-stats-${new Date().toISOString().split('T')[0]}.json`;
+            } else if (format === 'csv') {
+                // Simplified CSV export
+                const csvRows = [];
+                csvRows.push('Metric,Value');
+                Object.entries(data).forEach(([key, value]) => {
+                    csvRows.push(`${key},${value}`);
+                });
+                content = csvRows.join('\n');
+                mimeType = 'text/csv';
+                fileName = `appointment-stats-${new Date().toISOString().split('T')[0]}.csv`;
+            }
+            
+            const blob = new Blob([content], { type: mimeType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Add export buttons
+        const exportDiv = document.createElement('div');
+        exportDiv.className = 'header-actions';
+        exportDiv.style.marginTop = '1rem';
+        exportDiv.style.width = '100%';
+        exportDiv.style.display = 'flex';
+        exportDiv.style.gap = '0.5rem';
+        exportDiv.style.justifyContent = 'flex-end';
+        
+        const exportJsonBtn = document.createElement('button');
+        exportJsonBtn.innerHTML = '<i class="fa-solid fa-file-code"></i> JSON';
+        exportJsonBtn.className = 'btn-action-header btn-secondary';
+        exportJsonBtn.addEventListener('click', () => exportData('json'));
+        
+        const exportCsvBtn = document.createElement('button');
+        exportCsvBtn.innerHTML = '<i class="fa-solid fa-file-csv"></i> CSV';
+        exportCsvBtn.className = 'btn-action-header btn-success';
+        exportCsvBtn.addEventListener('click', () => exportData('csv'));
+        
+        exportDiv.appendChild(exportJsonBtn);
+        exportDiv.appendChild(exportCsvBtn);
+        
+        // Insert export buttons after main stats
+        const statsGrid = document.querySelector('.stats-grid');
+        if (statsGrid) {
+            statsGrid.parentNode.insertBefore(exportDiv, statsGrid.nextSibling);
+        }
+        
+        console.log('📊 Appointment Analytics Dashboard Initialized');
+        console.log('📈 Charts and Statistics: LOADED');
+        console.log('🎯 Interactive Features: ENABLED');
+        console.log('📱 Responsive Design: ACTIVE');
+    });
+</script>
 {% endblock %}
