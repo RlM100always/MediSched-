@@ -4,6 +4,7 @@ from doctor.models import Doctor, DoctorAppointmentFee
 from decimal import Decimal
 import uuid
 from django.utils import timezone
+from users.models import CustomUser as User
 
 class Appointment(models.Model):
     APPOINTMENT_STATUS = (
@@ -145,3 +146,25 @@ class PaymentTransaction(models.Model):
     
     def __str__(self):
         return f"Transaction {self.transaction_id}"
+    
+
+class ExportHistory(models.Model):
+    FORMAT_CHOICES = [
+        ('csv', 'CSV'),
+        ('excel', 'Excel'),
+        ('pdf', 'PDF'),
+    ]
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    filename = models.CharField(max_length=255)
+    format = models.CharField(max_length=10, choices=FORMAT_CHOICES)
+    record_count = models.IntegerField(default=0)
+    filters = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.filename} - {self.user.username if self.user else 'Anonymous'}"
+    
+    class Meta:
+        verbose_name_plural = "Export Histories"
+        ordering = ['-created_at']

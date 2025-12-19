@@ -828,10 +828,308 @@ def appointment_statistics(request):
     }
     return render(request, 'adminapp/appointment/statistics.html', context)
 
-# # Export Appointments
-# @login_required
-# @user_passes_test(is_admin)
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.utils import timezone
+from django.contrib import messages
+import json
+import csv
+import pandas as pd
+from io import BytesIO
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from appointment.models import Appointment, ExportHistory
+
 def appointment_export(request):
-    # For now, just show the export page
-    # You can implement CSV/Excel export here
-    return render(request, 'adminapp/appointment/export.html')
+    # For GET requests, show the export form
+    if request.method == 'GET':
+        try:
+            # Get recent exports for the logged-in user
+            recent_exports = ExportHistory.objects.filter(user=request.user).order_by('-created_at')[:5]
+        except Exception as e:
+            recent_exports = []
+            print(f"Error fetching recent exports: {e}")
+        
+        # Use the nested template path
+        return render(request, 'adminapp/appointment/export.html', {
+            'recent_exports': recent_exports
+        })
+
+    
+    # For POST requests, handle the export
+    elif request.method == 'POST':
+        try:
+            # Get filter parameters
+            format_type = request.POST.get('format', 'csv')
+            date_range = request.POST.get('date_range', 'all')
+            status_filter = request.POST.get('status_filter', 'all')
+            payment_filter = request.POST.get('payment_filter', 'all')
+            columns = request.POST.getlist('columns', [])
+            
+            # If no columns selected, default to all basic columns
+            if not columns:
+                columns = ['id', 'patient', 'doctor', 'date', 'status', 'payment', 'amount']
+            
+            # Start with all appointments
+            appointments = Appointment.objects.all()
+            
+            # Apply filters
+            if date_range == 'custom':
+                start_date = request.POST.get('start_date')
+                end_date = request.POST.get('end_date')
+                if start_date and end_date:
+                    appointments = appointments.filter(
+                        appointment_date__range=[start_date, end_date]
+                    )
+            
+            if status_filter != 'all':
+                appointments = appointments.filter(status=status_filter)
+            
+            if payment_filter != 'all':
+                appointments = appointments.filter(payment_status=payment_filter)
+            
+            # Prepare data for export
+            data = []
+            headers = []
+            
+            # Define column mapping
+            column_mapping = {
+                'id': 'Appointment ID',
+                'patient': 'Patient Information',
+                'doctor': 'Doctor Information',
+                'date': 'Date & Time',
+                'status': 'Status',
+                'payment': 'Payment Information',
+                'amount': 'Amount',
+                'notes': 'Notes',
+                'symptoms': 'Symptoms'
+            }
+            
+            # Add headers based on selected columns
+            for col in columns:
+                if col in column_mapping:
+                    headers.append(column_mapping[col])
+            
+            # Add data rows
+            for appointment in appointments:
+                row = []
+                
+                for col in columns:
+                    if col == 'id':
+                        row.append(str(appointment.id))
+                    elif col == 'patient':
+                        patient_name = appointment.patient_name or (appointment.patient.username if appointment.patient else 'N/A')
+                        patient_phone = appointment.patient_phone or 'N/A'
+                        patient_info = f"{patient_name}\n{patient_phone}"
+                        row.append(patient_info)
+                    elif col == 'doctor':
+                        doctor_name = appointment.doctor.user.get_full_name() if appointment.doctor and appointment.doctor.user else 'N/A'
+                        doctor_specialization = appointment.doctor.specialization if appointment.doctor else 'N/A'
+                        doctor_info = f"{doctor_name}\n{doctor_specialization}"
+                        row.append(doctor_info)
+                    elif col == 'date':
+                        if appointment.appointment_date:
+                            date_str = appointment.appointment_date.strftime("%Y-%m-%d %H:%M")
+                        else:
+                            date_str = "Not scheduled"
+                        row.append(date_str)
+                    elif col == 'status':
+                        row.append(appointment.get_status_display())
+                    elif col == 'payment':
+                        payment_status = appointment.get_payment_status_display()
+                        payment_method = appointment.payment_method or "N/A"
+                        payment_info = f"{payment_status}\n{payment_method}"
+                        row.append(payment_info)
+                    elif col == 'amount':
+                        row.append(f"৳{appointment.total_amount if appointment.total_amount else '0'}")
+                    elif col == 'notes':
+                        row.append(appointment.notes or "")
+                    elif col == 'symptoms':
+                        row.append(appointment.symptoms or "")
+                
+                data.append(row)
+            
+            # Create response based on format
+            current_date = timezone.now().date()
+            
+            if format_type == 'csv':
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = f'attachment; filename="appointments_{current_date}.csv"'
+                
+                writer = csv.writer(response)
+                writer.writerow(headers)
+                writer.writerows(data)
+                
+                # Save export history
+                try:
+                    ExportHistory.objects.create(
+                        user=request.user,
+                        filename=f"appointments_{current_date}.csv",
+                        format='csv',
+                        record_count=appointments.count(),
+                        filters=json.dumps({
+                            'date_range': date_range,
+                            'status_filter': status_filter,
+                            'payment_filter': payment_filter,
+                            'columns': columns
+                        }, default=str)  # Use default=str to handle any non-serializable objects
+                    )
+                except Exception as e:
+                    print(f"Error saving export history: {e}")
+                    # Continue with export even if history fails
+                
+                return response
+            
+            elif format_type == 'excel':
+                # Create DataFrame
+                df = pd.DataFrame(data, columns=headers)
+                
+                # Create response
+                response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                response['Content-Disposition'] = f'attachment; filename="appointments_{current_date}.xlsx"'
+                
+                # Write to Excel
+                output = BytesIO()
+                try:
+                    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                        df.to_excel(writer, index=False, sheet_name='Appointments')
+                    output.seek(0)
+                    response.write(output.getvalue())
+                except Exception as e:
+                    print(f"Excel export error: {e}")
+                    messages.error(request, "Error creating Excel file. Please try CSV format.")
+                    return redirect('appointment_export')
+                
+                # Save export history
+                try:
+                    ExportHistory.objects.create(
+                        user=request.user,
+                        filename=f"appointments_{current_date}.xlsx",
+                        format='excel',
+                        record_count=appointments.count(),
+                        filters=json.dumps({
+                            'date_range': date_range,
+                            'status_filter': status_filter,
+                            'payment_filter': payment_filter,
+                            'columns': columns
+                        }, default=str)
+                    )
+                except Exception as e:
+                    print(f"Error saving export history: {e}")
+                
+                return response
+            
+            elif format_type == 'pdf':
+                try:
+                    response = HttpResponse(content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename="appointments_{current_date}.pdf"'
+                    
+                    # Create PDF document
+                    buffer = BytesIO()
+                    doc = SimpleDocTemplate(buffer, pagesize=letter)
+                    elements = []
+                    
+                    # Add title
+                    styles = getSampleStyleSheet()
+                    title = Paragraph(f"Appointments Report - {current_date}", styles['Title'])
+                    elements.append(title)
+                    
+                    # Add filter info
+                    filter_text = f"Total Records: {appointments.count()}"
+                    if status_filter != 'all':
+                        filter_text += f" | Status: {status_filter}"
+                    if payment_filter != 'all':
+                        filter_text += f" | Payment: {payment_filter}"
+                    elements.append(Paragraph(filter_text, styles['Normal']))
+                    elements.append(Paragraph("<br/>", styles['Normal']))
+                    
+                    # Create table (limit rows for PDF performance)
+                    max_pdf_rows = 100
+                    table_data = [headers] + data[:max_pdf_rows]
+                    
+                    if len(data) > max_pdf_rows:
+                        warning = Paragraph(f"Note: Showing first {max_pdf_rows} of {len(data)} records", styles['Italic'])
+                        elements.append(warning)
+                        elements.append(Paragraph("<br/>", styles['Normal']))
+                    
+                    table = Table(table_data)
+                    
+                    # Add style
+                    style = TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 10),
+                        ('FONTSIZE', (0, 1), (-1, -1), 8),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                        ('WORDWRAP', (0, 0), (-1, -1), 'CJK'),  # Enable word wrap
+                    ])
+                    table.setStyle(style)
+                    elements.append(table)
+                    
+                    # Build PDF
+                    doc.build(elements)
+                    pdf = buffer.getvalue()
+                    buffer.close()
+                    response.write(pdf)
+                    
+                    # Save export history
+                    try:
+                        ExportHistory.objects.create(
+                            user=request.user,
+                            filename=f"appointments_{current_date}.pdf",
+                            format='pdf',
+                            record_count=min(appointments.count(), max_pdf_rows),
+                            filters=json.dumps({
+                                'date_range': date_range,
+                                'status_filter': status_filter,
+                                'payment_filter': payment_filter,
+                                'columns': columns
+                            }, default=str)
+                        )
+                    except Exception as e:
+                        print(f"Error saving export history: {e}")
+                    
+                    return response
+                    
+                except Exception as e:
+                    print(f"PDF export error: {e}")
+                    messages.error(request, f"Error creating PDF file: {str(e)}. Please try CSV or Excel format.")
+                    return redirect('appointment_export')
+        
+        except Exception as e:
+            print(f"Export error: {e}")
+            messages.error(request, f"Error exporting data: {str(e)}")
+            return redirect('appointment_export')
+
+def download_export(request, export_id):
+    try:
+        export = ExportHistory.objects.get(id=export_id, user=request.user)
+        
+        # Create a simple response with the export info
+        # In a real implementation, you would generate the file again or serve from storage
+        content = f"Export Details:\n"
+        content += f"Filename: {export.filename}\n"
+        content += f"Format: {export.format}\n"
+        content += f"Record Count: {export.record_count}\n"
+        content += f"Created: {export.created_at}\n"
+        content += f"Filters: {export.filters}\n\n"
+        content += "Note: In a production environment, this would download the actual exported file."
+        
+        response = HttpResponse(content, content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename="{export.filename}"'
+        return response
+        
+    except ExportHistory.DoesNotExist:
+        messages.error(request, "Export not found or you don't have permission to access it.")
+        return redirect('appointment_export')
+    except Exception as e:
+        print(f"Download error: {e}")
+        messages.error(request, "Error downloading export.")
+        return redirect('appointment_export')
