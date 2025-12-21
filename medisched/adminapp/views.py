@@ -506,6 +506,29 @@ def doctor_edit(request, pk):
     districts = District.objects.filter(division=doctor.division) if doctor.division else District.objects.none()
     upazilas = Upazila.objects.filter(district=doctor.district) if doctor.district else Upazila.objects.none()
     
+    # Get ALL districts and upazilas for JavaScript filtering
+    all_districts = District.objects.all()
+    all_upazilas = Upazila.objects.all()
+    
+    # Convert to JSON for JavaScript
+    all_districts_json = json.dumps([
+        {
+            'id': str(district.id),
+            'district_name': district.district_name,
+            'division_id': str(district.division.id)
+        }
+        for district in all_districts
+    ])
+    
+    all_upazilas_json = json.dumps([
+        {
+            'id': str(upazila.id),
+            'upazila_name': upazila.upazila_name,
+            'district_id': str(upazila.district.id)
+        }
+        for upazila in all_upazilas
+    ])
+    
     # Get appointment fees
     general_fee = doctor.appointment_fees.filter(category='General').first()
     special_fee = doctor.appointment_fees.filter(category='Special').first()
@@ -515,6 +538,8 @@ def doctor_edit(request, pk):
         'divisions': divisions,
         'districts': districts,
         'upazilas': upazilas,
+        'all_districts_json': all_districts_json,
+        'all_upazilas_json': all_upazilas_json,
         'departments': Department.objects.all(),
         'symptoms': Symptom.objects.all(),
         'selected_departments': [dept.id for dept in doctor.departments.all()],
