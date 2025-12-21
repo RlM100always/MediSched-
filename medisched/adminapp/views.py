@@ -123,21 +123,41 @@ def add_department(request):
         messages.success(request, 'Department added!')
         return redirect('department_list')
     return redirect('department_list')
-
 def edit_department(request, id):
     department = get_object_or_404(Department, id=id)
+    
     if request.method == 'POST':
         name = request.POST.get('department_name')
         image = request.FILES.get('department_image')  # get uploaded image (optional)
-
-        department.department_name = name
-        if image:  # only update if a new image is uploaded
-            department.department_image = image
-
-        department.save()
-        messages.success(request, 'Department updated!')
-        return redirect('department_list')
-
+        
+        # Debug print to console
+        print(f"DEBUG: POST request received for department {id}")
+        print(f"DEBUG: Name: {name}")
+        print(f"DEBUG: Has image: {'Yes' if image else 'No'}")
+        
+        if not name:
+            messages.error(request, 'Department name is required!')
+            return render(request, 'adminapp/edit_department.html', {'department': department})
+        
+        try:
+            department.department_name = name
+            if image:  # only update if a new image is uploaded
+                # Delete old image if exists
+                if department.department_image:
+                    department.department_image.delete(save=False)
+                department.department_image = image
+            
+            department.save()
+            print(f"DEBUG: Department saved successfully")
+            messages.success(request, f'Department "{name}" updated successfully!')
+            return redirect('department_list')
+            
+        except Exception as e:
+            print(f"DEBUG: Error saving department: {str(e)}")
+            messages.error(request, f'Error updating department: {str(e)}')
+            return render(request, 'adminapp/edit_department.html', {'department': department})
+    
+    # For GET request, render the form
     return render(request, 'adminapp/edit_department.html', {'department': department})
 
 def delete_department(request, id):

@@ -314,13 +314,9 @@
         <a href="{% url 'appointment_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'appointment_list' %}active{% endif %}">
           <i class="fa-solid fa-calendar-check"></i> Appointments
         </a>
-        <a href="{% url 'payment_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'payment_list' %}active{% endif %}">
-          <i class="fa-solid fa-credit-card"></i> Payments
-        </a>
+
         
-        <a href="{% url 'logout' %}" class="sidebar-link logout mt-4">
-          <i class="fa-solid fa-right-from-bracket"></i> Logout
-        </a>
+      
       </div>
     </div>
   </div>

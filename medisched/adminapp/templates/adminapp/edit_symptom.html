@@ -409,11 +409,6 @@
         font-size: 1rem;
     }
     
-    /* Modal */
-    .modal-content {
-        border-radius: 10px;
-    }
-    
     /* Character Counter */
     #charCounter {
         text-align: right;
@@ -435,360 +430,6 @@
     
     .form-card {
         animation: fadeIn 0.3s ease-out;
-    }
-    
-    /* ==================== RESPONSIVE BREAKPOINTS ==================== */
-    
-    /* Small Mobile (≤ 360px) */
-    @media (max-width: 360px) {
-        .form-container {
-            padding: 0.3rem;
-        }
-        
-        .card-header-custom {
-            padding: 0.8rem 0.5rem !important;
-        }
-        
-        .header-title {
-            font-size: 1rem;
-        }
-        
-        .header-title i {
-            font-size: 1rem;
-            padding: 0.3rem;
-            margin-right: 0.3rem;
-        }
-        
-        .symptom-badge {
-            font-size: 0.65rem;
-            padding: 0.2rem 0.4rem;
-        }
-        
-        .card-body {
-            padding: 0.8rem 0.5rem;
-        }
-        
-        .form-section {
-            padding: 0.6rem;
-        }
-        
-        .section-title {
-            font-size: 0.85rem;
-        }
-        
-        .form-control-custom {
-            padding: 0.5rem;
-            font-size: 0.85rem;
-        }
-        
-        .current-image,
-        .no-image-placeholder {
-            width: 70px;
-            height: 70px;
-        }
-        
-        .upload-zone {
-            padding: 0.8rem 0.5rem;
-        }
-        
-        .btn-back,
-        .btn-update {
-            padding: 0.5rem;
-            font-size: 0.8rem;
-        }
-        
-        .success-toast {
-            left: 0.3rem;
-            right: 0.3rem;
-            padding: 0.6rem;
-            font-size: 0.8rem;
-        }
-    }
-    
-    /* Medium Mobile (361px - 480px) */
-    @media (min-width: 361px) and (max-width: 480px) {
-        .form-container {
-            padding: 0.5rem;
-        }
-        
-        .header-title {
-            font-size: 1.1rem;
-        }
-        
-        .current-image,
-        .no-image-placeholder {
-            width: 80px;
-            height: 80px;
-        }
-    }
-    
-    /* Large Mobile (481px - 576px) */
-    @media (min-width: 481px) and (max-width: 576px) {
-        .form-container {
-            padding: 0.8rem;
-        }
-        
-        .card-header-custom {
-            padding: 1rem 0.8rem !important;
-        }
-        
-        .header-title {
-            font-size: 1.2rem;
-        }
-        
-        .header-title i {
-            font-size: 1.2rem;
-            padding: 0.5rem;
-            margin-right: 0.6rem;
-        }
-        
-        .symptom-badge {
-            font-size: 0.8rem;
-            padding: 0.4rem 0.8rem;
-        }
-        
-        .card-body {
-            padding: 1rem 0.8rem;
-        }
-        
-        .symptom-info {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.6rem;
-        }
-        
-        .form-section {
-            padding: 0.9rem;
-        }
-        
-        .section-title {
-            font-size: 1rem;
-        }
-        
-        .current-image,
-        .no-image-placeholder {
-            width: 90px;
-            height: 90px;
-        }
-        
-        .image-preview-container {
-            flex-direction: row;
-            align-items: center;
-        }
-    }
-    
-    /* Tablet (577px - 768px) */
-    @media (min-width: 577px) and (max-width: 768px) {
-        .form-container {
-            max-width: 90%;
-            margin: 0 auto;
-            padding: 1rem 0;
-        }
-        
-        .card-header-content {
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .symptom-badge {
-            align-self: center;
-        }
-        
-        .symptom-info {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.8rem;
-        }
-        
-        .button-group {
-            flex-direction: row;
-            flex-wrap: wrap;
-        }
-        
-        .btn-back,
-        .btn-update {
-            flex: 1;
-            min-width: 120px;
-        }
-        
-        .current-image,
-        .no-image-placeholder {
-            width: 100px;
-            height: 100px;
-        }
-        
-        .upload-zone {
-            padding: 1.2rem;
-        }
-        
-        .success-toast {
-            left: auto;
-            right: 0.8rem;
-            bottom: 0.8rem;
-            max-width: 250px;
-        }
-    }
-    
-    /* Desktop (769px - 992px) */
-    @media (min-width: 769px) {
-        .form-container {
-            max-width: 800px;
-            margin: 1.5rem auto;
-            padding: 0 0.8rem;
-        }
-        
-        .header-content {
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .header-title {
-            font-size: 1.4rem;
-        }
-        
-        .header-title i {
-            font-size: 1.4rem;
-            padding: 0.6rem;
-            margin-right: 0.8rem;
-        }
-        
-        .symptom-badge {
-            font-size: 0.9rem;
-            padding: 0.5rem 1rem;
-        }
-        
-        .card-body {
-            padding: 1.5rem;
-        }
-        
-        .symptom-info {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-        
-        .form-section {
-            padding: 1.2rem;
-        }
-        
-        .section-title {
-            font-size: 1.1rem;
-        }
-        
-        .form-label {
-            font-size: 0.9rem;
-        }
-        
-        .form-control-custom {
-            padding: 0.8rem;
-            font-size: 0.95rem;
-            border-width: 2px;
-        }
-        
-        .current-image,
-        .no-image-placeholder {
-            width: 120px;
-            height: 120px;
-        }
-        
-        .image-actions {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            margin-top: 0;
-        }
-        
-        .upload-zone {
-            padding: 1.5rem;
-        }
-        
-        .upload-icon {
-            font-size: 1.8rem;
-        }
-        
-        .upload-text {
-            font-size: 1rem;
-        }
-        
-        .button-group {
-            flex-direction: row;
-            justify-content: space-between;
-            gap: 0.8rem;
-        }
-        
-        .btn-back,
-        .btn-update {
-            width: auto;
-            padding: 0.7rem 1.2rem;
-        }
-        
-        .success-toast {
-            left: auto;
-            right: 1.5rem;
-            bottom: 1.5rem;
-            max-width: 300px;
-        }
-    }
-    
-    /* Large Desktop (≥ 993px) */
-    @media (min-width: 993px) {
-        .form-container {
-            max-width: 850px;
-        }
-        
-        .card-header-custom {
-            padding: 1.5rem !important;
-        }
-        
-        .header-title {
-            font-size: 1.5rem;
-        }
-        
-        .card-body {
-            padding: 2rem;
-        }
-        
-        .current-image,
-        .no-image-placeholder {
-            width: 140px;
-            height: 140px;
-        }
-        
-        .image-preview-container {
-            flex-direction: row;
-            align-items: flex-start;
-        }
-        
-        .form-section:hover {
-            transform: translateY(-1px);
-        }
-    }
-    
-    /* Landscape Mode */
-    @media (max-height: 600px) and (orientation: landscape) {
-        .form-container {
-            padding: 0.3rem;
-        }
-        
-        .form-card {
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-        
-        .card-header-custom {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        
-        .image-preview-container {
-            flex-direction: row;
-        }
-        
-        .current-image,
-        .no-image-placeholder {
-            width: 60px;
-            height: 60px;
-        }
     }
 </style>
 {% endblock %}
@@ -834,7 +475,8 @@
                 </div>
             </div>
             
-            <form method="POST" enctype="multipart/form-data" id="editSymptomForm" novalidate>
+            <!-- FIXED: ADDED ACTION URL TO FORM -->
+            <form method="POST" action="{% url 'edit_symptom' symptom.id %}" enctype="multipart/form-data" id="editSymptomForm">
                 {% csrf_token %}
                 
                 <!-- Symptom Name Section -->
@@ -888,14 +530,6 @@
                                         alt="{{ symptom.symptom_name }}" 
                                         class="current-image"
                                     >
-                                    <div class="image-actions">
-                                        <button type="button" class="image-action-btn" onclick="previewImage('{{ symptom.symptom_image.url }}')">
-                                            <i class="fa-solid fa-expand"></i>
-                                        </button>
-                                        <button type="button" class="image-action-btn" onclick="removeCurrentImage()">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </div>
                                 </div>
                             {% else %}
                                 <div class="no-image-placeholder">
@@ -913,32 +547,18 @@
                             Upload New Image (Optional)
                         </label>
                         
-                        <div class="upload-zone" id="uploadZone">
-                            <div class="upload-icon">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>
-                            </div>
-                            <div class="upload-text">
-                                Click to Upload
-                            </div>
-                            <div class="upload-subtext">
-                                JPG, PNG, GIF, WEBP
-                            </div>
-                            <div class="upload-subtext text-primary fw-semibold">
-                                Max 5MB
-                            </div>
-                            <input 
-                                type="file" 
-                                name="symptom_image" 
-                                id="symptom_image" 
-                                class="d-none" 
-                                accept="image/*"
-                            >
-                            <div class="file-info" id="fileInfo"></div>
-                        </div>
+                        <!-- SIMPLE FILE INPUT THAT WORKS -->
+                        <input 
+                            type="file" 
+                            name="symptom_image" 
+                            id="symptom_image" 
+                            class="form-control-custom" 
+                            accept="image/*"
+                        >
                         
                         <div class="form-helper">
                             <i class="fa-solid fa-circle-info"></i>
-                            Leave empty to keep current
+                            Leave empty to keep current image
                         </div>
                     </div>
                 </div>
@@ -951,34 +571,10 @@
                     </a>
                     <button type="submit" class="btn-update" id="submitBtn">
                         <i class="fa-solid fa-floppy-disk"></i>
-                        <span>Update</span>
+                        <span>Update Symptom</span>
                     </button>
                 </div>
             </form>
-        </div>
-    </div>
-</div>
-
-<!-- Success Toast -->
-<div class="success-toast" id="successToast">
-    <i class="fa-solid fa-circle-check"></i>
-    <div>
-        <strong>Updated!</strong>
-        <div style="font-size: 0.8rem;">Changes saved</div>
-    </div>
-</div>
-
-<!-- Image Preview Modal -->
-<div class="modal fade" id="imagePreviewModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title small">Preview</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body text-center p-2">
-                <img id="previewImage" src="" alt="Preview" class="img-fluid rounded">
-            </div>
         </div>
     </div>
 </div>
@@ -988,12 +584,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('editSymptomForm');
-        const uploadZone = document.getElementById('uploadZone');
-        const fileInput = document.getElementById('symptom_image');
-        const fileInfo = document.getElementById('fileInfo');
-        const submitBtn = document.getElementById('submitBtn');
-        const successToast = document.getElementById('successToast');
         const symptomNameInput = document.getElementById('symptom_name');
+        const submitBtn = document.getElementById('submitBtn');
         
         // Character counter
         function updateCharCounter() {
@@ -1024,232 +616,41 @@
         
         symptomNameInput.addEventListener('input', updateCharCounter);
         
-        // Click on upload zone to trigger file input
-        uploadZone.addEventListener('click', function() {
-            fileInput.click();
-        });
-        
-        // Handle file selection
-        fileInput.addEventListener('change', function() {
-            if (this.files.length > 0) {
-                handleFileSelection(this.files[0]);
-            }
-        });
-        
-        function handleFileSelection(file) {
-            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            
-            if (!validTypes.includes(file.type)) {
-                showAlert('Please select a valid image file (JPG, PNG, GIF, or WEBP).', 'danger');
-                fileInput.value = '';
-                return;
-            }
-            
-            if (file.size > 5 * 1024 * 1024) {
-                showAlert('File size exceeds 5MB limit.', 'danger');
-                fileInput.value = '';
-                return;
-            }
-            
-            // Update file info
-            fileInfo.innerHTML = `
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <strong>Selected:</strong> ${file.name}<br>
-                        <small>Size: ${(file.size / 1024).toFixed(0)} KB</small>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFileSelection()">
-                        <i class="fa-solid fa-times"></i>
-                    </button>
-                </div>
-            `;
-            fileInfo.classList.add('show');
-            
-            // Preview image
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                uploadZone.innerHTML = `
-                    <div class="text-center">
-                        <img src="${e.target.result}" 
-                             alt="Preview" 
-                             class="rounded mb-1"
-                             style="width: 80px; height: 80px; object-fit: cover; border: 2px solid white;">
-                        <div class="upload-text text-success">✓ Selected</div>
-                        <div class="upload-subtext">${file.name}</div>
-                        <button type="button" class="btn btn-sm btn-outline-primary mt-1" onclick="changeImage()">
-                            Change
-                        </button>
-                        <input type="file" name="symptom_image" id="symptom_image" class="d-none" accept="image/*">
-                    </div>
-                `;
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        // Drag and drop
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            uploadZone.addEventListener(eventName, preventDefaults, false);
-        });
-        
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        
-        ['dragenter', 'dragover'].forEach(eventName => {
-            uploadZone.addEventListener(eventName, highlight, false);
-        });
-        
-        ['dragleave', 'drop'].forEach(eventName => {
-            uploadZone.addEventListener(eventName, unhighlight, false);
-        });
-        
-        function highlight() {
-            uploadZone.style.background = 'rgba(45, 156, 219, 0.08)';
-            uploadZone.style.borderColor = 'var(--primary-dark)';
-        }
-        
-        function unhighlight() {
-            uploadZone.style.background = '';
-            uploadZone.style.borderColor = '';
-        }
-        
-        uploadZone.addEventListener('drop', function(e) {
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                handleFileSelection(files[0]);
-            }
-        });
-        
-        // Form submission
+        // Form submission - Simple validation
         form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
             const symptomName = symptomNameInput.value.trim();
             
             if (!symptomName) {
-                showAlert('Please enter a symptom name.', 'danger');
+                e.preventDefault();
+                alert('Please enter a symptom name.');
                 symptomNameInput.focus();
                 return;
             }
             
             if (symptomName.length < 3) {
-                showAlert('Symptom name must be at least 3 characters long.', 'danger');
+                e.preventDefault();
+                alert('Symptom name must be at least 3 characters long.');
                 symptomNameInput.focus();
                 return;
+            }
+            
+            // Optional: Check file size
+            const fileInput = document.getElementById('symptom_image');
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                
+                if (file.size > maxSize) {
+                    e.preventDefault();
+                    alert('File size exceeds 5MB limit.');
+                    return;
+                }
             }
             
             // Show loading state
             submitBtn.classList.add('btn-loading');
             submitBtn.disabled = true;
-            
-            // Show success toast
-            showSuccessToast();
-            
-            // Submit form
-            setTimeout(() => {
-                form.submit();
-            }, 1000);
         });
-        
-        // Success toast
-        function showSuccessToast() {
-            successToast.style.display = 'flex';
-            
-            setTimeout(() => {
-                successToast.style.opacity = '0';
-                successToast.style.transform = 'translateY(20px)';
-                successToast.style.transition = 'all 0.2s ease';
-                
-                setTimeout(() => {
-                    successToast.style.display = 'none';
-                    successToast.style.opacity = '';
-                    successToast.style.transform = '';
-                }, 200);
-            }, 2000);
-        }
-        
-        // Alert function
-        function showAlert(message, type) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-0 m-2`;
-            alertDiv.style.zIndex = '9999';
-            alertDiv.style.fontSize = '0.8rem';
-            alertDiv.style.padding = '0.6rem';
-            alertDiv.innerHTML = `
-                <i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-exclamation'} me-1"></i>
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" style="font-size: 0.7rem;"></button>
-            `;
-            document.body.appendChild(alertDiv);
-            
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 3000);
-        }
     });
-    
-    // Global functions
-    window.previewImage = function(imageUrl) {
-        document.getElementById('previewImage').src = imageUrl;
-        new bootstrap.Modal(document.getElementById('imagePreviewModal')).show();
-    };
-    
-    window.removeCurrentImage = function() {
-        if (confirm('Remove current image?')) {
-            let hiddenInput = document.getElementById('removeImageFlag');
-            if (!hiddenInput) {
-                hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'remove_image';
-                hiddenInput.id = 'removeImageFlag';
-                hiddenInput.value = 'true';
-                document.getElementById('editSymptomForm').appendChild(hiddenInput);
-            }
-            
-            const container = document.querySelector('.current-image-wrapper');
-            if (container) {
-                container.innerHTML = `
-                    <div class="no-image-placeholder">
-                        <i class="fa-solid fa-image"></i>
-                        <span class="ms-1">Removed</span>
-                    </div>
-                `;
-            }
-        }
-    };
-    
-    window.clearFileSelection = function() {
-        const fileInput = document.getElementById('symptom_image');
-        const fileInfo = document.getElementById('fileInfo');
-        
-        fileInput.value = '';
-        fileInfo.classList.remove('show');
-        fileInfo.innerHTML = '';
-        
-        // Reset upload zone
-        const uploadZone = document.getElementById('uploadZone');
-        uploadZone.innerHTML = `
-            <div class="upload-icon">
-                <i class="fa-solid fa-cloud-arrow-up"></i>
-            </div>
-            <div class="upload-text">
-                Click to Upload
-            </div>
-            <div class="upload-subtext">
-                JPG, PNG, GIF, WEBP
-            </div>
-            <div class="upload-subtext text-primary fw-semibold">
-                Max 5MB
-            </div>
-            <input type="file" name="symptom_image" id="symptom_image" class="d-none" accept="image/*">
-            <div class="file-info" id="fileInfo"></div>
-        `;
-    };
-    
-    window.changeImage = function() {
-        document.getElementById('symptom_image').click();
-    };
 </script>
 {% endblock %}
