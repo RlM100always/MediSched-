@@ -4,11 +4,368 @@ from django.contrib import messages
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 
-# Dashboard
 def admin_dashboard(request):
-    return render(request, 'adminapp/admin_dashboard.html')
-
-
+    try:
+        # Get current date
+        today = timezone.now().date()
+        current_month = today.month
+        current_year = today.year
+        
+        # Get first day of current and previous month
+        first_day_current = datetime(current_year, current_month, 1).date()
+        if current_month == 1:
+            first_day_previous = datetime(current_year-1, 12, 1).date()
+        else:
+            first_day_previous = datetime(current_year, current_month-1, 1).date()
+        
+        # Basic counts with safe defaults
+        total_doctors = Doctor.objects.count()
+        total_patients = CustomUser.objects.filter(role='patient').count()
+        total_appointments = Appointment.objects.count()
+        
+        # Get total revenue from paid appointments
+        try:
+            total_revenue_result = Appointment.objects.filter(payment_status='paid').aggregate(
+                total=Sum('total_amount')
+            )
+            total_revenue = total_revenue_result['total'] or 0
+        except:
+            total_revenue = 0
+        
+        # Today's counts
+        today_pending_appointments = Appointment.objects.filter(
+            appointment_date__date=today,
+            status='pending'
+        ).count()
+        
+        today_completed_appointments = Appointment.objects.filter(
+            appointment_date__date=today,
+            status='completed'
+        ).count()
+        
+        today_cancelled_appointments = Appointment.objects.filter(
+            appointment_date__date=today,
+            status='cancelled'
+        ).count()
+        
+        today_new_registrations = CustomUser.objects.filter(
+            date_joined__date=today
+        ).count()
+        
+        # Location counts
+        total_divisions = Division.objects.count()
+        total_districts = District.objects.count()
+        total_upazilas = Upazila.objects.count()
+        
+        # Department and symptom counts
+        total_departments = Department.objects.count()
+        total_symptoms = Symptom.objects.count()
+        
+        # Pending appointments count
+        pending_appointments = Appointment.objects.filter(status='pending').count()
+        
+        # Monthly statistics for appointments
+        monthly_appointments = Appointment.objects.filter(
+            created_at__month=current_month,
+            created_at__year=current_year
+        ).count()
+        
+        previous_month_appointments = Appointment.objects.filter(
+            created_at__date__gte=first_day_previous,
+            created_at__date__lt=first_day_current
+        ).count()
+        
+        try:
+            monthly_revenue_result = Appointment.objects.filter(
+                created_at__month=current_month,
+                created_at__year=current_year,
+                payment_status='paid'
+            ).aggregate(total=Sum('total_amount'))
+            monthly_revenue = monthly_revenue_result['total'] or 0
+        except:
+            monthly_revenue = 0
+        
+        try:
+            previous_month_revenue_result = Appointment.objects.filter(
+                created_at__date__gte=first_day_previous,
+                created_at__date__lt=first_day_current,
+                payment_status='paid'
+            ).aggregate(total=Sum('total_amount'))
+            previous_month_revenue = previous_month_revenue_result['total'] or 0
+        except:
+            previous_month_revenue = 0
+        
+        # New doctors this month (using user's date_joined)
+        monthly_new_doctors = Doctor.objects.filter(
+            user__date_joined__month=current_month,
+            user__date_joined__year=current_year
+        ).count()
+        
+        previous_month_doctors = Doctor.objects.filter(
+            user__date_joined__date__gte=first_day_previous,
+            user__date_joined__date__lt=first_day_current
+        ).count()
+        
+        # Calculate percentage changes with safe defaults
+        def calculate_percent_change(current, previous):
+            if previous == 0:
+                return 100 if current > 0 else 0
+            try:
+                return round(((current - previous) / previous) * 100, 1)
+            except:
+                return 0
+        
+        monthly_appointments_percent_change = calculate_percent_change(
+            monthly_appointments, previous_month_appointments
+        )
+        
+        monthly_revenue_percent_change = calculate_percent_change(
+            monthly_revenue, previous_month_revenue
+        )
+        
+        monthly_doctors_percent_change = calculate_percent_change(
+            monthly_new_doctors, previous_month_doctors
+        )
+        
+        # Calculate growth percentages (week over week) with safe defaults
+        week_ago = today - timedelta(days=7)
+        
+        # Weekly statistics with safe handling
+        doctor_this_week = Doctor.objects.filter(
+            user__date_joined__date__gte=week_ago
+        ).count()
+        
+        doctor_previous_week = Doctor.objects.filter(
+            user__date_joined__date__gte=week_ago - timedelta(days=7),
+            user__date_joined__date__lt=week_ago
+        ).count()
+        
+        patient_this_week = CustomUser.objects.filter(
+            date_joined__date__gte=week_ago,
+            role='patient'
+        ).count()
+        
+        patient_previous_week = CustomUser.objects.filter(
+            date_joined__date__gte=week_ago - timedelta(days=7),
+            date_joined__date__lt=week_ago,
+            role='patient'
+        ).count()
+        
+        appointment_this_week = Appointment.objects.filter(
+            created_at__date__gte=week_ago
+        ).count()
+        
+        appointment_previous_week = Appointment.objects.filter(
+            created_at__date__gte=week_ago - timedelta(days=7),
+            created_at__date__lt=week_ago
+        ).count()
+        
+        try:
+            revenue_this_week_result = Appointment.objects.filter(
+                created_at__date__gte=week_ago,
+                payment_status='paid'
+            ).aggregate(total=Sum('total_amount'))
+            revenue_this_week = revenue_this_week_result['total'] or 0
+        except:
+            revenue_this_week = 0
+        
+        try:
+            revenue_previous_week_result = Appointment.objects.filter(
+                created_at__date__gte=week_ago - timedelta(days=7),
+                created_at__date__lt=week_ago,
+                payment_status='paid'
+            ).aggregate(total=Sum('total_amount'))
+            revenue_previous_week = revenue_previous_week_result['total'] or 0
+        except:
+            revenue_previous_week = 0
+        
+        # Calculate growth percentages
+        doctor_growth = calculate_percent_change(doctor_this_week, doctor_previous_week)
+        patient_growth = calculate_percent_change(patient_this_week, patient_previous_week)
+        appointment_growth = calculate_percent_change(appointment_this_week, appointment_previous_week)
+        revenue_growth = calculate_percent_change(revenue_this_week, revenue_previous_week)
+        
+        # Get top doctors by appointment count
+        try:
+            top_doctors = Doctor.objects.annotate(
+                appointment_count=Count('appointments')
+            ).order_by('-appointment_count')[:5]
+        except:
+            top_doctors = Doctor.objects.all()[:5]
+        
+        # Get recent activities
+        recent_activities = []
+        
+        # Add recent appointments
+        try:
+            recent_appointments = Appointment.objects.select_related(
+                'patient', 'doctor', 'doctor__user'
+            ).order_by('-created_at')[:5]
+            
+            for appointment in recent_appointments:
+                # Get patient name safely
+                if appointment.patient:
+                    patient_name = appointment.patient.get_full_name() or appointment.patient.username
+                else:
+                    patient_name = appointment.patient_name or "Unknown Patient"
+                
+                # Get doctor name safely
+                if appointment.doctor and appointment.doctor.user:
+                    doctor_name = appointment.doctor.user.get_full_name() or appointment.doctor.user.username
+                else:
+                    doctor_name = "Unknown Doctor"
+                
+                recent_activities.append({
+                    'title': f'Appointment - {appointment.get_status_display()}',
+                    'description': f'{patient_name} with Dr. {doctor_name}',
+                    'time': appointment.created_at,
+                    'icon': 'fas fa-calendar-check',
+                    'color': '#10b981' if appointment.status == 'completed' else 
+                            '#f59e0b' if appointment.status == 'pending' else
+                            '#ef4444' if appointment.status == 'cancelled' else '#3b82f6'
+                })
+        except Exception as e:
+            print(f"Error getting recent appointments: {e}")
+        
+        # Add recent doctor registrations
+        try:
+            recent_doctors = Doctor.objects.select_related('user').order_by('-user__date_joined')[:3]
+            for doctor in recent_doctors:
+                # Get department name safely
+                department_name = "General"
+                if doctor.departments.exists():
+                    first_department = doctor.departments.all().first()
+                    if first_department:
+                        department_name = first_department.department_name
+                
+                recent_activities.append({
+                    'title': 'New Doctor Registered',
+                    'description': f'Dr. {doctor.user.get_full_name() or doctor.user.username} - {department_name}',
+                    'time': doctor.user.date_joined,
+                    'icon': 'fas fa-user-md',
+                    'color': '#8b5cf6'
+                })
+        except Exception as e:
+            print(f"Error getting recent doctors: {e}")
+        
+        # Add recent patient registrations
+        try:
+            recent_patients = CustomUser.objects.filter(
+                role='patient'
+            ).order_by('-date_joined')[:3]
+            
+            for patient in recent_patients:
+                recent_activities.append({
+                    'title': 'New Patient Registered',
+                    'description': f'{patient.get_full_name() or patient.username} - {patient.email}',
+                    'time': patient.date_joined,
+                    'icon': 'fas fa-user-plus',
+                    'color': '#3b82f6'
+                })
+        except Exception as e:
+            print(f"Error getting recent patients: {e}")
+        
+        # Add recent payments
+        try:
+            recent_payments = Appointment.objects.filter(
+                payment_status='paid'
+            ).order_by('-created_at')[:3]
+            
+            for payment in recent_payments:
+                patient_name = payment.patient_name
+                if not patient_name and payment.patient:
+                    patient_name = payment.patient.get_full_name() or payment.patient.username
+                
+                recent_activities.append({
+                    'title': 'Payment Received',
+                    'description': f'৳{payment.total_amount} - {patient_name or "Unknown"}',
+                    'time': payment.created_at,
+                    'icon': 'fas fa-dollar-sign',
+                    'color': '#10b981'
+                })
+        except Exception as e:
+            print(f"Error getting recent payments: {e}")
+        
+        # Sort activities by time (most recent first)
+        recent_activities.sort(key=lambda x: x['time'], reverse=True)
+        recent_activities = recent_activities[:10]
+        
+        # Get current month name
+        current_month_name = timezone.now().strftime('%B')
+        
+        context = {
+            'today_date': today,
+            'total_doctors': total_doctors,
+            'total_patients': total_patients,
+            'total_appointments': total_appointments,
+            'total_revenue': total_revenue,
+            'today_pending_appointments': today_pending_appointments,
+            'today_completed_appointments': today_completed_appointments,
+            'today_cancelled_appointments': today_cancelled_appointments,
+            'today_new_registrations': today_new_registrations,
+            'total_divisions': total_divisions,
+            'total_districts': total_districts,
+            'total_upazilas': total_upazilas,
+            'total_departments': total_departments,
+            'total_symptoms': total_symptoms,
+            'pending_appointments': pending_appointments,
+            'doctor_growth': doctor_growth,
+            'patient_growth': patient_growth,
+            'appointment_growth': appointment_growth,
+            'revenue_growth': revenue_growth,
+            'top_doctors': top_doctors,
+            'recent_activities': recent_activities,
+            'monthly_appointments': monthly_appointments,
+            'monthly_revenue': monthly_revenue,
+            'monthly_new_doctors': monthly_new_doctors,
+            'monthly_appointments_percent_change': monthly_appointments_percent_change,
+            'monthly_revenue_percent_change': monthly_revenue_percent_change,
+            'monthly_doctors_percent_change': monthly_doctors_percent_change,
+            'current_month_name': current_month_name,
+        }
+        
+        return render(request, 'adminapp/admin_dashboard.html', context)
+        
+    except Exception as e:
+        # If there's any error, return a minimal working context
+        print(f"Dashboard error: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Minimal context to at least show something
+        context = {
+            'today_date': timezone.now().date(),
+            'total_doctors': Doctor.objects.count(),
+            'total_patients': CustomUser.objects.filter(role='patient').count(),
+            'total_appointments': Appointment.objects.count(),
+            'total_revenue': 0,
+            'today_pending_appointments': 0,
+            'today_completed_appointments': 0,
+            'today_cancelled_appointments': 0,
+            'today_new_registrations': 0,
+            'total_divisions': Division.objects.count(),
+            'total_districts': District.objects.count(),
+            'total_upazilas': Upazila.objects.count(),
+            'total_departments': Department.objects.count(),
+            'total_symptoms': Symptom.objects.count(),
+            'pending_appointments': Appointment.objects.filter(status='pending').count(),
+            'doctor_growth': 0,
+            'patient_growth': 0,
+            'appointment_growth': 0,
+            'revenue_growth': 0,
+            'top_doctors': Doctor.objects.all()[:5],
+            'recent_activities': [],
+            'monthly_appointments': 0,
+            'monthly_revenue': 0,
+            'monthly_new_doctors': 0,
+            'monthly_appointments_percent_change': 0,
+            'monthly_revenue_percent_change': 0,
+            'monthly_doctors_percent_change': 0,
+            'current_month_name': timezone.now().strftime('%B'),
+        }
+        
+        return render(request, 'adminapp/admin_dashboard.html', context)
+    
 # ---------- Division ----------
 def division_list(request):
     divisions = Division.objects.all()
