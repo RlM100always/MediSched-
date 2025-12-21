@@ -8,7 +8,6 @@ import uuid
 from doctor.models import Doctor, DoctorAppointmentFee
 from .models import Appointment, PaymentTransaction
 from .forms import AppointmentForm, PaymentMethodForm
-
 @login_required
 def book_appointment(request, doctor_id):
     """Step 1: Book appointment with doctor"""
@@ -38,6 +37,11 @@ def book_appointment(request, doctor_id):
                 appointment.consultation_fee = general_fee
             else:
                 appointment.consultation_fee = special_fee
+            
+            # Calculate total amount
+            vat_amount = appointment.consultation_fee * Decimal('0.05')
+            appointment.vat_amount = vat_amount
+            appointment.total_amount = appointment.consultation_fee + vat_amount + Decimal('29.00')
             
             appointment.save()
             
@@ -88,7 +92,6 @@ def payment_page(request):
     }
     return render(request, 'appointment/payment.html', context)
 
-
 @login_required
 def payment_process(request):
     """Step 3: Process payment"""
@@ -99,19 +102,26 @@ def payment_process(request):
     
     appointment = get_object_or_404(Appointment, id=appointment_id, patient=request.user)
     
-    # Create payment transaction
+    # Check if payment transaction already exists
+    if PaymentTransaction.objects.filter(appointment=appointment).exists():
+        messages.info(request, 'Payment already processed for this appointment.')
+        return redirect('appointment:confirmation', appointment_id=appointment.id)
+    
+    # Create payment transaction with unique transaction_id
     transaction = PaymentTransaction.objects.create(
         appointment=appointment,
-        transaction_id=appointment.transaction_id,
+        transaction_id=appointment.transaction_id or f"TXN-{uuid.uuid4().hex[:12].upper()}",
         amount=appointment.total_amount,
         method=appointment.payment_method or 'bkash',
         status='paid'
     )
     
-    # Update appointment status
-    appointment.payment_status = 'paid'
-    appointment.status = 'confirmed'
-    appointment.save()
+    # Update appointment with transaction_id if empty
+    if not appointment.transaction_id:
+        appointment.transaction_id = transaction.transaction_id
+        appointment.payment_status = 'paid'
+        appointment.status = 'confirmed'
+        appointment.save()
     
     # Clear session
     if 'appointment_id' in request.session:

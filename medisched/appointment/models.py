@@ -6,6 +6,8 @@ import uuid
 from django.utils import timezone
 from users.models import CustomUser as User
 
+
+
 class Appointment(models.Model):
     APPOINTMENT_STATUS = (
         ('pending', 'Pending'),
@@ -74,7 +76,7 @@ class Appointment(models.Model):
     # Payment info
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, blank=True, null=True)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
-    transaction_id = models.CharField(max_length=100, blank=True)
+    transaction_id = models.CharField(max_length=100, blank=True, unique=True)  # Make unique
     
     # Status
     status = models.CharField(max_length=20, choices=APPOINTMENT_STATUS, default='pending')
@@ -90,6 +92,38 @@ class Appointment(models.Model):
     
     def __str__(self):
         return f"Appointment #{self.id} - {self.patient.username}"
+    
+    def save(self, *args, **kwargs):
+        # Generate transaction_id if not provided
+        if not self.transaction_id and self.payment_status == 'paid':
+            self.transaction_id = f"APPT-{uuid.uuid4().hex[:12].upper()}"
+        
+        # Calculate total amount if not set
+        if not self.total_amount and self.consultation_fee:
+            self.vat_amount = self.consultation_fee * Decimal('0.05')
+            self.total_amount = self.consultation_fee + self.vat_amount + self.platform_fee
+        
+        super().save(*args, **kwargs)
+
+
+class PaymentTransaction(models.Model):
+    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE, related_name='payment_transaction')
+    transaction_id = models.CharField(max_length=100, unique=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    method = models.CharField(max_length=50)
+    gateway_response = models.JSONField(blank=True, null=True)
+    status = models.CharField(max_length=20, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Transaction {self.transaction_id}"
+    
+    def save(self, *args, **kwargs):
+        # Generate transaction_id if not provided
+        if not self.transaction_id:
+            self.transaction_id = f"TXN-{uuid.uuid4().hex[:12].upper()}"
+        super().save(*args, **kwargs)
+
 
 
 
@@ -135,17 +169,6 @@ class AppointmentNote(models.Model):
         ordering = ['-created_at']
 
 
-class PaymentTransaction(models.Model):
-    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE, related_name='payment_transaction')
-    transaction_id = models.CharField(max_length=100, unique=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    method = models.CharField(max_length=50)
-    gateway_response = models.JSONField(blank=True, null=True)
-    status = models.CharField(max_length=20, default='pending')
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"Transaction {self.transaction_id}"
     
 
 class ExportHistory(models.Model):
