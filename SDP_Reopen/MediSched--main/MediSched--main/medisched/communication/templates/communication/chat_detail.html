@@ -1,0 +1,509 @@
+{% extends 'communication/chat_home.html' %}
+
+{% block chat_content %}
+<div class="main-content">
+    <!-- Chat Header -->
+    <div class="p-3 border-bottom bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="chat-avatar me-3">
+                    {% if request.user.is_doctor %}
+                        <!-- Patient avatar -->
+                        {% if appointment.patient.profile_image %}
+                            <img src="{{ appointment.patient.profile_image.url }}" alt="{{ appointment.patient.username }}">
+                        {% else %}
+                            <i class="fas fa-user fa-lg"></i>
+                        {% endif %}
+                    {% else %}
+                        <!-- Doctor avatar -->
+                        {% if appointment.doctor.profile_image %}
+                            <img src="{{ appointment.doctor.profile_image.url }}" alt="Dr. {{ appointment.doctor.user.username }}">
+                        {% else %}
+                            <i class="fas fa-user-md fa-lg"></i>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div>
+                    <h5 class="mb-0">
+                        {% if request.user.is_doctor %}
+                            {{ appointment.patient.get_full_name|default:appointment.patient.username }}
+                        {% else %}
+                            Dr. {{ appointment.doctor.user.get_full_name|default:appointment.doctor.user.username }}
+                        {% endif %}
+                    </h5>
+                    <p class="text-muted mb-0 small">
+                        Appointment #{{ appointment.id }} • 
+                        {{ appointment.get_consultation_type_display }}
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                
+                
+                <a href="{% url 'communication:upload_test_report' appointment.id %}" 
+                   class="btn btn-info btn-sm">
+                    <i class="fas fa-file-medical"></i> Test Report
+                </a>
+                 <!-- No active call - Start new -->
+                        <a href="{% url 'communication:video_call_room' appointment.id %}" 
+                           class="btn btn-warning btn-sm" id="video-call-btn">
+                            <i class="fas fa-video"></i> Video Call
+                        </a>
+                
+                  <!-- SIMPLIFIED Video Call Button -->
+<div class="video-call-section">
+    {% with active_call=active_calls.first %}
+        <div class="d-flex gap-2 align-items-center">
+            <!-- Always show Start Call button for both -->
+            <a href="{% url 'communication:immediate_video_call' appointment.id %}" 
+               class="btn btn-success btn-sm">
+                <i class="fas fa-video"></i> Start Call Now
+            </a>
+            
+            <!-- Or Schedule button -->
+            <a href="{% url 'communication:schedule_video_call' appointment.id %}" 
+               class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-calendar"></i> Schedule
+            </a>
+            
+            <!-- Show join option if there's an active call -->
+            {% if active_call and active_call.status == 'ongoing' %}
+                <a href="{% url 'communication:video_call_room' active_call.call_id %}" 
+                   class="btn btn-warning btn-sm">
+                    <i class="fas fa-play"></i> Join Active Call
+                </a>
+            {% endif %}
+        </div>
+        
+        <!-- Show call info if exists -->
+        {% if active_call %}
+            <small class="text-muted d-block mt-1">
+                <i class="fas fa-clock"></i>
+                {% if active_call.status == 'ongoing' %}
+                    Call in progress (started {{ active_call.actual_start_time|timesince }} ago)
+                {% elif active_call.status == 'scheduled' %}
+                    Scheduled for {{ active_call.scheduled_time|date:"M d, H:i" }}
+                    {% if active_call.scheduled_time <= now %}
+                        - <a href="{% url 'communication:video_call_room' active_call.call_id %}" class="text-primary">Join now</a>
+                    {% endif %}
+                {% endif %}
+            </small>
+        {% endif %}
+    {% endwith %}
+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area" id="chat-messages">
+        <!-- Messages will be loaded here -->
+        {% for message in messages %}
+        <div class="message {% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}">
+            <div class="message-content">
+                {% if message.message_type == 'text' %}
+                    {{ message.content }}
+                {% elif message.message_type == 'image' and message.image %}
+                    <img src="{{ message.image.url }}" alt="Image" style="max-width: 200px; border-radius: 10px;">
+                    {% if message.content %}<p class="mt-2">{{ message.content }}</p>{% endif %}
+                {% elif message.message_type == 'file' and message.file %}
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-pdf fa-2x text-danger me-2"></i>
+                        <div>
+                            <strong>Document</strong><br>
+                            <a href="{{ message.file.url }}" target="_blank" class="small">Download</a>
+                        </div>
+                    </div>
+                    {% if message.content %}<p class="mt-2">{{ message.content }}</p>{% endif %}
+                {% elif message.message_type == 'prescription' %}
+                    <div class="prescription-card p-3 rounded">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-prescription-bottle-alt fa-2x text-success me-3"></i>
+                            <div>
+                                <strong>New Prescription</strong><br>
+                                <small>{{ message.content }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% elif message.message_type == 'test_report' %}
+                    <div class="test-report-card p-3 rounded">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-file-medical-alt fa-2x text-info me-3"></i>
+                            <div>
+                                <strong>Test Report Uploaded</strong><br>
+                                <small>{{ message.content }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% elif message.message_type == 'video_call' %}
+                    <div class="video-call-card p-3 rounded">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-video fa-2x text-warning me-3"></i>
+                            <div>
+                                <strong>Video Call Scheduled</strong><br>
+                                <small>{{ message.content }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="message-time">
+                    {{ message.created_at|time:"H:i" }}
+                    {% if message.sender == request.user %}
+                        <i class="fas fa-check{% if message.is_read %}-double text-info{% endif %} ms-1"></i>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state d-flex flex-column align-items-center justify-content-center h-100">
+            <i class="fas fa-comment-medical fa-3x text-muted mb-3"></i>
+            <h5>No messages yet</h5>
+            <p class="text-muted">Start the conversation by sending a message</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Chat Input -->
+    <div class="chat-input">
+        <form method="POST" enctype="multipart/form-data" id="message-form">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                {{ form.content }}
+            </div>
+            
+            <div class="message-actions">
+                <div class="d-flex gap-2 flex-grow-1">
+                    <label class="btn-action" title="Attach Image">
+                        <i class="fas fa-image"></i>
+                        {{ form.image }}
+                    </label>
+                    <label class="btn-action" title="Attach File">
+                        <i class="fas fa-paperclip"></i>
+                        {{ form.file }}
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-send">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Medical Information Section (Collapsible) -->
+<div class="accordion m-3" id="medicalAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#medicalInfo">
+                <i class="fas fa-medkit me-2"></i> Medical Information
+            </button>
+        </h2>
+        <div id="medicalInfo" class="accordion-collapse collapse">
+            <div class="accordion-body">
+                <!-- Prescriptions -->
+                <div class="mb-4">
+                    <h6><i class="fas fa-prescription text-success me-2"></i> Prescriptions</h6>
+                    {% if prescriptions %}
+                        {% for prescription in prescriptions %}
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h6>Prescription #{{ prescription.id }}</h6>
+                                <p><strong>Diagnosis:</strong> {{ prescription.diagnosis }}</p>
+                                {% if prescription.advice %}<p><strong>Advice:</strong> {{ prescription.advice }}</p>{% endif %}
+                                {% if prescription.follow_up_date %}<p><strong>Follow-up:</strong> {{ prescription.follow_up_date }}</p>{% endif %}
+                                
+                                {% if prescription.medicines %}
+                                <div class="mt-3">
+                                    <strong>Medicines:</strong>
+                                    <ul class="mb-0">
+                                        {% for medicine in prescription.medicines %}
+                                        <li>{{ medicine.name }} - {{ medicine.dosage }} for {{ medicine.duration }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                                
+                                <small class="text-muted">Prescribed on {{ prescription.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No prescriptions yet.</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Test Reports -->
+                <div class="mb-4">
+                    <h6><i class="fas fa-file-medical text-info me-2"></i> Test Reports</h6>
+                    {% if test_reports %}
+                        {% for report in test_reports %}
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h6>{{ report.test_name }}</h6>
+                                <p><strong>Date:</strong> {{ report.test_date }}</p>
+                                {% if report.lab_name %}<p><strong>Lab:</strong> {{ report.lab_name }}</p>{% endif %}
+                                {% if report.findings %}<p><strong>Findings:</strong> {{ report.findings }}</p>{% endif %}
+                                {% if report.doctor_notes %}<p><strong>Doctor's Notes:</strong> {{ report.doctor_notes }}</p>{% endif %}
+                                
+                                <a href="{{ report.report_file.url }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-download"></i> Download Report
+                                </a>
+                                
+                                <small class="text-muted d-block mt-2">
+                                    Status: <span class="badge bg-{% if report.status == 'reviewed' %}success{% elif report.status == 'submitted' %}warning{% else %}secondary{% endif %}">
+                                        {{ report.get_status_display }}
+                                    </span>
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No test reports yet.</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Video Calls History -->
+                <div>
+                    <h6><i class="fas fa-video text-warning me-2"></i> Video Calls</h6>
+                    {% if video_calls %}
+                        {% for call in video_calls %}
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            {{ call.get_call_type_display }} 
+                                            {% if call.status == 'ongoing' %}
+                                                <span class="badge bg-success animate-pulse">Live</span>
+                                            {% endif %}
+                                        </h6>
+                                        <p class="mb-1">
+                                            <i class="fas fa-calendar me-1"></i> 
+                                            {{ call.scheduled_time|date:"M d, Y H:i" }}
+                                        </p>
+                                        <span class="badge 
+                                            {% if call.status == 'scheduled' %}bg-primary
+                                            {% elif call.status == 'completed' %}bg-success
+                                            {% elif call.status == 'ongoing' %}bg-warning
+                                            {% elif call.status == 'cancelled' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ call.get_status_display }}
+                                        </span>
+                                        {% if call.duration %}
+                                            <span class="badge bg-info ms-1">
+                                                {{ call.duration }} min
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        {% if call.status == 'ongoing' %}
+                                            <a href="{% url 'communication:video_call_room' call.call_id %}" 
+                                               class="btn btn-sm btn-success">
+                                                <i class="fas fa-play me-1"></i> Join Now
+                                            </a>
+                                        {% elif call.status == 'scheduled' %}
+                                            <a href="{% url 'communication:start_video_call' appointment.id %}" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-video me-1"></i> Start
+                                            </a>
+                                        {% elif call.status == 'completed' %}
+                                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                <i class="fas fa-check me-1"></i> Completed
+                                            </button>
+                                        {% elif call.status == 'cancelled' %}
+                                            <button class="btn btn-sm btn-outline-danger" disabled>
+                                                <i class="fas fa-times me-1"></i> Cancelled
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                {% if call.notes %}
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-sticky-note me-1"></i>
+                                        {{ call.notes }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-video-slash fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No video calls scheduled yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-scroll to bottom of chat
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chat-messages');
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+}
+
+// Update countdown timer
+function updateCallCountdown() {
+    const countdownElement = document.getElementById('call-countdown');
+    if (countdownElement) {
+        const scheduledTime = new Date(countdownElement.dataset.scheduled);
+        const now = new Date();
+        const diffMs = scheduledTime - now;
+        
+        if (diffMs <= 0) {
+            countdownElement.textContent = 'Start Now';
+            // Refresh page to update button state
+            setTimeout(() => location.reload(), 30000); // Check every 30 seconds
+        } else {
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const remainingMins = diffMins % 60;
+            
+            if (diffHours > 0) {
+                countdownElement.textContent = `${diffHours}h ${remainingMins}m`;
+            } else {
+                countdownElement.textContent = `${remainingMins}m`;
+            }
+        }
+    }
+}
+
+// Check for active video calls
+function checkVideoCallStatus() {
+    fetch(`/communication/api/check-call-status/{{ appointment.id }}/`)
+        .then(response => response.json())
+        .then(data => {
+            const videoCallBtn = document.getElementById('video-call-btn');
+            if (videoCallBtn && data.has_active_call) {
+                // Update button if needed
+                if (videoCallBtn.textContent.includes('Video Call') || 
+                    videoCallBtn.textContent.includes('Start Early') ||
+                    videoCallBtn.textContent.includes('countdown')) {
+                    
+                    videoCallBtn.href = `/communication/video-call/${data.call_id}/`;
+                    videoCallBtn.className = videoCallBtn.className.replace('btn-outline-', 'btn-');
+                    videoCallBtn.className = videoCallBtn.className.replace('btn-warning', 'btn-success');
+                    videoCallBtn.className = videoCallBtn.className.replace('btn-primary', 'btn-success');
+                    videoCallBtn.innerHTML = '<i class="fas fa-video"></i> Join Call';
+                }
+            }
+        })
+        .catch(error => console.error('Error checking call status:', error));
+}
+
+// Auto-refresh messages
+function refreshMessages() {
+    fetch(`/communication/api/messages/{{ appointment.id }}/`)
+        .then(response => response.json())
+        .then(data => {
+            // You would need to implement message updating logic here
+            console.log('Messages updated:', data.messages.length);
+        });
+}
+
+// Handle file input display
+document.querySelectorAll('input[type="file"]').forEach(input => {
+    input.addEventListener('change', function(e) {
+        const fileName = this.files[0]?.name;
+        if (fileName) {
+            console.log('Selected file:', fileName);
+        }
+    });
+});
+
+// Initialize
+window.onload = function() {
+    scrollToBottom();
+    updateCallCountdown();
+    
+    // Update countdown every minute
+    setInterval(updateCallCountdown, 60000);
+    
+    // Check call status every 30 seconds
+    setInterval(checkVideoCallStatus, 30000);
+    
+    // Refresh messages every 10 seconds
+    setInterval(refreshMessages, 10000);
+};
+</script>
+
+<style>
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.chat-area {
+    height: 400px;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.message {
+    margin-bottom: 15px;
+    max-width: 70%;
+}
+
+.message-sent {
+    margin-left: auto;
+    background-color: #007bff;
+    color: white;
+    border-radius: 15px 15px 0 15px;
+    padding: 10px 15px;
+}
+
+.message-received {
+    margin-right: auto;
+    background-color: #f8f9fa;
+    color: #212529;
+    border-radius: 15px 15px 15px 0;
+    padding: 10px 15px;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    text-align: right;
+    margin-top: 5px;
+}
+
+.chat-input {
+    border-top: 1px solid #dee2e6;
+    padding: 15px;
+}
+
+.btn-action {
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.btn-action input[type="file"] {
+    display: none;
+}
+
+.btn-send {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+}
+</style>
+{% endblock %}

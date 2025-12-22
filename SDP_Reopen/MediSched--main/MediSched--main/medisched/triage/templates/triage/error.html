@@ -1,0 +1,33 @@
+<!-- triage/templates/triage/error.html -->
+{% extends 'base.html' %}
+
+{% block title %}Error - Symptom Checker{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-lg border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Error in Symptom Analysis</h4>
+                </div>
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-bug fa-4x text-danger mb-4"></i>
+                    <h5 class="card-title mb-3">Something went wrong</h5>
+                    <p class="card-text mb-4">
+                        We encountered an error while analyzing your symptoms. Please try again.
+                    </p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'triage:symptom_check' %}" class="btn btn-primary me-md-2">
+                            <i class="fas fa-redo me-1"></i>Try Again
+                        </a>
+                        <a href="{% url 'home:index' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-1"></i>Return to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

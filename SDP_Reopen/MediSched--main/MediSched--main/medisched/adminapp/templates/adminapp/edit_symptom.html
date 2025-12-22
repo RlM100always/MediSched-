@@ -1,0 +1,656 @@
+{% extends 'adminapp/base_admin.html' %}
+{% load static %}
+
+{% block title %}Edit Symptom | MediSched Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Mobile First Design - Minimal Padding */
+    :root {
+        --primary-color: #2D9CDB;
+        --primary-dark: #1e7cb3;
+        --primary-light: #e1f1fa;
+        --primary-gradient: linear-gradient(135deg, #2D9CDB 0%, #1e7cb3 100%);
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --light-bg: #f8fafc;
+        --card-shadow: 0 2px 10px rgba(45, 156, 219, 0.05);
+    }
+    
+    /* Base Container - Minimal Padding */
+    .form-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0.5rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Card */
+    .form-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        background: white;
+        width: 100%;
+    }
+    
+    /* Card Header - Reduced Padding */
+    .card-header-custom {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1rem 0.75rem !important;
+        border-bottom: none;
+    }
+    
+    .header-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .header-title {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    
+    .header-title i {
+        font-size: 1.1rem;
+        margin-right: 0.4rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.4rem;
+        border-radius: 6px;
+        flex-shrink: 0;
+    }
+    
+    .symptom-badge {
+        background: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.7rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        align-self: flex-start;
+    }
+    
+    /* Card Body - Reduced Padding */
+    .card-body {
+        padding: 1rem 0.75rem;
+        background: #f8fafc;
+    }
+    
+    /* Symptom Info Cards */
+    .symptom-info {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .info-card {
+        background: white;
+        padding: 0.6rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        border-left: 2px solid var(--primary-color);
+    }
+    
+    .info-label {
+        font-size: 0.7rem;
+        color: #718096;
+        font-weight: 600;
+        margin-bottom: 0.125rem;
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+    }
+    
+    .info-value {
+        font-size: 0.8rem;
+        color: #2d3748;
+        font-weight: 600;
+    }
+    
+    /* Form Sections - Reduced Padding */
+    .form-section {
+        background: white;
+        border-radius: 10px;
+        padding: 0.8rem;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+        border: 1px solid #eef2f7;
+    }
+    
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: #2d3748;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.8rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 1px solid var(--primary-light);
+    }
+    
+    .section-title i {
+        color: var(--primary-color);
+        background: var(--primary-light);
+        padding: 0.3rem;
+        border-radius: 5px;
+        font-size: 0.8rem;
+    }
+    
+    /* Form Elements */
+    .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.3rem;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    
+    .form-label i {
+        color: var(--primary-color);
+        font-size: 0.7rem;
+    }
+    
+    .form-control-custom {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 0.6rem;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        background: white;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .form-control-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(45, 156, 219, 0.15);
+        outline: none;
+    }
+    
+    /* Image Preview Container */
+    .image-preview-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-top: 0.8rem;
+    }
+    
+    .current-image-wrapper {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .current-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 2px solid white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    
+    .no-image-placeholder {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #718096;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    
+    .image-actions {
+        display: flex;
+        gap: 0.4rem;
+        margin-top: 0.4rem;
+    }
+    
+    .image-action-btn {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.7rem;
+    }
+    
+    .image-action-btn:hover {
+        background: var(--primary-dark);
+    }
+    
+    /* Upload Zone - Reduced Padding */
+    .upload-zone {
+        border: 1.5px dashed var(--primary-color);
+        border-radius: 8px;
+        padding: 1rem 0.6rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: rgba(45, 156, 219, 0.03);
+        width: 100%;
+    }
+    
+    .upload-zone:hover {
+        background: rgba(45, 156, 219, 0.06);
+        border-color: var(--primary-dark);
+    }
+    
+    .upload-icon {
+        font-size: 1.2rem;
+        color: var(--primary-color);
+        margin-bottom: 0.4rem;
+    }
+    
+    .upload-text {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.2rem;
+    }
+    
+    .upload-subtext {
+        color: #718096;
+        font-size: 0.7rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .file-info {
+        margin-top: 0.6rem;
+        padding: 0.5rem;
+        background: var(--primary-light);
+        border-radius: 6px;
+        font-size: 0.7rem;
+        display: none;
+    }
+    
+    .file-info.show {
+        display: block;
+    }
+    
+    /* Buttons - Reduced Padding */
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        margin-top: 1rem;
+        padding-top: 0.8rem;
+        border-top: 1px solid #edf2f7;
+    }
+    
+    .btn-back,
+    .btn-update {
+        border-radius: 6px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        transition: all 0.2s;
+        text-decoration: none;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1.5px solid transparent;
+    }
+    
+    .btn-back {
+        background: white;
+        color: #4a5568;
+        border-color: #e2e8f0;
+    }
+    
+    .btn-back:hover {
+        background: #f7fafc;
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .btn-update {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+    }
+    
+    .btn-update:hover {
+        background: var(--primary-dark);
+    }
+    
+    /* Loading Animation */
+    .btn-loading {
+        position: relative;
+        color: transparent !important;
+    }
+    
+    .btn-loading:after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin: -8px 0 0 -8px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Form Helper */
+    .form-helper {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        color: #718096;
+        font-size: 0.7rem;
+        margin-top: 0.3rem;
+        font-weight: 500;
+    }
+    
+    .form-helper i {
+        color: var(--primary-color);
+        font-size: 0.65rem;
+    }
+    
+    /* Success Toast - Reduced */
+    .success-toast {
+        position: fixed;
+        bottom: 10px;
+        left: 0.5rem;
+        right: 0.5rem;
+        background: var(--success-color);
+        color: white;
+        padding: 0.8rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+        z-index: 9999;
+        animation: slideInUp 0.2s ease-out;
+        display: none;
+        font-size: 0.85rem;
+    }
+    
+    .success-toast i {
+        font-size: 1rem;
+    }
+    
+    /* Character Counter */
+    #charCounter {
+        text-align: right;
+        font-size: 0.7rem;
+        color: #718096;
+        margin-top: 0.2rem;
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideInUp {
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .form-card {
+        animation: fadeIn 0.3s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card form-card">
+        <!-- Header -->
+        <div class="card-header card-header-custom">
+            <div class="header-content">
+                <h2 class="header-title">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    Edit Symptom
+                </h2>
+                <div class="symptom-badge">
+                    <i class="fa-solid fa-stethoscope"></i>
+                    ID: {{ symptom.id }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Body -->
+        <div class="card-body">
+            <!-- Symptom Information -->
+            <div class="symptom-info">
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                        Created
+                    </div>
+                    <div class="info-value">
+                        {{ symptom.created_at|date:"M d, Y"|default:"N/A" }}
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        Updated
+                    </div>
+                    <div class="info-value">
+                        {{ symptom.updated_at|date:"M d, Y H:i"|default:"N/A" }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FIXED: ADDED ACTION URL TO FORM -->
+            <form method="POST" action="{% url 'edit_symptom' symptom.id %}" enctype="multipart/form-data" id="editSymptomForm">
+                {% csrf_token %}
+                
+                <!-- Symptom Name Section -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-signature"></i>
+                        Symptom Information
+                    </div>
+                    
+                    <div class="mb-2">
+                        <label for="symptom_name" class="form-label">
+                            <i class="fa-solid fa-file-signature"></i>
+                            Symptom Name *
+                        </label>
+                        <input 
+                            type="text" 
+                            name="symptom_name" 
+                            id="symptom_name" 
+                            class="form-control-custom" 
+                            value="{{ symptom.symptom_name }}" 
+                            placeholder="e.g., Fever, Headache"
+                            required
+                            maxlength="100"
+                        >
+                        <div class="form-helper">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Enter descriptive name
+                        </div>
+                        <div id="charCounter" class="form-helper text-end"></div>
+                    </div>
+                </div>
+                
+                <!-- Symptom Image Section -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fa-solid fa-image"></i>
+                        Symptom Image
+                    </div>
+                    
+                    <!-- Current Image -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fa-solid fa-image-portrait"></i>
+                            Current Image
+                        </label>
+                        <div class="image-preview-container">
+                            {% if symptom.symptom_image %}
+                                <div class="current-image-wrapper">
+                                    <img 
+                                        src="{{ symptom.symptom_image.url }}" 
+                                        alt="{{ symptom.symptom_name }}" 
+                                        class="current-image"
+                                    >
+                                </div>
+                            {% else %}
+                                <div class="no-image-placeholder">
+                                    <i class="fa-solid fa-image"></i>
+                                    <span class="ms-1">No Image</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Upload New Image -->
+                    <div class="mb-2">
+                        <label class="form-label">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            Upload New Image (Optional)
+                        </label>
+                        
+                        <!-- SIMPLE FILE INPUT THAT WORKS -->
+                        <input 
+                            type="file" 
+                            name="symptom_image" 
+                            id="symptom_image" 
+                            class="form-control-custom" 
+                            accept="image/*"
+                        >
+                        
+                        <div class="form-helper">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Leave empty to keep current image
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <a href="{% url 'symptom_list' %}" class="btn-back">
+                        <i class="fa-solid fa-arrow-left-long"></i>
+                        <span>Back</span>
+                    </a>
+                    <button type="submit" class="btn-update" id="submitBtn">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Update Symptom</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('editSymptomForm');
+        const symptomNameInput = document.getElementById('symptom_name');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Character counter
+        function updateCharCounter() {
+            const charCount = symptomNameInput.value.length;
+            const maxLength = 100;
+            const counter = document.getElementById('charCounter');
+            
+            if (counter) {
+                counter.textContent = `${charCount}/${maxLength}`;
+                
+                if (charCount > 90) {
+                    counter.style.color = 'var(--danger-color)';
+                    counter.style.fontWeight = 'bold';
+                } else if (charCount > 75) {
+                    counter.style.color = 'var(--warning-color)';
+                    counter.style.fontWeight = '600';
+                } else {
+                    counter.style.color = '';
+                    counter.style.fontWeight = '';
+                }
+            }
+        }
+        
+        // Initialize character counter
+        if (symptomNameInput.value) {
+            updateCharCounter();
+        }
+        
+        symptomNameInput.addEventListener('input', updateCharCounter);
+        
+        // Form submission - Simple validation
+        form.addEventListener('submit', function(e) {
+            const symptomName = symptomNameInput.value.trim();
+            
+            if (!symptomName) {
+                e.preventDefault();
+                alert('Please enter a symptom name.');
+                symptomNameInput.focus();
+                return;
+            }
+            
+            if (symptomName.length < 3) {
+                e.preventDefault();
+                alert('Symptom name must be at least 3 characters long.');
+                symptomNameInput.focus();
+                return;
+            }
+            
+            // Optional: Check file size
+            const fileInput = document.getElementById('symptom_image');
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                
+                if (file.size > maxSize) {
+                    e.preventDefault();
+                    alert('File size exceeds 5MB limit.');
+                    return;
+                }
+            }
+            
+            // Show loading state
+            submitBtn.classList.add('btn-loading');
+            submitBtn.disabled = true;
+        });
+    });
+</script>
+{% endblock %}
