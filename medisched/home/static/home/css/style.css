@@ -147,8 +147,9 @@ html {
 }
 
 .btn-secondary:hover {
-    background: #229954;
+    background: #2589c5;
     transform: translateY(-2px);
+    color: white;
 }
 
 .hamburger {
@@ -965,8 +966,8 @@ footer {
 
 .alert-success {
     background: #D1FAE5;
-    color: #065F46;
-    border-left: 4px solid var(--success-green);
+    color: #2D9CDB;
+    border-left: #2D9CDB;
 }
 
 .alert-error {

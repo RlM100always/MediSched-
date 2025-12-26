@@ -378,7 +378,7 @@
                                     
                                     <!-- Add prescription button -->
                                     {% if appointment.status == 'completed' %}
-                                    <a href="{% url 'doctor:create_prescription_view' appointment.id %}" 
+                                    <a href="{% url 'doctor:create_prescription' appointment.id %}" 
                                        class="btn btn-outline-success" title="Create Prescription">
                                         <i class="fas fa-file-prescription"></i>
                                     </a>

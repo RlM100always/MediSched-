@@ -643,19 +643,36 @@ def doctor_list(request):
     }
     return render(request, 'adminapp/doctor/doctor_list.html', context)
 
-
+# ========== DOCTOR MANAGEMENT ==========
 # ========== DOCTOR MANAGEMENT ==========
 def doctor_create(request):
     if request.method == 'POST':
         try:
-            # Create User
+            # Generate username from email (or use form field if you add it)
+            email = request.POST.get('email')
+            
+            # Option 1: Generate username from email
+            username = email.split('@')[0]  # Use part before @ as username
+            
+            # Ensure username is unique
+            original_username = username
+            counter = 1
+            while CustomUser.objects.filter(username=username).exists():
+                username = f"{original_username}{counter}"
+                counter += 1
+            
+            # Option 2: If you prefer to use a username from form, add this field to template
+            # username = request.POST.get('username')  # Uncomment if you add username field to form
+            
+            # Create User with proper field names
             user = CustomUser.objects.create_user(
-                email=request.POST.get('email'),
+                username=username,  # REQUIRED: Django's AbstractUser requires username
+                email=email,
                 password=request.POST.get('password'),
                 first_name=request.POST.get('first_name'),
                 last_name=request.POST.get('last_name'),
-                phone=request.POST.get('phone'),
-                user_type='doctor'
+                phone=request.POST.get('phone', ''),  # Provide default empty string
+                role='doctor'  # CORRECT: Use 'role' not 'user_type'
             )
             
             # Create Doctor Profile
@@ -681,35 +698,43 @@ def doctor_create(request):
             departments = request.POST.getlist('departments')
             for dept_id in departments:
                 if dept_id:
-                    department = Department.objects.get(id=dept_id)
-                    DoctorSpecializationDepartment.objects.create(
-                        doctor=doctor,
-                        department=department
-                    )
+                    try:
+                        department = Department.objects.get(id=dept_id)
+                        DoctorSpecializationDepartment.objects.create(
+                            doctor=doctor,
+                            department=department
+                        )
+                    except Department.DoesNotExist:
+                        continue  # Skip if department doesn't exist
             
             # Add Symptoms
             symptoms = request.POST.getlist('symptoms')
             for symp_id in symptoms:
                 if symp_id:
-                    symptom = Symptom.objects.get(id=symp_id)
-                    DoctorSpecializationSymptom.objects.create(
-                        doctor=doctor,
-                        symptom=symptom
-                    )
+                    try:
+                        symptom = Symptom.objects.get(id=symp_id)
+                        DoctorSpecializationSymptom.objects.create(
+                            doctor=doctor,
+                            symptom=symptom
+                        )
+                    except Symptom.DoesNotExist:
+                        continue  # Skip if symptom doesn't exist
             
             # Add Experiences
             hospital_names = request.POST.getlist('hospital_name')
             designations = request.POST.getlist('designation')
             dept_names = request.POST.getlist('experience_department')
             
-            for i in range(len(hospital_names)):
-                if hospital_names[i] and designations[i]:
-                    DoctorExperience.objects.create(
-                        doctor=doctor,
-                        hospital_name=hospital_names[i],
-                        designation=designations[i],
-                        department=dept_names[i] if i < len(dept_names) and dept_names[i] else ''
-                    )
+            # Only create if we have at least one experience with hospital name
+            if hospital_names and hospital_names[0]:  # Check first experience entry
+                for i in range(len(hospital_names)):
+                    if hospital_names[i] and designations[i]:
+                        DoctorExperience.objects.create(
+                            doctor=doctor,
+                            hospital_name=hospital_names[i],
+                            designation=designations[i],
+                            department=dept_names[i] if i < len(dept_names) and dept_names[i] else ''
+                        )
             
             # Add Appointment Fees
             general_fee = request.POST.get('general_fee')
@@ -734,17 +759,29 @@ def doctor_create(request):
             
         except Exception as e:
             messages.error(request, f'Error creating doctor: {str(e)}')
-            return redirect('doctor_create')
+            # For debugging
+            import traceback
+            print(f"Error details: {str(e)}")
+            traceback.print_exc()
+            
+            # Re-render the form with existing data
+            context = {
+                'divisions': Division.objects.all(),
+                'districts': District.objects.all(),
+                'upazilas': Upazila.objects.all(),
+                'departments': Department.objects.all(),
+                'symptoms': Symptom.objects.all(),
+            }
+            return render(request, 'adminapp/doctor/doctor_create.html', context)
     
     context = {
         'divisions': Division.objects.all(),
-        'districts': District.objects.all(),  # Load all districts initially
-        'upazilas': Upazila.objects.all(),    # Load all upazilas initially
+        'districts': District.objects.all(),
+        'upazilas': Upazila.objects.all(),
         'departments': Department.objects.all(),
         'symptoms': Symptom.objects.all(),
     }
     return render(request, 'adminapp/doctor/doctor_create.html', context)
-
 
 def doctor_detail(request, pk):
     doctor = get_object_or_404(Doctor, pk=pk)
