@@ -273,14 +273,19 @@
         text-transform: uppercase;
     }
 
-    .status-upcoming {
+    .status-pending {
         background: rgba(45, 156, 219, 0.1);
         color: var(--primary-blue);
     }
 
-    .status-completed {
+    .status-confirmed {
         background: rgba(39, 174, 96, 0.1);
         color: var(--secondary);
+    }
+
+    .status-completed {
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
     }
 
     .status-cancelled {
@@ -306,6 +311,43 @@
 
     .detail-item i {
         color: var(--primary-blue);
+    }
+
+    .appointment-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        color: white;
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--primary-blue);
+        border: 1px solid var(--primary-blue);
+    }
+
+    .btn-outline:hover {
+        background: var(--primary-blue);
+        color: white;
     }
 
     /* Quick Actions */
@@ -405,6 +447,16 @@
             flex-direction: column;
             gap: 10px;
         }
+
+        .appointment-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .appointment-status {
+            align-self: flex-start;
+        }
     }
 
     @media (max-width: 576px) {
@@ -421,16 +473,16 @@
     <div class="welcome-banner">
         <div class="welcome-content">
             <div class="welcome-text">
-                <h1>Welcome back, {{ user.first_name|default:user.username }}! 👋</h1>
-                <p>Here's your health overview for today</p>
+                <h1>Welcome back, {{ user.get_full_name|default:user.username }}! 👋</h1>
+                <p>Here's your health overview for today - {{ current_date|date:"F d, Y" }}</p>
             </div>
             <div class="quick-stats">
                 <div class="stat-item">
-                    <div class="stat-number">5</div>
-                    <div class="stat-label">Appointments</div>
+                    <div class="stat-number">{{ total_appointments }}</div>
+                    <div class="stat-label">Total Appointments</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">3</div>
+                    <div class="stat-number">{{ upcoming_appointments|length }}</div>
                     <div class="stat-label">Upcoming</div>
                 </div>
             </div>
@@ -445,7 +497,7 @@
                     <i class="fas fa-calendar-check"></i>
                 </div>
             </div>
-            <h3>12</h3>
+            <h3>{{ total_appointments }}</h3>
             <p>Total Appointments</p>
         </div>
 
@@ -455,7 +507,7 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
             </div>
-            <h3>8</h3>
+            <h3>{{ completed_count }}</h3>
             <p>Completed</p>
         </div>
 
@@ -465,8 +517,8 @@
                     <i class="fas fa-clock"></i>
                 </div>
             </div>
-            <h3>3</h3>
-            <p>Upcoming</p>
+            <h3>{{ pending_count }}</h3>
+            <p>Pending</p>
         </div>
 
         <div class="stat-card red">
@@ -475,7 +527,7 @@
                     <i class="fas fa-times-circle"></i>
                 </div>
             </div>
-            <h3>1</h3>
+            <h3>{{ cancelled_count }}</h3>
             <p>Cancelled</p>
         </div>
     </div>
@@ -489,67 +541,68 @@
                 <a href="#" class="btn-view-all">View All →</a>
             </div>
 
-            <!-- Example Appointment -->
-            <div class="appointment-item">
-                <div class="appointment-header">
-                    <div class="doctor-info">
-                        <div class="doctor-avatar">DR</div>
-                        <div class="doctor-details">
-                            <h4>Dr. Sarah Johnson</h4>
-                            <p>Cardiologist</p>
+            {% if upcoming_appointments %}
+                {% for appointment in upcoming_appointments %}
+                <div class="appointment-item">
+                    <div class="appointment-header">
+                        <div class="doctor-info">
+                            <div class="doctor-avatar">
+                                {{ appointment.doctor.user.first_name|first }}{{ appointment.doctor.user.last_name|first }}
+                            </div>
+                            <div class="doctor-details">
+                                <h4>Dr. {{ appointment.doctor.user.get_full_name }}</h4>
+                                <p>
+                                    {% with appointment.doctor.departments.all|first as dept %}
+                                        {{ dept.department_name|default:"Doctor" }}
+                                    {% endwith %}
+                                </p>
+                            </div>
+                        </div>
+                        <span class="appointment-status status-{{ appointment.status }}">
+                            {{ appointment.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="appointment-details">
+                        {% if appointment.appointment_date %}
+                        <div class="detail-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>{{ appointment.appointment_date|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-clock"></i>
+                            <span>{{ appointment.appointment_date|time:"g:i A" }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="detail-item">
+                            <i class="fas fa-{% if appointment.appointment_type == 'instant' %}video{% else %}hospital{% endif %}"></i>
+                            <span>{{ appointment.get_appointment_type_display }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-money-bill"></i>
+                            <span>৳{{ appointment.total_amount|default:appointment.consultation_fee }}</span>
                         </div>
                     </div>
-                    <span class="appointment-status status-upcoming">Upcoming</span>
-                </div>
-                <div class="appointment-details">
-                    <div class="detail-item">
-                        <i class="fas fa-calendar"></i>
-                        <span>Dec 10, 2025</span>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-clock"></i>
-                        <span>10:00 AM</span>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-video"></i>
-                        <span>Video Call</span>
+                    <div class="appointment-actions">
+                        {% if appointment.status == 'pending' %}
+                        <a href="#" class="btn-action btn-primary">Confirm Payment</a>
+                        {% endif %}
+                        <a href="#" class="btn-action btn-outline">View Details</a>
+                        {% if appointment.status != 'cancelled' and appointment.status != 'completed' %}
+                        <a href="#" class="btn-action btn-outline">Reschedule</a>
+                        {% endif %}
                     </div>
                 </div>
-            </div>
-
-            <div class="appointment-item">
-                <div class="appointment-header">
-                    <div class="doctor-info">
-                        <div class="doctor-avatar">DM</div>
-                        <div class="doctor-details">
-                            <h4>Dr. Michael Chen</h4>
-                            <p>General Physician</p>
-                        </div>
-                    </div>
-                    <span class="appointment-status status-upcoming">Upcoming</span>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h3>No Upcoming Appointments</h3>
+                    <p>Schedule your next appointment with our doctors</p>
+                    <a href="{% url 'home:all_doctors' %}" class="btn-action btn-primary" style="margin-top: 15px; display: inline-block;">
+                        Book Appointment
+                    </a>
                 </div>
-                <div class="appointment-details">
-                    <div class="detail-item">
-                        <i class="fas fa-calendar"></i>
-                        <span>Dec 15, 2025</span>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-clock"></i>
-                        <span>2:30 PM</span>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-hospital"></i>
-                        <span>In-Person</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Empty State Example -->
-            <!-- <div class="empty-state">
-                <i class="fas fa-calendar-times"></i>
-                <h3>No Upcoming Appointments</h3>
-                <p>Schedule your next appointment with our doctors</p>
-            </div> -->
+            {% endif %}
         </div>
 
         <!-- Quick Actions Sidebar -->
@@ -569,7 +622,7 @@
                         </div>
                     </a>
 
-                    <a href="#" class="action-btn">
+                    <a href="{% url 'home:all_doctors' %}" class="action-btn">
                         <div class="action-icon">
                             <i class="fas fa-user-md"></i>
                         </div>
@@ -579,26 +632,43 @@
                         </div>
                     </a>
 
-                    <a href="#" class="action-btn">
-                        <div class="action-icon">
-                            <i class="fas fa-file-medical"></i>
-                        </div>
-                        <div class="action-content">
-                            <h4>Medical Records</h4>
-                            <p>View your history</p>
-                        </div>
-                    </a>
+                   
 
-                    <a href="#" class="action-btn">
-                        <div class="action-icon">
-                            <i class="fas fa-prescription"></i>
-                        </div>
-                        <div class="action-content">
-                            <h4>Prescriptions</h4>
-                            <p>Manage medications</p>
-                        </div>
-                    </a>
+                    
                 </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="section-card" style="margin-top: 30px;">
+                <div class="section-header">
+                    <h2>Recent Activity</h2>
+                </div>
+                {% if recent_activity %}
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        {% for activity in recent_activity %}
+                        <div style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                <i class="fas fa-{% if activity.type == 'appointment' %}calendar{% else %}file-medical{% endif %}" 
+                                   style="color: var(--primary-blue);"></i>
+                                <span style="font-weight: 600; font-size: 14px;">
+                                    {{ activity.title }}
+                                </span>
+                            </div>
+                            <div style="font-size: 12px; color: #718096;">
+                                {{ activity.description }}
+                            </div>
+                            <div style="font-size: 11px; color: #a0aec0; margin-top: 3px;">
+                                {{ activity.date|timesince }} ago
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state" style="padding: 20px 0;">
+                        <i class="fas fa-history" style="font-size: 40px;"></i>
+                        <p>No recent activity</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

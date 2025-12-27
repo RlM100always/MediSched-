@@ -14,5 +14,9 @@ urlpatterns = [
     # dashboards
     path('patient/dashboard/', views.patient_dashboard, name='patient_dashboard'),
     path('doctor/dashboard/', views.doctor_dashboard, name='doctor_dashboard'),
+    
+    # profile editing
+    path('patient/profile/edit/', views.edit_profile, name='edit_profile'),
+
 
 ]

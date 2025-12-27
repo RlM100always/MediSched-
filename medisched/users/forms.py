@@ -2,6 +2,10 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import authenticate
 from .models import CustomUser
+# users/forms.py
+from django import forms
+from django.contrib.auth.forms import UserChangeForm
+from .models import CustomUser
 
 class CustomUserSignupForm(UserCreationForm):
     email = forms.EmailField(
@@ -100,3 +104,35 @@ class CustomUserSigninForm(AuthenticationForm):
             raise forms.ValidationError("Incorrect username/email or password.")
         self.user_cache = user
         return self.cleaned_data
+
+
+
+
+class CustomUserEditForm(UserChangeForm):
+    password = None  # Remove password field from edit form
+    
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'email', 'phone', 'location']
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'First Name'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Last Name'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Email Address'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Phone Number'
+            }),
+            'location': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Your Location'
+            }),
+        }
