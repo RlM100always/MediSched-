@@ -664,13 +664,11 @@
                     <a href="{% url 'appointment:confirmation' appointment.id %}" class="btn-action btn-view">
                         <i class="fas fa-eye"></i> View Details
                     </a>
-                    <a href="{% url 'communication:chat_detail' appointment.id %}" class="btn-action btn-chat">
+                    
+                    {% if appointment.status == 'confirmed' %}
+                       <a href="{% url 'communication:chat_detail' appointment.id %}" class="btn-action btn-chat">
                         <i class="fas fa-comments"></i> Chat with Doctor
                     </a>
-                    {% if appointment.status == 'confirmed' %}
-                    <button class="btn-action btn-cancel" disabled>
-                        <i class="fas fa-times"></i> Cancel (Coming Soon)
-                    </button>
                     {% endif %}
                 </div>
             </div>
