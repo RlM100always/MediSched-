@@ -324,15 +324,7 @@ The core of the database schema revolves around the relationships between the `C
 | **`Appointment`** | `patient` (FK), `doctor` (FK), `appointment_date`, `total_amount`, `status` | Foreign Key to `CustomUser` (patient) and `Doctor` |
 | **`PaymentTransaction`** | `appointment` (One-to-One), `amount`, `status`, `transaction_id` | One-to-One with `Appointment` |
 
-### 4.5 Code Repository Link
 
-[Code Repository Link Placeholder]
-
-### 4.6 Video Demo Link
-
-[Video Demo Link Placeholder]
-
-***
 
 ## 5. Evaluation
 
