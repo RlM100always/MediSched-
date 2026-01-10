@@ -22,12 +22,6 @@ MediSched
 Department of Computer Science & Engineering
 University of Dhaka
 
-**Team Member**
-Abdullah Al Arman Emon (50),
-Shah Jamal Islam (81),
-Suhail Tanvir Nahin (82),
-Md. Rakib Hossain (88)
-
 
 ***
 
