@@ -101,6 +101,23 @@ The primary use cases for the MediSched system are centered around the two main 
 
 ***
 
+ ### 2.3 Project Screenshots
+
+<p align="center">
+  <!-- Replace with your actual screenshots -->
+  <img width="600" src=" " />
+  <img width="600" src=" " />
+  <img width="600" src=" " />
+  <img width="600" src=" " />
+  <img width="600" src=" " />
+  <img width="600" src=" " />
+  <img width="600" src=" " />
+  <img width="600" src=" " />
+  
+  
+  
+</p>
+
 ## 3. Design Patterns Used
 
 ### 3.1 Design Philosophy & Rationale
