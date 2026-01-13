@@ -105,14 +105,50 @@ The primary use cases for the MediSched system are centered around the two main 
 
 <p align="center">
   <!-- Replace with your actual screenshots -->
-  <img width="600" src=" " />
-  <img width="600" src=" " />
-  <img width="600" src=" " />
-  <img width="600" src=" " />
-  <img width="600" src=" " />
-  <img width="600" src=" " />
-  <img width="600" src=" " />
-  <img width="600" src=" " />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202025-12-13%20185923.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20214500.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20214638.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20214659.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20214725.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20214746.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20214805.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20214845.png?raw=true" />
+    <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215030.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215052.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215130.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215218.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215237.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215301.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215322.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215339.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215358.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215349.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215415.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215431.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215443.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215506.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215523.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215550.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215559.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215609.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215659.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215713.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215722.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20215746.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20220016.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20220037.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20220053.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20220110.png?raw=true" />
+    <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20220147.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20220202.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20220217.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20220228.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20220410.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20220410.png?raw=true" />
+  <img width="600" src="https://github.com/RlM100always/Hisab/blob/main/medisched/Screenshot%202026-01-13%20220443.png?raw=true" />
+
+
+
   
   
   
